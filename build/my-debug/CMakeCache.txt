@@ -300,7 +300,7 @@ Z_VCPKG_PWSH_PATH:FILEPATH=Z_VCPKG_PWSH_PATH-NOTFOUND
 _VCPKG_INSTALLED_DIR:PATH=C:/CppProjects/ProtoMapper/build/my-debug/vcpkg_installed
 
 //The directory containing a CMake configuration file for fmt.
-fmt_DIR:PATH=C:/CppProjects/ProtoMapper/build/my-debug/vcpkg_installed/x64-windows/share/fmt
+fmt_DIR:PATH=fmt_DIR-NOTFOUND
 
 
 ########################
