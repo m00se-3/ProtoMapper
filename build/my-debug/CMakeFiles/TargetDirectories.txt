@@ -1,5 +1,0 @@
-C:/CppProjects/ProtoMapper/build/my-debug/CMakeFiles/edit_cache.dir
-C:/CppProjects/ProtoMapper/build/my-debug/CMakeFiles/rebuild_cache.dir
-C:/CppProjects/ProtoMapper/build/my-debug/ProtoMapper/CMakeFiles/ProtoMapper.dir
-C:/CppProjects/ProtoMapper/build/my-debug/ProtoMapper/CMakeFiles/edit_cache.dir
-C:/CppProjects/ProtoMapper/build/my-debug/ProtoMapper/CMakeFiles/rebuild_cache.dir
