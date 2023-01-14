@@ -16,7 +16,6 @@ target_link_libraries(
 
 	PRIVATE 
 
-	fmt::fmt-header-only
 	sfml-system
 	sfml-network
 	sfml-graphics

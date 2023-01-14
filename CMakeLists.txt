@@ -8,7 +8,6 @@ project ("ProtoMapper" LANGUAGES CXX)
 list(APPEND flags "-Wall" "-Wextra" "-Wpedantic" "-Wno-newline-eof" "-Wno-c++98-compat" "-Wno-c++98-compat-pedantic")
 
 find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
 find_package(TGUI CONFIG REQUIRED)
 
 # Include sub-projects.
