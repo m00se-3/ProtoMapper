@@ -1,0 +1,241 @@
+Package: vcpkg-cmake-config
+Version: 2022-02-06
+Port-Version: 1
+Architecture: x64-windows
+Multi-Arch: same
+Abi: fc590b51303a83199c8c58e33ef380ddebedf181cafed3074018de0970ffb074
+Type: Port
+Status: install ok installed
+
+Package: vcpkg-cmake
+Version: 2022-11-13
+Architecture: x64-windows
+Multi-Arch: same
+Abi: bea3199770d4a3cba0a9eaa22e44e499aab3e014d64a0dbcd25b12e46acd7560
+Type: Port
+Status: install ok installed
+
+Package: fmt
+Version: 9.1.0
+Port-Version: 1
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 1020341f607661b3d7ae6f18174ca7468bf0546338bc00e6104a6443c2cfea9b
+Description: Formatting library for C++. It can be used as a safe alternative to printf or as a fast alternative to IOStreams.
+Type: Port
+Status: install ok installed
+
+Package: stb
+Version: 2021-09-10
+Port-Version: 1
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 437a2ef6546652e2013f29077caadef40817374383bdf18af2fa6b9dfc4a569d
+Description: public domain header-only libraries
+Type: Port
+Status: install ok installed
+
+Package: egl-registry
+Version: 2022-09-20
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 4826234918da7ee8b2ee8872c9adf5bda28addc2dbcc914a126d44e70ee18c26
+Description: the EGL API and Extension Registry
+Type: Port
+Status: install ok installed
+
+Package: opengl-registry
+Version: 2022-09-29
+Depends: egl-registry
+Architecture: x64-windows
+Multi-Arch: same
+Abi: ce9cfa942ce5ebd89fca74042262c29695cc545df8aedf05bb209a085e74933a
+Description: the API and Extension registries for the OpenGL family APIs
+Type: Port
+Status: install ok installed
+
+Package: opengl
+Version: 2022-12-04
+Depends: opengl-registry
+Architecture: x64-windows
+Multi-Arch: same
+Abi: dc0b8af96a205a106facc957d864d547c2be749cf67611401dfdee2502441aef
+Description: Open Graphics Library (OpenGL)[3][4][5] is a cross-language, cross-platform application programming interface (API) for rendering 2D and 3D vector graphics.
+Type: Port
+Status: install ok installed
+
+Package: openal-soft
+Version: 1.22.2
+Port-Version: 4
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 6eeab82b88f751cc5907f8e4b448b4ec09e1155176c829fda5f4416429c2f0af
+Description: OpenAL Soft is an LGPL-licensed, cross-platform, software implementation of the OpenAL 3D audio API.
+Type: Port
+Status: install ok installed
+
+Package: libogg
+Version: 1.3.5
+Port-Version: 1
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 96074de88fa1fa7289215ddee2829aff477a654088f7bb2e2ab5811dc4431fda
+Description: Ogg is a multimedia container format, and the native file and stream format for the Xiph.org multimedia codecs.
+Type: Port
+Status: install ok installed
+
+Package: libvorbis
+Version: 1.3.7
+Port-Version: 2
+Depends: libogg, vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 098a1a40b832abf4741af9190a69c6ae66fded1eb731749cb7dac2c8f2a297a3
+Description: Ogg Vorbis is a fully open, non-proprietary, patent-and-royalty-free, general-purpose compressed audio format
+Type: Port
+Status: install ok installed
+
+Package: libflac
+Version: 1.3.4
+Port-Version: 1
+Depends: libogg, vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: e656245ff2752dfef170d7bcd4581e679ff570e33eb7a3ab40948babadcd22bc
+Description: Library for manipulating FLAC files
+Type: Port
+Status: install ok installed
+
+Package: zlib
+Version: 1.2.13
+Depends: vcpkg-cmake
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 75ba633bb47ca5c42aa9e0b7923e461fc0eca93274f7c0fca34cd7e583c2406d
+Description: A compression library
+Type: Port
+Status: install ok installed
+
+Package: libpng
+Version: 1.6.39
+Depends: vcpkg-cmake, vcpkg-cmake-config, zlib
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 77f95ab00c5f5b101685f50a7c6f19aa1b44de3b57b4d260f4c7d67d3734a4cd
+Description: libpng is a library implementing an interface for reading and writing PNG (Portable Network Graphics) format files
+Type: Port
+Status: install ok installed
+
+Package: bzip2
+Version: 1.0.8
+Port-Version: 3
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 67c849b8981586e8a89fea266ed28a7399093f6344f95d4b446ee9f9331254e8
+Description: bzip2 is a freely available, patent free, high-quality data compressor. It typically compresses files to within 10% to 15% of the best available techniques (the PPM family of statistical compressors), whilst being around twice as fast at compression and six times faster at decompression.
+Type: Port
+Default-Features: tool
+Status: install ok installed
+
+Package: bzip2
+Feature: tool
+Architecture: x64-windows
+Multi-Arch: same
+Description: Builds bzip2 executable
+Type: Port
+Status: install ok installed
+
+Package: brotli
+Version: 1.0.9
+Port-Version: 4
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: f1dd06df528fbe5460bc123fc534764b750e2e7fc6b6bc66657870f06617258c
+Description: a generic-purpose lossless compression algorithm that compresses data using a combination of a modern variant of the LZ77 algorithm, Huffman coding and 2nd order context modeling.
+Type: Port
+Status: install ok installed
+
+Package: freetype
+Version: 2.12.1
+Port-Version: 3
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 6960a6fdc81a453c1887bfea2770abaa145d1c111cad3d860047605d124dceae
+Description: A library to render fonts.
+Type: Port
+Default-Features: brotli, bzip2, png, zlib
+Status: install ok installed
+
+Package: freetype
+Feature: brotli
+Depends: brotli
+Architecture: x64-windows
+Multi-Arch: same
+Description: Support decompression of WOFF2 streams
+Type: Port
+Status: install ok installed
+
+Package: freetype
+Feature: bzip2
+Depends: bzip2
+Architecture: x64-windows
+Multi-Arch: same
+Description: Support bzip2 compressed fonts.
+Type: Port
+Status: install ok installed
+
+Package: freetype
+Feature: png
+Depends: libpng
+Architecture: x64-windows
+Multi-Arch: same
+Description: Support PNG compressed OpenType embedded bitmaps.
+Type: Port
+Status: install ok installed
+
+Package: freetype
+Feature: zlib
+Depends: zlib
+Architecture: x64-windows
+Multi-Arch: same
+Description: Use zlib instead of internal library for DEFLATE
+Type: Port
+Status: install ok installed
+
+Package: sfml
+Version: 2.5.1
+Port-Version: 14
+Depends: freetype, libflac, libogg, libvorbis, openal-soft, opengl, stb, vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: f1df783b0de17704fc899828f7f82e92a517c4fa7e56d49ef3f247b8b5f88b2a
+Description: Simple and fast multimedia library
+Type: Port
+Status: install ok installed
+
+Package: tgui
+Version: 0.9.5
+Depends: stb, vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: c5e2654b982c0649576a37a2a7c003f5946595b133211909a04ae0c6fd7feffc
+Description: TGUI is an easy to use, cross-platform, C++ GUI for SFML.
+Type: Port
+Default-Features: sfml
+Status: install ok installed
+
+Package: tgui
+Feature: sfml
+Depends: sfml
+Architecture: x64-windows
+Multi-Arch: same
+Description: Build the SFML backend
+Type: Port
+Status: install ok installed
+

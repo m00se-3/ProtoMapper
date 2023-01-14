@@ -1,0 +1,216 @@
+{
+	"inputs" : 
+	[
+		{
+			"path" : "CMakeLists.txt"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/CMakeFiles/3.24.202208181-MSVC_2/CMakeSystem.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeDependentOption.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeSystemSpecificInitialize.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/CMakeFiles/3.24.202208181-MSVC_2/CMakeCXXCompiler.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeSystemSpecificInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeGenericSystem.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeInitializeConfigs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/Platform/Windows.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/Platform/WindowsPaths.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeCXXInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/Compiler/Clang-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/Compiler/Clang.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/Platform/Windows-Clang-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/Platform/Windows-Clang.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/CMakeFiles/3.24.202208181-MSVC_2/CMakeRCCompiler.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeRCInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/sfml/SFMLConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/sfml/SFMLConfig.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/sfml/SFMLSharedTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/sfml/SFMLSharedTargets-debug.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/sfml/SFMLSharedTargets-release.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/sfml/SFMLConfigDependencies.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/fmt/fmt-config-version.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/fmt/fmt-config.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/fmt/fmt-targets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/fmt/fmt-targets-debug.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/fmt/fmt-targets-release.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/tgui/TGUIConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/tgui/TGUIConfig.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/sfml/SFMLConfigVersion.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/sfml/SFMLConfig.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.24/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/sfml/SFMLSharedTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/sfml/SFMLConfigDependencies.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/tgui/TGUISharedTargets.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/tgui/TGUISharedTargets-debug.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/my-debug/vcpkg_installed/x64-windows/share/tgui/TGUISharedTargets-release.cmake"
+		},
+		{
+			"path" : "vcpkg.json"
+		},
+		{
+			"path" : "ProtoMapper/CMakeLists.txt"
+		}
+	],
+	"kind" : "cmakeFiles",
+	"paths" : 
+	{
+		"build" : "C:/CppProjects/ProtoMapper/build/my-debug",
+		"source" : "C:/CppProjects/ProtoMapper"
+	},
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 0
+	}
+}
