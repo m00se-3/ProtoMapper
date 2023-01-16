@@ -29,7 +29,11 @@ target_sources(
 
 	PUBLIC 
 	${CMAKE_CURRENT_LIST_DIR}/inc/ProtoMapper.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/Map.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/TileMap2D.hpp
 
 	PRIVATE  
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Map.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/TileMap2D.cpp
 )

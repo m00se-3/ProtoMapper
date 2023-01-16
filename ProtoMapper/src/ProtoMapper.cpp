@@ -1,4 +1,7 @@
 ﻿#include "ProtoMapper.hpp"
+#include "TileMap2D.hpp"
+
+#include <chrono>
 
 bool ProtoMapper::Update(float dt)
 {
@@ -9,7 +12,7 @@ bool ProtoMapper::Update(float dt)
 
 bool ProtoMapper::Draw()
 {
-
+	if (_mapOpen) _window.draw(_mapSprite);
 
 	return true;
 }
@@ -19,7 +22,12 @@ ProtoMapper::ProtoMapper()
 	:_toolBar(tgui::Group::create())
 {
 	CreateToolBar();
+	_currentMap.reset(new TileMap2D{});
+	_currentMap->Create(_windowWidth, _windowHeight);
+	_mapSprite.setTexture(_currentMap->GetTexture());
 }
+
+ProtoMapper::~ProtoMapper() { _currentMap.reset(); }
 
 void ProtoMapper::CreateToolBar()
 {
@@ -31,20 +39,23 @@ void ProtoMapper::CreateToolBar()
 
 void ProtoMapper::Run()
 {
-	sf::RenderWindow window(sf::VideoMode(_windowWidth, _windowHeight), std::string{ "ProtoMapper - " } + VERSION_NUMBER);
+	_window.create(sf::VideoMode(_windowWidth, _windowHeight), std::string{ "ProtoMapper - " } + VERSION_NUMBER);
 
 	_camera.setSize(_fWidth, _fHeight);
 
-	window.setFramerateLimit(30);
+	_window.setView(_camera);
+	_window.setFramerateLimit(30);
 
-	_rootGui.setTarget(window);
+	_rootGui.setTarget(_window);
 	_rootGui.add(_toolBar, "Tool Bar");
+
+	_currentMap->Generate(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 
 	while (_appRunning)
 	{
 		sf::Clock clock;
 		sf::Event event;
-		while (window.pollEvent(event))
+		while (_window.pollEvent(event))
 		{
 			_rootGui.handleEvent(event);
 			
@@ -60,16 +71,16 @@ void ProtoMapper::Run()
 
 		if (!Update(clock.restart().asSeconds())) break;
 
-		window.clear();
+		_window.clear();
 
 		if (!Draw()) break;
 
 		_rootGui.draw();
-		window.display();
+		_window.display();
 
 	}
 
-	window.close();
+	_window.close();
 }
 
 
