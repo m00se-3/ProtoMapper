@@ -1,11 +1,13 @@
 ﻿#include "ProtoMapper.hpp"
-#include "TileMap2D.hpp"
+#include "SFML/Window/Event.hpp"
+#include "HeightMap2D.hpp"
+#include "TopMenu.hpp"
 
 #include <chrono>
 
 bool ProtoMapper::Update(float dt)
 {
-
+	
 
 	return true;
 }
@@ -19,37 +21,28 @@ bool ProtoMapper::Draw()
 
 
 ProtoMapper::ProtoMapper()
-	:_toolBar(tgui::Group::create())
+	: _currentMap(std::make_unique<HeightMap2D>())
 {
-	CreateToolBar();
-	_currentMap.reset(new TileMap2D{});
-	_currentMap->Create(_windowWidth, _windowHeight);
+	_currentMap->Create(_fWidth, _fHeight);
 	_mapSprite.setTexture(_currentMap->GetTexture());
 }
 
 ProtoMapper::~ProtoMapper() { _currentMap.reset(); }
 
-void ProtoMapper::CreateToolBar()
-{
-	_toolBar->setPosition(tgui::Layout2d{});
-	_toolBar->setSize(_windowWidth, _windowHeight / 6u);
-
-	_toolBar->add(tgui::Button::create("Click Me!"), "btn001");
-}
 
 void ProtoMapper::Run()
 {
 	_window.create(sf::VideoMode(_windowWidth, _windowHeight), std::string{ "ProtoMapper - " } + VERSION_NUMBER);
 
-	_camera.setSize(_fWidth, _fHeight);
+	_camera.setViewport(sf::FloatRect{ 0.f, 0.05f, 1.f, 0.95f });
 
 	_window.setView(_camera);
 	_window.setFramerateLimit(30);
 
 	_rootGui.setTarget(_window);
-	_rootGui.add(_toolBar, "Tool Bar");
 
-	_currentMap->Generate(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+	TopMenu bar(_fWidth * 1.f, _fHeight * 0.05f);
+	_rootGui.add(bar.GetGroup());
 
 	while (_appRunning)
 	{
@@ -64,6 +57,26 @@ void ProtoMapper::Run()
 			case sf::Event::Closed:
 			{
 				_appRunning = false;
+				break;
+			}
+			case sf::Event::MouseButtonPressed:
+			{
+				if (event.mouseButton.button == sf::Mouse::Middle) _panning = true;
+				break;
+			}
+			case sf::Event::MouseButtonReleased:
+			{
+				if (event.mouseButton.button == sf::Mouse::Middle) _panning = false;
+				break;
+			}
+			case sf::Event::MouseWheelScrolled:
+			{
+
+				break;
+			}
+			case sf::Event::MouseMoved:
+			{
+
 				break;
 			}
 			}

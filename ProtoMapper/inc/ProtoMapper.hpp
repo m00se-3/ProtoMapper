@@ -4,7 +4,8 @@
 #include "SFML/Window.hpp"
 #include "SFML/System.hpp"
 #include "SFML/Graphics.hpp"
-#include "TGUI/TGUI.hpp"
+#include "TGUI/Core.hpp"
+#include "TGUI/Backends/SFML.hpp"
 #include "Map.hpp"
 
 #include <string>
@@ -12,14 +13,13 @@
 
 class ProtoMapper
 {
-	bool _appRunning = true, _mapOpen = true;
+	bool _appRunning = true, _mapOpen = true, _panning = false;
 	
 	std::unique_ptr<Map> _currentMap;
 	tgui::GuiSFML _rootGui;
-	tgui::Group::Ptr _toolBar;
 
-	unsigned int _windowWidth = 800u, _windowHeight = 600u;
-	float _fWidth = 800.f, _fHeight = 600.f;
+	unsigned int _windowWidth = 1024u, _windowHeight = 768u;
+	float _fWidth = 1024.f, _fHeight = 768.f;
 
 	sf::RenderWindow _window;
 	sf::Sprite _mapSprite;
