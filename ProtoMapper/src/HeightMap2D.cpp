@@ -1,6 +1,6 @@
-#include "TileMap2D.hpp"
+#include "HeightMap2D.hpp"
 
-bool TileMap2D::Create(unsigned int w, unsigned int h)
+bool HeightMap2D::Create(unsigned int w, unsigned int h)
 {
 	_data.create(w, h, sf::Color{ 255u, 255u, 255u });
 	_texture.create(w, h);
@@ -8,7 +8,7 @@ bool TileMap2D::Create(unsigned int w, unsigned int h)
 	return true;
 }
 
-bool TileMap2D::Generate(size_t seed)
+bool HeightMap2D::Generate(size_t seed)
 {
 	_generator.seed(seed);
 

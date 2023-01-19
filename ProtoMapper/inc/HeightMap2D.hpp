@@ -4,15 +4,15 @@
 #include "Map.hpp"
 #include <random>
 
-class TileMap2D : public Map
+class HeightMap2D : public Map
 {
 	std::mt19937 _generator;
 	sf::Image _data;
 
 public:
 
-	TileMap2D() = default;
-	~TileMap2D() = default;
+	HeightMap2D() = default;
+	~HeightMap2D() = default;
 
 	bool Create(unsigned int, unsigned int) override;
 	bool Generate(size_t) override;
