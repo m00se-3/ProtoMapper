@@ -9,6 +9,7 @@ list(APPEND flags "-Wall" "-Wextra" "-Wpedantic" "-Wno-newline-eof" "-Wno-c++98-
 
 find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
 find_package(TGUI CONFIG REQUIRED)
+find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 
 # Include sub-projects.
 add_subdirectory ("ProtoMapper")

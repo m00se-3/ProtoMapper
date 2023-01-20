@@ -12,7 +12,8 @@
           "CMAKE_CXX_COMPILER": "clang++"
         },
         "environment": {
-          "PROGRAM_VERSION": "0.1.0"
+          "PROGRAM_VERSION": "0.1.0",
+          "ASSETS_FOLDER": "${sourceDir}"
         }
       },
       {

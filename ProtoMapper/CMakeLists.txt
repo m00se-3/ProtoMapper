@@ -2,13 +2,20 @@
 
 set_target_properties(ProtoMapper PROPERTIES CXX_STANDARD 20)
 target_compile_options(ProtoMapper PRIVATE ${flags})
-target_compile_definitions(ProtoMapper PUBLIC VERSION_NUMBER="$ENV{PROGRAM_VERSION}")
+target_compile_definitions(ProtoMapper PUBLIC VERSION_NUMBER="$ENV{PROGRAM_VERSION}" ASSETS_DIR="$ENV{ASSETS_FOLDER}")
+
+if(${CMAKE_BUILD_TYPE} MATCHES Debug)
+	target_compile_definitions(ProtoMapper PUBLIC _DEBUG_)
+elseif(${CMAKE_BUILD_TYPE} MATCHES Release AND NOT $ENV{POST_BUILD_TYPE} MATCHES Distro)
+	target_compile_definitions(ProtoMapper PUBLIC _RELEASE_)
+endif()
 
 target_include_directories(
 	ProtoMapper
 
-	PUBLIC 
+	PRIVATE 
 	${CMAKE_CURRENT_LIST_DIR}/inc
+	${SIMPLEINI_INCLUDE_DIRS}
 )
 
 target_link_libraries(
@@ -32,10 +39,12 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/inc/Map.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/HeightMap2D.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/TopMenu.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/UIGroup.hpp
 
 	PRIVATE  
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Map.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/HeightMap2D.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/TopMenu.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/UIGroup.cpp
 )
