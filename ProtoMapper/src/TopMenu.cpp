@@ -2,16 +2,19 @@
 
 #include "TGUI/String.hpp"
 
-TopMenu::TopMenu() : _group(tgui::Group::create()), _menuBar(tgui::MenuBar::create()) { SetupMenu(); }
+TopMenu::TopMenu(ProtoMapper* par) : UIGroup(par),_menuBar(tgui::MenuBar::create()) { SetupMenu(); }
 
-TopMenu::TopMenu(float w, float h)
-	: _group(tgui::Group::create(tgui::Layout2d{ tgui::Vector2f{ w, h } })), _menuBar(tgui::MenuBar::create())
+TopMenu::TopMenu(ProtoMapper* par, float w, float h)
+	: UIGroup(par, w, h), _menuBar(tgui::MenuBar::create())
 {
 	SetupMenu();
 }
 
 void TopMenu::SetupMenu()
 {
+	/*
+		Set up File menu.
+	*/
 	_menuBar->addMenu("File");
 	_menuBar->addMenuItem("File", "New");
 	_menuBar->addMenuItem("File", "Open");
@@ -28,7 +31,6 @@ void TopMenu::SetupMenu()
 
 
 
+	// Add MenuBar to the group
 	_group->add(_menuBar);
 }
-
-tgui::Group::Ptr TopMenu::GetGroup() const { return _group; }
