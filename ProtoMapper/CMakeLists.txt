@@ -23,11 +23,12 @@ target_link_libraries(
 
 	PRIVATE 
 
-	sfml-system
-	sfml-network
-	sfml-graphics
-	sfml-window
-	sfml-main
+	glad::glad
+	glm::glm
+	SDL2::SDL2
+	SDL2::SDL2main
+	$<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static>
+	$<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>
 	tgui
 )
 
@@ -40,6 +41,9 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/inc/HeightMap2D.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/TopMenu.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/UIGroup.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/Texture.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/Shader.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/Vertex.hpp
 
 	PRIVATE  
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
@@ -47,4 +51,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/HeightMap2D.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/TopMenu.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/UIGroup.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Texture.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Shader.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Vertex.cpp
 )

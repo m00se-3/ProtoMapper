@@ -2,7 +2,7 @@
 #define MAPPER_UIGROUP_HPP
 
 #include "TGUI/Core.hpp"
-#include "TGUI/Backends/SFML.hpp"
+#include "TGUI/Backends/SDL.hpp"
 #include "TGUI/Widgets/Group.hpp"
 
 class ProtoMapper;

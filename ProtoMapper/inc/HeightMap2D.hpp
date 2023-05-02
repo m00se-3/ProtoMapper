@@ -4,17 +4,22 @@
 #include "Map.hpp"
 #include <random>
 
+extern "C"
+{
+	typedef struct SDL_Surface;
+}
+
 class HeightMap2D : public Map
 {
 	std::mt19937 _generator;
-	sf::Image _data;
+	SDL_Surface* _data = nullptr;
 
 public:
 
 	HeightMap2D() = default;
 	~HeightMap2D() = default;
 
-	bool Create(unsigned int, unsigned int) override;
+	bool Create(ProtoMapper* par, unsigned int, unsigned int) override;
 	bool Generate(size_t) override;
 };
 

@@ -1,21 +1,28 @@
 ﻿#include "ProtoMapper.hpp"
-#include "SFML/Window/Event.hpp"
 #include "HeightMap2D.hpp"
 #include "TopMenu.hpp"
+
+#include "SDL2/SDL_image.h"
+#include "SDL2/SDL_ttf.h"
+#include "glad/glad.h"
 
 #include <chrono>
 #include <filesystem>
 
 bool ProtoMapper::Update(float dt)
 {
-	
 
 	return true;
 }
 
 bool ProtoMapper::Draw()
 {
-	if (_mapOpen) _window.draw(_mapSprite);
+	if (_mapOpen)
+	{
+		const SDL_FRect destRect{0.f, 0.f, _fWidth, _fHeight};
+
+
+	}
 
 	return true;
 }
@@ -36,6 +43,13 @@ ProtoMapper::~ProtoMapper()
 
 	_configData.Reset();
 	_currentMap.reset();
+
+	SDL_GL_DeleteContext(_context);
+	SDL_DestroyWindow(_window);
+
+	TTF_Quit();
+	IMG_Quit();
+	SDL_Quit();
 }
 
 bool ProtoMapper::Configure()
@@ -72,9 +86,15 @@ bool ProtoMapper::Configure()
 	*/
 	if (width != 0)
 	{
-		_videoMode.width = static_cast<unsigned int>(width);
-		_videoMode.height = static_cast<unsigned int>(height);
+		_wWidth = static_cast<unsigned int>(width);
+		_wHeight = static_cast<unsigned int>(height);
 		_fullscreen = false;
+	}
+
+	if (SDL_Init(SDL_INIT_VIDEO) != 0 || IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG || TTF_Init() != 0)
+	{
+		SDL_Log("%s", SDL_GetError());
+		return false;
 	}
 
 	return true;
@@ -83,64 +103,89 @@ bool ProtoMapper::Configure()
 
 void ProtoMapper::Run()
 {
+	using time = std::chrono::high_resolution_clock;
+
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	
 	if (_fullscreen)
-		_window.create(sf::VideoMode::getDesktopMode(), std::string{"ProtoMapper - "} + VERSION_NUMBER);
+	{
+		_window = SDL_CreateWindow(std::string{_title + VERSION_NUMBER}.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _wWidth, _wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED);
+	}
 	else
-		_window.create(_videoMode, std::string{ "ProtoMapper - " } + VERSION_NUMBER);
+	{
+		_window = SDL_CreateWindow(std::string{ _title + VERSION_NUMBER }.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _wWidth, _wHeight, SDL_WINDOW_OPENGL);
+	}
 
-	_camera.setViewport(sf::FloatRect{ 0.f, 0.05f, 1.f, 0.95f });
+	if (_window)
+	{
+		_context = SDL_GL_CreateContext(_window);
 
-	_window.setView(_camera);
-	_window.setFramerateLimit(30);
+		SDL_GL_MakeCurrent(_window, _context);
 
-	_rootGui.setTarget(_window);
+		if (!gladLoadGLLoader(static_cast<GLADloadproc>(SDL_GL_GetProcAddress))) return;
+	}
+	else
+	{
+		SDL_Log("%s", SDL_GetError());
+		return;
+	}
 
+	glClearColor(0.f, 0.f, 0.f, 1.f);
+
+	tgui::GuiSDL _rootGui{ _window };
+	
 	TopMenu bar(this, _fWidth * 1.f, _fHeight * 0.05f);
 	_rootGui.add(bar.GetGroup());
 
+	time::time_point last = time::now();
 
 	while (_appRunning)
 	{
-		sf::Clock clock;
-		sf::Event event;
-		while (_window.pollEvent(event))
+		SDL_Event event;
+
+		time::time_point current = time::now();
+		float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
+
+		while (SDL_PollEvent(&event))
 		{
 			if (_rootGui.handleEvent(event)) continue;
 			
 			switch (event.type)
 			{
-			case sf::Event::Closed:
+			case SDL_QUIT:
 			{
 				_appRunning = false;
 				break;
 			}
-			case sf::Event::MouseButtonPressed:
+			case SDL_MOUSEBUTTONDOWN:
 			{
-				if (event.mouseButton.button == sf::Mouse::Middle) _panning = true;
+				if (event.button.button == SDL_BUTTON_MIDDLE) _panning = true;
 				break;
 			}
-			case sf::Event::MouseButtonReleased:
+			case SDL_MOUSEBUTTONUP:
 			{
-				if (event.mouseButton.button == sf::Mouse::Middle) _panning = false;
+				if (event.button.button == SDL_BUTTON_MIDDLE) _panning = false;
 				break;
 			}
-			case sf::Event::MouseWheelScrolled:
+			case SDL_MOUSEWHEEL:
 			{
 
 				break;
 			}
-			case sf::Event::MouseMoved:
+			case SDL_MOUSEMOTION:
 			{
 
 				break;
 			}
-			case sf::Event::Resized:
+			case SDL_WINDOWEVENT_RESIZED:
 			{
-				_videoMode.width = event.size.width;
-				_videoMode.height = event.size.height;
+				_wWidth = event.window.data1;
+				_wHeight = event.window.data2;
 
-				auto err1 = _configData.SetLongValue("display", "width", event.size.width);
-				auto err2 = _configData.SetLongValue("display", "height", event.size.height);
+				auto err1 = _configData.SetLongValue("display", "width", event.window.data1);
+				auto err2 = _configData.SetLongValue("display", "height", event.window.data2);
 
 				if (err1 != SI_UPDATED || err2 != SI_UPDATED)
 				{
@@ -155,27 +200,33 @@ void ProtoMapper::Run()
 			}
 		}
 
-		if (!Update(clock.restart().asSeconds())) break;
+		if (!Update(microseconds * 1000000.f)) break;
 
-		_window.clear(sf::Color{ 50u, 50u, 50u, 50u });
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		if (!Draw()) break;
 
 		_rootGui.draw();
-		_window.display();
+		
+		SDL_GL_SwapWindow(_window);
 
 	}
 
-	_window.close();
 }
 
 
-int main()
+int main([[maybe_unused]]int argc, [[maybe_unused]]char** argv)
 {
 	ProtoMapper mapper;
 
-	if(mapper.Configure())
+	if (mapper.Configure())
+	{
 		mapper.Run();
+	}
 	else
+	{
 		fprintf_s(stdout, "Failed to load application configurations. Please reinstall the program.");
+	}
+
+	return 0; // Don't forget to return 0 from an SDL application. :$
 }

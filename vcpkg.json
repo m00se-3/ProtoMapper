@@ -3,11 +3,15 @@
   "version-string": "0.1.0",
   "description": "A tool for prototyping map generators.",
   "dependencies": [
-    "sfml",
+    "sdl2",
+    "sdl2-ttf",
+    "sdl2-image",
+    "glm",
+    "glad",
     {
       "name": "tgui",
       "features": [
-        "sfml"
+        "sdl2"
       ]
     },
     "simpleini"

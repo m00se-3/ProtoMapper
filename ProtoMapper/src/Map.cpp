@@ -1,4 +1,4 @@
 #include "Map.hpp"
 
+Map::~Map() {  }
 
-sf::Texture& Map::GetTexture() { return _texture; }

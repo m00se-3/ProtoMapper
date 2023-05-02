@@ -3,7 +3,7 @@
 
 #include "UIGroup.hpp"
 #include "TGUI/Core.hpp"
-#include "TGUI/Backends/SFML.hpp"
+#include "TGUI/Backends/SDL.hpp"
 #include "TGUI/Widgets/MenuBar.hpp"
 
 class TopMenu : public UIGroup
