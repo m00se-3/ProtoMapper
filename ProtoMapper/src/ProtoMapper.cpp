@@ -19,8 +19,7 @@ bool ProtoMapper::Draw()
 {
 	if (_mapOpen)
 	{
-		const SDL_FRect destRect{0.f, 0.f, _fWidth, _fHeight};
-
+		
 
 	}
 
@@ -140,6 +139,8 @@ void ProtoMapper::Run()
 	_rootGui.add(bar.GetGroup());
 
 	time::time_point last = time::now();
+
+	_currentMap->Generate(last.time_since_epoch().count());
 
 	while (_appRunning)
 	{
