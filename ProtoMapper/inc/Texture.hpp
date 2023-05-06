@@ -3,7 +3,7 @@
 
 extern "C"
 {
-	typedef struct SDL_Surface;
+	struct SDL_Surface;
 }
 
 /*
@@ -22,15 +22,24 @@ void FreeImageSurface(SDL_Surface* image);
 */
 class Texture2D
 {
-	unsigned int _ID = 0u;
+#ifdef USE_GLES
+	using IDType = unsigned short;
+#else
+	using IDType = unsigned int;
+#endif
+
+	IDType _ID = 0u;
 
 public:
 	Texture2D() = default;
 
-	void Create();
-	void Destroy();
+	Texture2D& Create();
+	Texture2D& Destroy();
 	void Bind() const;
-	void WriteImage(SDL_Surface* image);
+	void Unbond() const;
+	Texture2D& WriteImage(SDL_Surface* image);
+
+	IDType Target() const;
 };
 
 #endif
