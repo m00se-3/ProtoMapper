@@ -44,6 +44,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/inc/Texture.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Shader.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Vertex.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/Renderer.hpp
 
 	PRIVATE  
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
@@ -54,4 +55,5 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/Texture.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Shader.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Vertex.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Renderer.cpp
 )
