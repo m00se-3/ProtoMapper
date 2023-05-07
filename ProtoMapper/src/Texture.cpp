@@ -34,4 +34,10 @@ Texture2D& Texture2D::WriteImage(SDL_Surface* image)
 	return *this;
 }
 
+Texture2D& Texture2D::GenerateBlank(int w, int h)
+{
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32UI, w, h, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, nullptr);
+	return *this;
+}
+
 Texture2D::IDType Texture2D::Target() const { return GL_TEXTURE_2D; }

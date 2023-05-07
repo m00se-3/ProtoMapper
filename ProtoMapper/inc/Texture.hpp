@@ -36,6 +36,7 @@ public:
 	void Bind() const;
 	void Unbond() const;
 	Texture2D& WriteImage(SDL_Surface* image);
+	Texture2D& GenerateBlank(int w, int h);
 
 	IDType Target() const;
 };
