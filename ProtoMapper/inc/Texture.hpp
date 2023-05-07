@@ -7,9 +7,7 @@ extern "C"
 }
 
 /*
-	The following free functions are created to abstract the SDL_Surface type
-	from the rest of the API. This way, SDL_Surface's are not easily messed with
-	by any other code.
+	Convenience functions.
 */
 
 SDL_Surface* CreateImageBlank(int width, int height);
