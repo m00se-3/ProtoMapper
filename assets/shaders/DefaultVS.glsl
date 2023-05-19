@@ -1,4 +1,4 @@
-#version 320 core
+#version 430 core
 
 layout (location = 0) in vec2 position;
 layout (location = 1) in vec2 texCoords;
@@ -9,9 +9,11 @@ uniform mat4 view;
 uniform mat4 projection;
 
 out vec4 out_color;
+out vec2 textureUV;
 
-void main(void)
+void main()
 {
 	out_color = color;
-	gl_Position = projection * view * model * vec4(postion.x, position.y, 1.f, 1.f);
+	textureUV = texCoords;
+	gl_Position = projection * vec4(position.x, position.y, 1.0, 1.0);
 }
