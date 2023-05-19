@@ -13,7 +13,7 @@
         },
         "environment": {
           "PROGRAM_VERSION": "0.1.0",
-          "ASSETS_FOLDER": "${sourceDir}"
+          "ASSETS_FOLDER": "${sourceDir}/assets"
         }
       },
       {
