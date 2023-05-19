@@ -1,5 +1,6 @@
 #include "TopMenu.hpp"
 
+#include "SDL2/SDL_ttf.h"
 #include "TGUI/String.hpp"
 
 TopMenu::TopMenu(ProtoMapper* par) : UIGroup(par),_menuBar(tgui::MenuBar::create()) { SetupMenu(); }

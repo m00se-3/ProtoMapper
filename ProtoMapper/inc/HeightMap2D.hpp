@@ -19,10 +19,12 @@ class HeightMap2D : public Map
 public:
 
 	HeightMap2D() = default;
-	~HeightMap2D() = default;
+	~HeightMap2D();
 
 	bool Create(ProtoMapper* par, unsigned int, unsigned int) override;
 	bool Generate(size_t) override;
+
+	Texture2D* Texture();
 };
 
 #endif // !MAPPER_TILEMAP2D_HPP

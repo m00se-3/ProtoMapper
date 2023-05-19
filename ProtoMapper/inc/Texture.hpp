@@ -33,12 +33,13 @@ public:
 
 	Texture2D& Create();
 	Texture2D& Destroy();
-	void Bind() const;
-	void Unbond() const;
+	void Bind(unsigned int slot = 0u) const;
+	void Unbind() const;
 	Texture2D& WriteImage(SDL_Surface* image);
-	Texture2D& GenerateBlank(int w, int h);
+	Texture2D& GenerateBlank(int w, int h, unsigned int colorValue = 0xFFFFFFFF);
 
 	IDType Target() const;
+	IDType ID() const;
 };
 
 #endif

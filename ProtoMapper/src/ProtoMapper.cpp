@@ -4,7 +4,9 @@
 
 #include "SDL2/SDL_image.h"
 #include "SDL2/SDL_ttf.h"
-#include "glad/glad.h"
+#include "Renderer.hpp"
+#include "Shader.hpp"
+
 
 #include <chrono>
 #include <filesystem>
@@ -19,11 +21,20 @@ bool ProtoMapper::Draw()
 {
 	if (_mapOpen)
 	{
-		
+		_renderer->Begin();
 
+		_renderer->UseTexture(static_cast<HeightMap2D*>(_currentMap.get())->Texture());
+		_renderer->DrawCurrentBuffer();
+
+		_renderer->End();
 	}
 
 	return true;
+}
+
+void ProtoMapper::DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, [[maybe_unused]]GLsizei length, const GLchar* message, [[maybe_unused]]const void* userParam)
+{
+	printf_s("Error [%u] [%u] [%u] - %s", src, type, severity, message);
 }
 
 
@@ -43,7 +54,7 @@ ProtoMapper::~ProtoMapper()
 	_configData.Reset();
 	_currentMap.reset();
 
-	SDL_GL_DeleteContext(_context);
+	SDL_GL_DeleteContext(_mapContext);
 	SDL_DestroyWindow(_window);
 
 	TTF_Quit();
@@ -55,12 +66,12 @@ bool ProtoMapper::Configure()
 {
 #if defined(_DEBUG_) || defined(_RELEASE_)
 
-	_configFile = ASSETS_DIR;
-	_configFile += "/assets/config/config.ini";
+	_assetsDir = ASSETS_DIR;
+	_configFile = _assetsDir + "/config/config.ini";
 
 #else
-
-	_configFile = "./assets/config/config.ini"
+	_assetsDir = "./assets"
+	_configFile = _assetsDir + "/config/config.ini"
 
 #endif // _DEBUG_
 
@@ -96,6 +107,8 @@ bool ProtoMapper::Configure()
 		return false;
 	}
 
+	_currentMap.reset(new HeightMap2D());
+
 	return true;
 }
 
@@ -104,26 +117,29 @@ void ProtoMapper::Run()
 {
 	using time = std::chrono::high_resolution_clock;
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	
 	if (_fullscreen)
 	{
-		_window = SDL_CreateWindow(std::string{_title + VERSION_NUMBER}.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _wWidth, _wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED);
+		_window = SDL_CreateWindow(std::string{_title + VERSION_NUMBER}.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			_wWidth, _wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
 	}
 	else
 	{
-		_window = SDL_CreateWindow(std::string{ _title + VERSION_NUMBER }.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _wWidth, _wHeight, SDL_WINDOW_OPENGL);
+		_window = SDL_CreateWindow(std::string{ _title + VERSION_NUMBER }.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _wWidth, _wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	}
 
 	if (_window)
 	{
-		_context = SDL_GL_CreateContext(_window);
+		_mapContext = SDL_GL_CreateContext(_window);
 
-		SDL_GL_MakeCurrent(_window, _context);
+		SDL_GL_MakeCurrent(_window, _mapContext);
 
 		if (!gladLoadGLLoader(static_cast<GLADloadproc>(SDL_GL_GetProcAddress))) return;
+
+		glDebugMessageCallback((GLDEBUGPROC)ProtoMapper::DebugOpenGL, nullptr);
 	}
 	else
 	{
@@ -131,14 +147,34 @@ void ProtoMapper::Run()
 		return;
 	}
 
-	glClearColor(0.f, 0.f, 0.f, 1.f);
-
 	tgui::GuiSDL _rootGui{ _window };
-	
 	TopMenu bar(this, _fWidth * 1.f, _fHeight * 0.05f);
 	_rootGui.add(bar.GetGroup());
 
+	_mapBuffer.Generate(4u, 6u).AddValues(
+		{
+			Vertex2D{glm::vec2{0.f, 0.f}, glm::vec2{ 0.f, 0.f }, glm::vec4{1.f}},
+			Vertex2D{glm::vec2{_fWidth, 0.f}, glm::vec2{ 1.f, 0.f }, glm::vec4{1.f}},
+			Vertex2D{glm::vec2{0.f, _fHeight}, glm::vec2{ 0.f, 1.f }, glm::vec4{1.f}},
+			Vertex2D{glm::vec2{_fWidth, _fHeight}, glm::vec2{ 1.f, 1.f }, glm::vec4{1.f}}
+		},
+		{ 0u, 1u, 2u, 1u, 3u, 2u }
+	);
+
+	_mapBuffer.WriteData().Unbind();
+
+	_renderer.reset(new Renderer(_assetsDir));
+
+	_renderer->UseBuffer(&_mapBuffer);
+	_renderer->SetRenderWindow(_fWidth, _fHeight);
+	_renderer->Init(Renderer::mode::Two);
+
+
+	glClearColor(0.f, 0.f, 0.f, 1.f);
+
 	time::time_point last = time::now();
+
+	_currentMap->Create(this, _wWidth, _wHeight);
 
 	_currentMap->Generate(last.time_since_epoch().count());
 
@@ -203,7 +239,7 @@ void ProtoMapper::Run()
 
 		if (!Update(microseconds * 1000000.f)) break;
 
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		if (!Draw()) break;
 

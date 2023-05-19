@@ -1,10 +1,12 @@
 #include "HeightMap2D.hpp"
 #include "ProtoMapper.hpp"
 
+HeightMap2D::~HeightMap2D() { _texture.Destroy(); }
+
 bool HeightMap2D::Create(ProtoMapper* par, unsigned int w, unsigned int h)
 {
 	_parent = par;
-	_data = SDL_CreateRGBSurface(0u, w, h, 8, 255u, 255u, 255u, 255u);
+	_data = CreateImageBlank(w, h);
 	_texture.Create();
 
 	return true;
@@ -30,7 +32,11 @@ bool HeightMap2D::Generate(size_t seed)
 
 	SDL_UnlockSurface(_data);
 
+	_texture.Bind();
+
 	_texture.WriteImage(_data);
 
 	return true;
 }
+
+Texture2D* HeightMap2D::Texture() { return &_texture; }

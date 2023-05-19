@@ -7,13 +7,18 @@
 
 class Shader
 {
-	unsigned int _ID = 0u;
+	unsigned int _ID = 0u, _vs = 0u, _fs = 0u;
 
 public:
 	Shader() = default;
+	~Shader();
 
 	Shader& Create(const char* srcVert, const char* srcFrag);
+	Shader& Link();
+	Shader& Cleanup();
 	void Bind() const;
+	void Unbind() const;
+	unsigned int ID() const;
 	void Destroy();
 
 	// Pass in a lambda that sets up the uniforms for the shader.

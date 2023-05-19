@@ -37,6 +37,7 @@ public:
 	Buffer2D& SetBufferSize(size_t size);
 	Buffer2D& SetNumberOfIndices(size_t size);
 	Buffer2D& WriteData();
+	size_t GetNumberOfIndices() const;
 	bool Bind();
 	void Unbind();
 };
