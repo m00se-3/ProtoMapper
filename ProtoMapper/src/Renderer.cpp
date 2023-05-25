@@ -1,7 +1,4 @@
 #include "Renderer.hpp"
-#include "Shader.hpp"
-#include "Texture.hpp"
-#include "Vertex.hpp"
 
 #include <filesystem>
 #include <cstdio>
@@ -128,7 +125,12 @@ void Renderer::SetRenderWindow(float w, float h)
 
 void Renderer::SetViewport(int x, int y, int w, int h)
 {
-	glViewport(x, y, w, h);
+	/*
+		We want to set the viewport using the top-left as the point of origin, but openGL uses the bottom-left.
+
+		We quickly transpose the 'y' value to match up with what the user wants.
+	*/
+	glViewport(x, (int)_vHeight - (h + y), w, h);
 }
 
 void Renderer::SetRenderMode(Renderer::mode m)
@@ -146,27 +148,4 @@ void Renderer::UseShader(Shader* shader)
 	_shader = shader;
 }
 
-void Renderer::UseBuffer(Buffer2D* buffer)
-{
-	_buffer = buffer;
-}
-
 void Renderer::SetUniforms(const std::function<void()>& uniforms) { _uniforms = uniforms; }
-
-void Renderer::DrawCurrentBuffer()
-{
-	_buffer->Bind();
-	_shader->Bind();
-	_texture->Bind();
-	_shader->Uniforms(_uniforms);
-
-	glUniformMatrix4fv(glGetUniformLocation(_shader->ID(), "model"), 1, GL_FALSE, &_model[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(_shader->ID(), "view"), 1, GL_FALSE, &_view[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(_shader->ID(), "projection"), 1, GL_FALSE, &_projection[0][0]);
-
-	glDrawElements(GL_TRIANGLES, _buffer->GetNumberOfIndices(), GL_UNSIGNED_INT, _buffer->Indices());
-
-	_buffer->Unbind();
-	_shader->Unbind();
-	_texture->Unbind();
-}
