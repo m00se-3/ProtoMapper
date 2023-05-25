@@ -1,11 +1,11 @@
 #include "HeightMap2D.hpp"
-#include "ProtoMapper.hpp"
+
+#include "SDL2/SDL_surface.h"
 
 HeightMap2D::~HeightMap2D() { _texture.Destroy(); }
 
-bool HeightMap2D::Create(ProtoMapper* par, unsigned int w, unsigned int h)
+bool HeightMap2D::Create(unsigned int w, unsigned int h)
 {
-	_parent = par;
 	_data = CreateImageBlank(w, h);
 	_texture.Create();
 

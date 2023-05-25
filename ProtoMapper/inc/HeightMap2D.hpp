@@ -21,7 +21,7 @@ public:
 	HeightMap2D() = default;
 	~HeightMap2D();
 
-	bool Create(ProtoMapper* par, unsigned int, unsigned int) override;
+	bool Create(unsigned int, unsigned int) override;
 	bool Generate(size_t) override;
 
 	Texture2D* Texture();
