@@ -23,8 +23,8 @@ bool ProtoMapper::Draw()
 	{
 		_renderer->Begin();
 
-		_renderer->UseTexture(static_cast<HeightMap2D*>(_currentMap.get())->Texture());
-		_renderer->DrawCurrentBuffer();
+		_renderer->UseTexture(Map::Get<HeightMap2D>(_currentMap)->Texture());
+		_renderer->DrawBuffer(_mapBuffer);
 
 		_renderer->End();
 	}
@@ -98,6 +98,8 @@ bool ProtoMapper::Configure()
 	{
 		_wWidth = static_cast<unsigned int>(width);
 		_wHeight = static_cast<unsigned int>(height);
+		_fWidth = static_cast<float>(width);
+		_fHeight = static_cast<float>(height);
 		_fullscreen = false;
 	}
 
@@ -165,7 +167,6 @@ void ProtoMapper::Run()
 
 	_renderer.reset(new Renderer(_assetsDir));
 
-	_renderer->UseBuffer(&_mapBuffer);
 	_renderer->SetRenderWindow(_fWidth, _fHeight);
 	_renderer->Init(Renderer::mode::Two);
 
@@ -174,7 +175,7 @@ void ProtoMapper::Run()
 
 	time::time_point last = time::now();
 
-	_currentMap->Create(this, _wWidth, _wHeight);
+	_currentMap->Create(_wWidth, _wHeight);
 
 	_currentMap->Generate(last.time_since_epoch().count());
 
@@ -220,6 +221,8 @@ void ProtoMapper::Run()
 			{
 				_wWidth = event.window.data1;
 				_wHeight = event.window.data2;
+				_fWidth = (float)event.window.data1;
+				_fHeight = (float)event.window.data2;
 
 				auto err1 = _configData.SetLongValue("display", "width", event.window.data1);
 				auto err2 = _configData.SetLongValue("display", "height", event.window.data2);

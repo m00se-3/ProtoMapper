@@ -22,7 +22,7 @@ class ProtoMapper
 	bool _appRunning = true, _mapOpen = true, _panning = false, _fullscreen = true, _configUpdate = false;
 	
 	std::shared_ptr<Map> _currentMap;
-	Buffer2D _mapBuffer;
+	Buffer<Vertex2D> _mapBuffer;
 
 	float _fWidth = 1024.f, _fHeight = 768.f;
 	int _wWidth = 1024, _wHeight = 768;
