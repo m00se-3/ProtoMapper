@@ -2,44 +2,113 @@
 #define PROTOMAPPER_VERTEX_HPP
 
 #include "glm/glm.hpp"
+#include "glad/glad.h"
 
 #include <vector>
+#include <functional>
+
+template<typename VertexType> class Buffer;
 
 struct Vertex2D
 {
 	glm::vec2 pos;
 	glm::vec2 texCoords;
 	glm::vec4 color;
+
+	static void Attributes(Buffer<Vertex2D>* buffer);
 };
 
-class Buffer2D
+
+template <typename VertexType>
+class Buffer
 {
+public:
 #ifdef USE_GLES
 	using IndType = unsigned short;
 #else
 	using IndType = unsigned int;
 #endif
 
+private:
 	IndType _vID = 0u, _indID = 0u, _vao = 0u;
 	bool _initialized = false;
-	std::vector<Vertex2D> _vertices;
+	std::vector<VertexType> _vertices;
 	std::vector<IndType> _indices;
 
 public:
-	Buffer2D() = default;
-	Buffer2D(size_t numVertices, size_t numIndices);
+	Buffer() = default;
+	Buffer(size_t numVertices, size_t numIndices) { Generate(numVertices, numIndices); }
 
-	void* Data() const;
-	void* Indices() const;
+	void* Data() const { return (void*)_vertices.data(); }
+	void* Indices() const { return (void*)_indices.data(); }
 
-	Buffer2D& Generate(size_t numVertices, size_t numIndices);
-	Buffer2D& AddValues(const std::vector<Vertex2D>& verts, const std::vector<IndType>& inds);
-	Buffer2D& SetBufferSize(size_t size);
-	Buffer2D& SetNumberOfIndices(size_t size);
-	Buffer2D& WriteData();
-	size_t GetNumberOfIndices() const;
-	bool Bind();
-	void Unbind();
+	size_t GetBufferSize() const { return _vertices.size(); }
+
+	Buffer& Generate(size_t numVertices, size_t numIndices)
+	{
+		if (!_initialized)
+		{
+			glGenVertexArrays(1, &_vao);
+			glGenBuffers(1, &_vID);
+			glGenBuffers(1, &_indID);
+			_initialized = true;
+		}
+
+		_vertices.reserve(numVertices);
+		_indices.reserve(numIndices);
+
+		glBindBuffer(GL_ARRAY_BUFFER, _vID);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indID);
+
+		VertexType::Attributes(this);
+
+		glBindVertexArray(0);
+
+		return *this;
+	}
+
+	Buffer& AddValues(const std::vector<VertexType>& verts, const std::vector<IndType>& inds)
+	{
+		for (auto& vert : verts)
+		{
+			_vertices.push_back(vert);
+		}
+
+		for (auto& ind : inds)
+		{
+			_indices.push_back(ind);
+		}
+
+		return *this;
+	}
+
+	Buffer& SetBufferSize(size_t size) { _vertices.reserve(size); return *this; }
+
+	Buffer& SetNumberOfIndices(size_t size) { _indices.reserve(size); return *this; }
+
+	Buffer& WriteData() {
+		glBindBuffer(GL_ARRAY_BUFFER, _vID);
+		glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(VertexType), _vertices.data(), GL_DYNAMIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indID);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), _indices.data(), GL_DYNAMIC_DRAW);
+
+		return *this;
+	}
+
+	size_t GetNumberOfIndices() const { return _indices.size(); }
+
+	bool Bind() const
+	{
+		if (_initialized)
+		{
+			glBindVertexArray(_vao);
+			return true;
+		}
+		return false;
+	}
+
+	void Unbind() const { glBindVertexArray(0); }
 };
 
 #endif // !PROTOMAPPER_VERTEX_HPP
