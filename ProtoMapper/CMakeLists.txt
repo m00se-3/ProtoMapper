@@ -45,6 +45,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/inc/Shader.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Vertex.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Renderer.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/Scene.hpp
 
 	PRIVATE  
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
@@ -56,4 +57,5 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/Shader.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Vertex.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Renderer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Scene.cpp
 )
