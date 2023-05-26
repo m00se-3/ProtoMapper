@@ -7,41 +7,13 @@
 #include "Renderer.hpp"
 #include "Shader.hpp"
 
-
 #include <chrono>
 #include <filesystem>
 
-bool ProtoMapper::Update(float dt)
-{
-
-	return true;
-}
-
-bool ProtoMapper::Draw()
-{
-	if (_mapOpen)
-	{
-		_renderer->Begin();
-
-		_renderer->UseTexture(Map::Get<HeightMap2D>(_currentMap)->Texture());
-		_renderer->DrawBuffer(_mapBuffer);
-
-		_renderer->End();
-	}
-
-	return true;
-}
 
 void ProtoMapper::DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, [[maybe_unused]]GLsizei length, const GLchar* message, [[maybe_unused]]const void* userParam)
 {
 	printf_s("Error [%u] [%u] [%u] - %s", src, type, severity, message);
-}
-
-
-ProtoMapper::ProtoMapper()
-	: _currentMap()
-{
-	
 }
 
 ProtoMapper::~ProtoMapper() 
@@ -52,7 +24,7 @@ ProtoMapper::~ProtoMapper()
 	}
 
 	_configData.Reset();
-	_currentMap.reset();
+	_scene.Cleanup();
 
 	SDL_GL_DeleteContext(_mapContext);
 	SDL_DestroyWindow(_window);
@@ -109,7 +81,6 @@ bool ProtoMapper::Configure()
 		return false;
 	}
 
-	_currentMap.reset(new HeightMap2D());
 
 	return true;
 }
@@ -126,11 +97,12 @@ void ProtoMapper::Run()
 	if (_fullscreen)
 	{
 		_window = SDL_CreateWindow(std::string{_title + VERSION_NUMBER}.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			_wWidth, _wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
+			_wWidth, _wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_HIDDEN);
 	}
 	else
 	{
-		_window = SDL_CreateWindow(std::string{ _title + VERSION_NUMBER }.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _wWidth, _wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+		_window = SDL_CreateWindow(std::string{ _title + VERSION_NUMBER }.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _wWidth, _wHeight,
+			SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
 	}
 
 	if (_window)
@@ -175,9 +147,9 @@ void ProtoMapper::Run()
 
 	time::time_point last = time::now();
 
-	_currentMap->Create(_wWidth, _wHeight);
+	// Build scene here.
 
-	_currentMap->Generate(last.time_since_epoch().count());
+	SDL_ShowWindow(_window);
 
 	while (_appRunning)
 	{
@@ -240,11 +212,9 @@ void ProtoMapper::Run()
 			}
 		}
 
-		if (!Update(microseconds * 1000000.f)) break;
-
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (!Draw()) break;
+		_scene.Update(microseconds * 1000000.f);
 
 		_rootGui.draw();
 		

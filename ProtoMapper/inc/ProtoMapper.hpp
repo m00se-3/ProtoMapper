@@ -8,6 +8,7 @@
 #include "SimpleIni.h"
 #include "Map.hpp"
 #include "Vertex.hpp"
+#include "Scene.hpp"
 
 #include <string>
 #include <memory>
@@ -21,7 +22,7 @@ class ProtoMapper
 	std::string _assetsDir;
 	bool _appRunning = true, _mapOpen = true, _panning = false, _fullscreen = true, _configUpdate = false;
 	
-	std::shared_ptr<Map> _currentMap;
+	Scene _scene;
 	Buffer<Vertex2D> _mapBuffer;
 
 	float _fWidth = 1024.f, _fHeight = 768.f;
@@ -35,16 +36,13 @@ class ProtoMapper
 	CSimpleIniA _configData;
 
 public:
-	ProtoMapper();
+	ProtoMapper() = default;
 	~ProtoMapper();
 
 	void CreateToolBar();
 
 	bool Configure();
 	void Run();
-	bool Update(float);
-	bool Draw();
-
 
 	static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 };
