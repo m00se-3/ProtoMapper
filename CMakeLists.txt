@@ -13,6 +13,7 @@ find_package(SDL2 CONFIG REQUIRED)
 find_package(sdl2_ttf CONFIG REQUIRED)
 find_package(sdl2_image CONFIG REQUIRED)
 find_package(TGUI CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
 find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 
 # Include sub-projects.
