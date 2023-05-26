@@ -1,24 +1,70 @@
 #ifndef PROTOMAPPER_SCENE_HPP
 #define PROTOMAPPER_SCENE_HPP
 
-#include <memory>
+#include "entt/entt.hpp"
 
-class Map;
+#include <vector>
+#include <list>
 
+
+/*
+	Defines the area occupied by the SceneNode. Any position values should be relative to this.
+*/
+struct Rectangle
+{
+	float x = 0.f, y = 0.f, w = 0.f, h = 0.f;
+
+	Rectangle() = default;
+	Rectangle(float x, float y, float w, float h);
+
+	bool operator==(const Rectangle& other) const;
+
+	bool Overlaps(const Rectangle& other) const;
+	bool Contains(const Rectangle& other) const;
+};
+
+
+/*
+	A tree of SceneNodes is constructed to organize the draw calls, and to allow for Scene customization in-app.
+*/
+class SceneNode
+{
+
+protected:
+
+	SceneNode* parent = nullptr;
+	bool visible = false;
+	struct Rectangle area;
+	std::vector<entt::entity> entities;
+	std::list<SceneNode*> children;
+
+public:
+	SceneNode() = default;
+	~SceneNode();
+
+	void Update(float dt);
+	void Draw();
+	void Destroy();
+};
+
+/*
+	The main container class for the many maps and other components in the app.
+
+	When maps are open they are added to the tree.
+*/
 class Scene
 {
+	
+protected:
+	SceneNode* root = nullptr;
 
 public:
 	Scene() = default;
 
-	virtual bool Init() = 0;
-	virtual bool Update() = 0;
-	virtual void Cleanup();
-
-
-private:
-
-	std::shared_ptr<Map> _map;
+	bool Init();
+	void Update(float dt);
+	void Draw();
+	void Cleanup();
 
 };
 
