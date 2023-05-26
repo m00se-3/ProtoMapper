@@ -25,8 +25,11 @@ Renderer::Renderer(const std::string& dir)
 
 	// File handles for the shader sources.
 
-	auto* vsHandle = fopen(vs.string().c_str(), "r");
-	auto* fsHandle = fopen(fs.string().c_str(), "r");
+	FILE* vsHandle;
+	FILE* fsHandle;
+
+	fopen_s(&vsHandle, vs.string().c_str(), "r");
+	fopen_s(&fsHandle, fs.string().c_str(), "r");
 
 	std::string vsSrc, fsSrc;						// Strings that will hold the source text.
 
