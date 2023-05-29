@@ -16,8 +16,6 @@ Renderer::Renderer(const std::string& dir)
 
 	/*
 		Open the default shader sources and extract the text.
-
-		TODO: Add error checking before testing.
 	*/
 
 	std::filesystem::path vs = dir + "/shaders/DefaultVS.glsl",
