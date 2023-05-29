@@ -23,6 +23,7 @@ struct Rectangle
 	bool Contains(const Rectangle& other) const;
 };
 
+class Scene;	// Forward declaration.
 
 /*
 	A tree of SceneNodes is constructed to organize the draw calls, and to allow for Scene customization in-app.
@@ -33,14 +34,16 @@ class SceneNode
 protected:
 
 	SceneNode* parent = nullptr;
+	entt::entity ID;
 	bool visible = false;
 	struct Rectangle area;
-	std::vector<entt::entity> entities;
 	std::list<SceneNode*> children;
 
 public:
-	SceneNode() = default;
-	~SceneNode();
+
+	friend class Scene;
+
+	SceneNode(SceneNode* par = nullptr);
 
 	void Update(float dt);
 	void Draw();

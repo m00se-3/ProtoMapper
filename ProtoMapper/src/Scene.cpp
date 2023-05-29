@@ -30,7 +30,13 @@ bool Rectangle::Contains(const Rectangle& other) const
 
 bool Scene::Init()
 {
-	return false;
+	/*
+		Create a SceneNode that represents the default background if there are no open files.
+	*/
+
+
+	
+	return true;
 }
 
 void Scene::Update(float dt)
@@ -47,8 +53,10 @@ void Scene::Cleanup()
 	delete root;
 }
 
-SceneNode::~SceneNode()
+SceneNode::SceneNode(SceneNode* par)
+	: parent(par)
 {
+
 }
 
 void SceneNode::Update(float dt)
