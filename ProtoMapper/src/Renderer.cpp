@@ -141,12 +141,26 @@ void Renderer::SetRenderMode(Renderer::mode m)
 
 void Renderer::UseTexture(Texture2D* texture)
 {
-	_texture = texture;
+	if (texture)
+	{
+		_texture = texture;
+	}
+	else
+	{
+		_texture = _defaultTexture.get();
+	}
 }
 
 void Renderer::UseShader(Shader* shader)
 {
-	_shader = shader;
+	if (shader)
+	{
+		_shader = shader;
+	}
+	else
+	{
+		_shader = _defaultShader.get();
+	}
 }
 
 void Renderer::SetUniforms(const std::function<void()>& uniforms) { _uniforms = uniforms; }
