@@ -4,17 +4,11 @@
   "description": "A tool for prototyping map generators.",
   "dependencies": [
     "sdl2",
-    "sdl2-ttf",
     "sdl2-image",
     "glm",
     "glad",
     "entt",
-    {
-      "name": "tgui",
-      "features": [
-        "sdl2"
-      ]
-    },
+    "nuklear",
     "simpleini"
   ]
 }

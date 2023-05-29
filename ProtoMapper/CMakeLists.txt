@@ -27,9 +27,8 @@ target_link_libraries(
 	glm::glm
 	SDL2::SDL2
 	SDL2::SDL2main
-	$<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static>
 	$<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>
-	tgui
+	nuklear
 	EnTT::EnTT
 )
 
@@ -38,8 +37,6 @@ target_sources(
 
 	PUBLIC 
 	${CMAKE_CURRENT_LIST_DIR}/inc/ProtoMapper.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/TopMenu.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/UIGroup.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Texture.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Shader.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Vertex.hpp
@@ -49,8 +46,6 @@ target_sources(
 
 	PRIVATE  
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/TopMenu.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/UIGroup.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Texture.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Shader.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Vertex.cpp

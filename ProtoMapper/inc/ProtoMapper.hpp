@@ -2,8 +2,6 @@
 #define PROTOMAPPER_MAIN_HPP
 
 #include "SDL2/SDL.h"
-#include "TGUI/Core.hpp"
-#include "TGUI/Backends/SDL.hpp"
 #include "glad/glad.h"
 #include "SimpleIni.h"
 #include "Scene.hpp"

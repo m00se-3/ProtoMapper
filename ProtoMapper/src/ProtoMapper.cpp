@@ -1,5 +1,4 @@
 ﻿#include "ProtoMapper.hpp"
-#include "TopMenu.hpp"
 
 #include "SDL2/SDL_image.h"
 #include "SDL2/SDL_ttf.h"
@@ -120,10 +119,6 @@ void ProtoMapper::Run()
 		return;
 	}
 
-	tgui::GuiSDL _rootGui{ _window };
-	TopMenu bar(this, _fWidth * 1.f, _fHeight * 0.05f);
-	_rootGui.add(bar.GetGroup());
-
 	_renderer.reset(new Renderer(_assetsDir));
 
 	_renderer->SetRenderWindow(_fWidth, _fHeight);
@@ -147,7 +142,6 @@ void ProtoMapper::Run()
 
 		while (SDL_PollEvent(&event))
 		{
-			if (_rootGui.handleEvent(event)) continue;
 			
 			switch (event.type)
 			{
@@ -202,8 +196,6 @@ void ProtoMapper::Run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		_scene.Update(microseconds * 1000000.f);
-
-		_rootGui.draw();
 		
 		SDL_GL_SwapWindow(_window);
 
