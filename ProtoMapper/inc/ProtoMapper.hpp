@@ -6,7 +6,6 @@
 #include "TGUI/Backends/SDL.hpp"
 #include "glad/glad.h"
 #include "SimpleIni.h"
-#include "Map.hpp"
 #include "Scene.hpp"
 
 #include <string>

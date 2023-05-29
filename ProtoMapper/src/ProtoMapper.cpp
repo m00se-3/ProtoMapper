@@ -1,5 +1,4 @@
 ﻿#include "ProtoMapper.hpp"
-#include "HeightMap2D.hpp"
 #include "TopMenu.hpp"
 
 #include "SDL2/SDL_image.h"

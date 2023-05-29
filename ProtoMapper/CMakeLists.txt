@@ -38,8 +38,6 @@ target_sources(
 
 	PUBLIC 
 	${CMAKE_CURRENT_LIST_DIR}/inc/ProtoMapper.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/Map.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/HeightMap2D.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/TopMenu.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/UIGroup.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Texture.hpp
@@ -51,8 +49,6 @@ target_sources(
 
 	PRIVATE  
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Map.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/HeightMap2D.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/TopMenu.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/UIGroup.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Texture.cpp
