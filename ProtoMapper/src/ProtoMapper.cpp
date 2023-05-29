@@ -1,7 +1,5 @@
 ﻿#include "ProtoMapper.hpp"
 
-#include "SDL2/SDL_image.h"
-#include "SDL2/SDL_ttf.h"
 #include "Renderer.hpp"
 #include "Shader.hpp"
 
@@ -27,7 +25,6 @@ ProtoMapper::~ProtoMapper()
 	SDL_GL_DeleteContext(_mapContext);
 	SDL_DestroyWindow(_window);
 
-	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
 }
@@ -73,7 +70,7 @@ bool ProtoMapper::Configure()
 		_fullscreen = false;
 	}
 
-	if (SDL_Init(SDL_INIT_VIDEO) != 0 || IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG || TTF_Init() != 0)
+	if (SDL_Init(SDL_INIT_VIDEO) != 0 || IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
 	{
 		SDL_Log("%s", SDL_GetError());
 		return false;
