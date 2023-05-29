@@ -7,7 +7,6 @@
 #include "glad/glad.h"
 #include "SimpleIni.h"
 #include "Map.hpp"
-#include "Vertex.hpp"
 #include "Scene.hpp"
 
 #include <string>
@@ -23,7 +22,6 @@ class ProtoMapper
 	bool _appRunning = true, _mapOpen = true, _panning = false, _fullscreen = true, _configUpdate = false;
 	
 	Scene _scene;
-	Buffer<Vertex2D> _mapBuffer;
 
 	float _fWidth = 1024.f, _fHeight = 768.f;
 	int _wWidth = 1024, _wHeight = 768;

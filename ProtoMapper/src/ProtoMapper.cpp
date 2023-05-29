@@ -125,18 +125,6 @@ void ProtoMapper::Run()
 	TopMenu bar(this, _fWidth * 1.f, _fHeight * 0.05f);
 	_rootGui.add(bar.GetGroup());
 
-	_mapBuffer.Generate(4u, 6u).AddValues(
-		{
-			Vertex2D{glm::vec2{0.f, 0.f}, glm::vec2{ 0.f, 0.f }, glm::vec4{1.f}},
-			Vertex2D{glm::vec2{_fWidth, 0.f}, glm::vec2{ 1.f, 0.f }, glm::vec4{1.f}},
-			Vertex2D{glm::vec2{0.f, _fHeight}, glm::vec2{ 0.f, 1.f }, glm::vec4{1.f}},
-			Vertex2D{glm::vec2{_fWidth, _fHeight}, glm::vec2{ 1.f, 1.f }, glm::vec4{1.f}}
-		},
-		{ 0u, 1u, 2u, 1u, 3u, 2u }
-	);
-
-	_mapBuffer.WriteData().Unbind();
-
 	_renderer.reset(new Renderer(_assetsDir));
 
 	_renderer->SetRenderWindow(_fWidth, _fHeight);
@@ -147,7 +135,7 @@ void ProtoMapper::Run()
 
 	time::time_point last = time::now();
 
-	// Build scene here.
+	_scene.Init();
 
 	SDL_ShowWindow(_window);
 
