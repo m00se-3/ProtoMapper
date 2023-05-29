@@ -12,11 +12,6 @@
 #include <functional>
 #include <type_traits>
 
-#include <memory>
-
-// Forward declarations.
-class Shader;
-class Texture2D;
 
 class Renderer
 {
@@ -31,8 +26,8 @@ private:
 	Shader* _shader = nullptr;
 	Texture2D* _texture = nullptr;
 
-	std::unique_ptr<Shader> _defaultShader;
-	std::unique_ptr<Texture2D> _defaultTexture;
+	Shader _defaultShader;
+	Texture2D _defaultTexture;
 
 	std::function<void()> _uniforms = []() {};
 

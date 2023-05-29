@@ -6,13 +6,11 @@
 Renderer::Renderer(const std::string& dir)
 	: _model(glm::mat4(1.f)), _view(glm::mat4(1.f))
 {
-	_defaultShader.reset(new Shader());
-	_defaultTexture.reset(new Texture2D());
 
-	_defaultTexture->Create().GenerateBlank(1, 1);
+	_defaultTexture.Create().GenerateBlank(1, 1);
 
-	_shader = _defaultShader.get();
-	_texture = _defaultTexture.get();
+	_shader = &_defaultShader;
+	_texture = &_defaultTexture;
 
 	/*
 		Open the default shader sources and extract the text.
@@ -49,7 +47,7 @@ Renderer::Renderer(const std::string& dir)
 	fclose(vsHandle);
 	fclose(fsHandle);
 
-	_defaultShader->Create(vsSrc.c_str(), fsSrc.c_str());
+	_defaultShader.Create(vsSrc.c_str(), fsSrc.c_str());
 }
 
 bool Renderer::Init(mode newMode)
@@ -147,7 +145,7 @@ void Renderer::UseTexture(Texture2D* texture)
 	}
 	else
 	{
-		_texture = _defaultTexture.get();
+		_texture = &_defaultTexture;
 	}
 }
 
@@ -159,7 +157,7 @@ void Renderer::UseShader(Shader* shader)
 	}
 	else
 	{
-		_shader = _defaultShader.get();
+		_shader = &_defaultShader;
 	}
 }
 
