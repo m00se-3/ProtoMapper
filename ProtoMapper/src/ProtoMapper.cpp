@@ -194,6 +194,10 @@ void ProtoMapper::Run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		_scene.Update(microseconds * 1000000.f);
+
+		_scene.DrawNodes();
+		_scene.CompileUI();
+		_scene.DrawUI();
 		
 		SDL_GL_SwapWindow(_window);
 

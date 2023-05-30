@@ -2,7 +2,7 @@
 
 set_target_properties(ProtoMapper PROPERTIES CXX_STANDARD 20)
 target_compile_options(ProtoMapper PRIVATE ${flags})
-target_compile_definitions(ProtoMapper PUBLIC VERSION_NUMBER="$ENV{PROGRAM_VERSION}" ASSETS_DIR="$ENV{ASSETS_FOLDER}")
+target_compile_definitions(ProtoMapper PUBLIC VERSION_NUMBER="$ENV{PROGRAM_VERSION}" ASSETS_DIR="$ENV{ASSETS_FOLDER}" NOMINMAX="1")
 
 if(${CMAKE_BUILD_TYPE} MATCHES Debug)
 	target_compile_definitions(ProtoMapper PUBLIC _DEBUG_)
@@ -45,7 +45,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/inc/Components.hpp
 
 	PRIVATE  
-	${CMAKE_CURRENT_LIST_DIR}/src/external/nuklear.c
+	${CMAKE_CURRENT_LIST_DIR}/src/external/nuklear.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Texture.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Shader.cpp
