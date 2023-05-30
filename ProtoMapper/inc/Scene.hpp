@@ -8,6 +8,8 @@
 #define NK_UINT_DRAW_INDEX
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_FIXED_TYPES
+
+// We have to explicitly undefine NK_IMPLEMENTATION here to avoid linking errors.
 #undef NK_IMPLEMENTATION
 #include "nuklear.h"
 #include "entt/entt.hpp"

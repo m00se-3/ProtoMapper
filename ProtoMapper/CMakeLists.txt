@@ -2,6 +2,13 @@
 
 set_target_properties(ProtoMapper PROPERTIES CXX_STANDARD 20)
 target_compile_options(ProtoMapper PRIVATE ${flags})
+
+####	Meaning of the macros defined below.
+#		
+#		VERSION_NUMBER  - The version number of the program. (Never would've guessed that, huh?')
+#		ASSETS_DIR		- The location of the assets folder, where fonts, images, shaders, data files, etc are lovated.
+#		NOMINMAX		- To prevent windows.h from defining a 'ma' macro that interferes with entt.
+
 target_compile_definitions(ProtoMapper PUBLIC VERSION_NUMBER="$ENV{PROGRAM_VERSION}" ASSETS_DIR="$ENV{ASSETS_FOLDER}" NOMINMAX="1")
 
 if(${CMAKE_BUILD_TYPE} MATCHES Debug)
