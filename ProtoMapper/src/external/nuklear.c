@@ -5,7 +5,6 @@
 #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
 #define NK_UINT_DRAW_INDEX
 #define NK_INCLUDE_FONT_BAKING
-#define NK_PRIVATE
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_IMPLEMENTATION
 #include "nuklear.h"
