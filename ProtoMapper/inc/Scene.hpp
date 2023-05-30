@@ -1,7 +1,18 @@
 #ifndef PROTOMAPPER_SCENE_HPP
 #define PROTOMAPPER_SCENE_HPP
 
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_STANDARD_IO
+
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_UINT_DRAW_INDEX
+#define NK_INCLUDE_FONT_BAKING
+#define NK_PRIVATE
+#define NK_INCLUDE_FIXED_TYPES
+#include "nuklear.h"
 #include "entt/entt.hpp"
+
+#include "Texture.hpp"
 
 #include <vector>
 #include <list>
@@ -60,13 +71,18 @@ class Scene
 	
 protected:
 	SceneNode* root = nullptr;
+	struct nk_context ctx;
+	struct nk_font_atlas atlas;
+	struct nk_font* font;
+	Texture2D fontTexture;
 
 public:
 	Scene() = default;
 
 	bool Init();
 	void Update(float dt);
-	void Draw();
+	void DrawNodes();
+	void DrawUI();
 	void Cleanup();
 
 };
