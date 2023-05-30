@@ -6,7 +6,7 @@
 static const struct nk_draw_vertex_layout_element vertex_layout[] = {
 		{NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct Vertex2D, pos.x)},
 		{NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(struct Vertex2D, texCoords.x)},
-		{NK_VERTEX_COLOR, NK_FORMAT_FLOAT, NK_OFFSETOF(struct Vertex2D, color.x)},
+		{NK_VERTEX_COLOR, NK_FORMAT_R32G32B32A32_FLOAT, NK_OFFSETOF(struct Vertex2D, color.x)},
 		{NK_VERTEX_LAYOUT_END}
 };
 
@@ -81,9 +81,10 @@ bool Scene::Init()
 	auto rID = manager.create();
 
 	root = new SceneNode(nullptr, rID);
+	root->SetArea(Rectangle{ 50.f, 50.f, 800.f, 600.f });
 
 	manager.emplace<UIElement>(rID, [](nk_context* context, const Rectangle& rect) {
-		if (nk_begin(context, "Hello world!", nk_rect(0.5f * rect.x, 0.5f * rect.y, 0.2f * rect.w, 0.4f * rect.h), 0))
+		if (nk_begin(context, "Hello world!", nk_rect(rect.x + 0.5f * rect.x, rect.y + 0.5f * rect.y, 0.2f * rect.w, 0.4f * rect.h), 0))
 		{
 			nk_end(context);
 		}
@@ -153,6 +154,11 @@ SceneNode::SceneNode(SceneNode* par, entt::entity inID)
 entt::entity SceneNode::ID() const { return id; }
 
 const struct Rectangle& SceneNode::Area() const { return area; }
+
+void SceneNode::SetArea(const struct Rectangle& newArea)
+{
+	area = newArea;
+}
 
 void SceneNode::Update(Scene* container, float dt)
 {

@@ -46,6 +46,7 @@ public:
 	void Update(Scene* container, float dt);
 	void Draw();
 	void Destroy();
+	void SetArea(const struct Rectangle& newArea);
 };
 
 /*
