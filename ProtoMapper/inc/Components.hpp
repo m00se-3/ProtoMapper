@@ -3,11 +3,13 @@
 
 #include <functional>
 
+struct nk_context;	// Forward declaration.
+
 struct UIElement
 {
-	using FunctionType = void(float, float, float, float);
+	using FunctionType = void(nk_context*, float, float, float, float);
 	
-	std::function<FunctionType> func = [](float, float, float, float) {};
+	std::function<FunctionType> func = [](nk_context*, float, float, float, float) {};
 
 	UIElement() = default;
 	UIElement(const std::function<FunctionType>& fun);
