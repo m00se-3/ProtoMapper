@@ -45,6 +45,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/inc/Components.hpp
 
 	PRIVATE  
+	${CMAKE_CURRENT_LIST_DIR}/src/external/nuklear.c
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Texture.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Shader.cpp
