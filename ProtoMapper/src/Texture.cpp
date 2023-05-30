@@ -47,6 +47,13 @@ Texture2D& Texture2D::WriteImage(SDL_Surface* image)
 	return *this;
 }
 
+Texture2D& Texture2D::WriteData(const void* data, int width, int height)
+{
+	Bind();
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	return *this;
+}
+
 Texture2D& Texture2D::GenerateBlank(int w, int h, unsigned int colorValue)
 {
 	Bind();
