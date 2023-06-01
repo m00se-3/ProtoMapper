@@ -19,8 +19,8 @@ void FreeImageSurface(SDL_Surface* image) { SDL_FreeSurface(image); }
 
 Texture2D& Texture2D::Create()
 {
-	glGenTextures(1, &_ID);
-	glBindTexture(GL_TEXTURE_2D, _ID);
+	glGenTextures(1, &ID);
+	glBindTexture(GL_TEXTURE_2D, ID);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -30,12 +30,12 @@ Texture2D& Texture2D::Create()
 	return *this;
 }
 
-Texture2D& Texture2D::Destroy() { glDeleteTextures(1, &_ID); return *this;  }
+Texture2D& Texture2D::Destroy() { glDeleteTextures(1, &ID); return *this;  }
 
 void Texture2D::Bind(unsigned int slot) const 
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
-	glBindTexture(GL_TEXTURE_2D, _ID);
+	glBindTexture(GL_TEXTURE_2D, ID);
 }
 
 void Texture2D::Unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
@@ -63,4 +63,3 @@ Texture2D& Texture2D::GenerateBlank(int w, int h, unsigned int colorValue)
 
 Texture2D::IDType Texture2D::Target() const { return GL_TEXTURE_2D; }
 
-Texture2D::IDType Texture2D::ID() const { return _ID; }

@@ -18,17 +18,15 @@ void FreeImageSurface(SDL_Surface* image);
 /*
 	This 2D Texture format is designed to be used with SDL_Surfaces.
 */
-class Texture2D
+struct Texture2D
 {
 #ifdef USE_GLES
 	using IDType = unsigned short;
 #else
 	using IDType = unsigned int;
 #endif
+	IDType ID = 0u;
 
-	IDType _ID = 0u;
-
-public:
 	Texture2D() = default;
 
 	Texture2D& Create();
@@ -40,7 +38,6 @@ public:
 	Texture2D& GenerateBlank(int w, int h, unsigned int colorValue = 0xFFFFFFFF);
 
 	IDType Target() const;
-	IDType ID() const;
 };
 
 #endif
