@@ -5,6 +5,10 @@
 
 #include <functional>
 
+/*
+	TODO: Add reference counting mechanism.
+*/
+
 struct Shader
 {
 	unsigned int ID = 0u;
