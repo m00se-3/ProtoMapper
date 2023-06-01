@@ -17,7 +17,7 @@ SDL_Surface* CreateImageFromPNG(const char* file)
 
 void FreeImageSurface(SDL_Surface* image) { SDL_FreeSurface(image); }
 
-explicit Texture2D::Texture2D(IDType id)
+Texture2D::Texture2D(IDType id)
 	:ID(id)
 {
 
@@ -36,13 +36,21 @@ Texture2D& Texture2D::Create()
 	return *this;
 }
 
-Texture2D& Texture2D::Destroy() { glDeleteTextures(1, &ID); return *this;  }
+void Texture2D::Destroy() { glDeleteTextures(1, &ID);  }
 
-void Texture2D::Bind(unsigned int slot) const 
+void Texture2D::Bind(unsigned int slot) 
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, ID);
 }
+
+void Texture2D::Bind(unsigned int slot) const
+{
+	glActiveTexture(GL_TEXTURE0 + slot);
+	glBindTexture(GL_TEXTURE_2D, ID);
+}
+
+void Texture2D::Unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
 
 void Texture2D::Unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
 

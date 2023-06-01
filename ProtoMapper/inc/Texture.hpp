@@ -36,8 +36,10 @@ struct Texture2D
 	explicit Texture2D(IDType id);
 
 	Texture2D& Create();
-	Texture2D& Destroy();
+	void Destroy();
+	void Bind(unsigned int slot = 0u);
 	void Bind(unsigned int slot = 0u) const;
+	void Unbind();
 	void Unbind() const;
 	Texture2D& WriteImage(SDL_Surface* image);
 	Texture2D& WriteData(const void* data, int width, int height);
