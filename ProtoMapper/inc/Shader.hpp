@@ -5,20 +5,20 @@
 
 #include <functional>
 
-class Shader
+struct Shader
 {
-	unsigned int _ID = 0u, _vs = 0u, _fs = 0u;
+	unsigned int ID = 0u;
 
-public:
 	Shader() = default;
+	Shader(const Shader&) = default;
 	~Shader();
 
-	Shader& Create(const char* srcVert, const char* srcFrag);
-	Shader& Link();
-	Shader& Cleanup();
+	std::pair<unsigned int, unsigned int> CreateBasic(const char* srcVert, const char* srcFrag);
+	unsigned int Attach(const char* src, unsigned int type);
+	void Link();
+	void Link(const std::pair<unsigned int, unsigned int>& shaders);
 	void Bind() const;
 	void Unbind() const;
-	unsigned int ID() const;
 	void Destroy();
 
 	// Pass in a lambda that sets up the uniforms for the shader.

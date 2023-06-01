@@ -1,86 +1,91 @@
 #include "Shader.hpp"
 
-
-
-Shader& Shader::Create(const char* srcVert, const char* srcFrag)
+std::pair<unsigned int, unsigned int> Shader::CreateBasic(const char* srcVert, const char* srcFrag)
 {
-	_vs = glCreateShader(GL_VERTEX_SHADER);
-	_fs = glCreateShader(GL_FRAGMENT_SHADER);
-	_ID = glCreateProgram();
+	ID = glCreateProgram();
 
-	glShaderSource(_vs, 1, &srcVert, nullptr);
-	glShaderSource(_fs, 1, &srcFrag, nullptr);
+	unsigned int vs = Attach(srcVert, GL_VERTEX_SHADER);
+	unsigned int fs = Attach(srcFrag, GL_FRAGMENT_SHADER);
 
-	glCompileShader(_vs);
-	glCompileShader(_fs);
+	glDeleteShader(vs);
+	glDeleteShader(fs);
 
-	glAttachShader(_ID, _vs);
-	glAttachShader(_ID, _fs);
+	return std::make_pair(vs, fs);
+}
+
+unsigned int Shader::Attach(const char* src, unsigned int type)
+{
+	unsigned int shader = glCreateShader(type);
+
+	glShaderSource(shader, 1, &src, nullptr);
+	glCompileShader(shader);
 
 #ifdef _DEBUG_
 
-	int testVert, testFrag, vLength, fLength;
+		int test, length;
 
-	glGetShaderiv(_vs, GL_COMPILE_STATUS, &testVert);
-	glGetShaderiv(_fs, GL_COMPILE_STATUS, &testFrag);
-	glGetShaderiv(_vs, GL_INFO_LOG_LENGTH, &vLength);
-	glGetShaderiv(_fs, GL_INFO_LOG_LENGTH, &fLength);
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &test);
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
-	char vBuffer[100u], fBuffer[100u];
+		
+		if (!test)
+		{
+			char buffer[100u];
 
-	glGetShaderInfoLog(_vs, 100u, &vLength, vBuffer);
-	glGetShaderInfoLog(_fs, 100u, &fLength, fBuffer);
+			glGetShaderInfoLog(shader, 100u, &length, buffer);
+			
+			printf_s("Vertex shader failed to compile: %s\n", buffer);
 
-	if (!testVert) printf_s("Vertex shader failed to compile: %s\n", vBuffer);
-	if (!testFrag) printf_s("Fragment shader failed to compile: %s\n", fBuffer);
+			return 0u;
+		}
 
 #endif // _DEBUG_
 
+		glAttachShader(ID, shader);
 
-	return *this;
+		return shader;
 }
 
-Shader& Shader::Link() 
+void Shader::Link() 
 {
-	glLinkProgram(_ID);
+	glLinkProgram(ID);
 
 #ifdef _DEBUG_
-	glValidateProgram(_ID);
+	glValidateProgram(ID);
 
 	int result;
-	glGetProgramiv(_ID, GL_VALIDATE_STATUS, &result);
+	glGetProgramiv(ID, GL_VALIDATE_STATUS, &result);
 
 	if (!result)
 	{
 		int length;
-		glGetProgramiv(_ID, GL_INFO_LOG_LENGTH, &length);
+		glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &length);
 
 		char buffer[100u];
 
-		glGetProgramInfoLog(_ID, 100u, &length, buffer);
+		glGetProgramInfoLog(ID, 100u, &length, buffer);
 
 		printf_s("Could not link shader program: %s\n", buffer);
 	}
 #endif
-
-	return *this;
 }
 
-Shader& Shader::Cleanup()
+void Shader::Link(const std::pair<unsigned int, unsigned int>& shaders)
 {
-	glDeleteShader(_vs);
-	glDeleteShader(_fs);
+	auto [vs, fs] = shaders;
 
-	return *this;
+	Link();
+
+	glDetachShader(ID, vs);
+	glDetachShader(ID, fs);
 }
 
-void Shader::Bind() const { glUseProgram(_ID); }
+void Shader::Bind() const { glUseProgram(ID); }
 
 void Shader::Unbind() const { glUseProgram(0); }
 
-void Shader::Destroy() { glDeleteProgram(_ID); }
+void Shader::Destroy() { glDeleteProgram(ID); }
 
-unsigned int Shader::ID() const { return _ID; }
 
 Shader& Shader::Uniforms(const std::function<void()>& func)
 {
