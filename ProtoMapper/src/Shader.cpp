@@ -87,10 +87,9 @@ void Shader::Unbind() const { glUseProgram(0); }
 void Shader::Destroy() { glDeleteProgram(ID); }
 
 
-Shader& Shader::Uniforms(const std::function<void()>& func)
+void Shader::Uniforms(const std::function<void()>& func)
 {
 	func();
-	return *this;
 }
 
 Shader::~Shader() { Destroy(); }

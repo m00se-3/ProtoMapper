@@ -39,7 +39,7 @@ struct Shader
 	void Destroy();
 
 	// Pass in a lambda that sets up the uniforms for the shader.
-	Shader& Uniforms(const std::function<void()>& func);
+	void Uniforms(const std::function<void()>& func);
 };
 
 #endif // !PROTOMAPPER_SHADER_HPP
