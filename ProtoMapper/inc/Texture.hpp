@@ -16,6 +16,10 @@ void FreeImageSurface(SDL_Surface* image);
 
 
 /*
+	TODO: Add reference counting mechanism.
+*/
+
+/*
 	This 2D Texture format is designed to be used with SDL_Surfaces.
 */
 struct Texture2D
@@ -28,6 +32,8 @@ struct Texture2D
 	IDType ID = 0u;
 
 	Texture2D() = default;
+	Texture2D(const Texture2D&) = default;
+	explicit Texture2D(IDType id);
 
 	Texture2D& Create();
 	Texture2D& Destroy();
