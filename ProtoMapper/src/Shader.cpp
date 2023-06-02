@@ -80,7 +80,11 @@ void Shader::Link(const std::pair<unsigned int, unsigned int>& shaders)
 	glDetachShader(ID, fs);
 }
 
+void Shader::Bind() { glUseProgram(ID); }
+
 void Shader::Bind() const { glUseProgram(ID); }
+
+void Shader::Unbind() { glUseProgram(0); }
 
 void Shader::Unbind() const { glUseProgram(0); }
 
@@ -92,4 +96,4 @@ void Shader::Uniforms(const std::function<void()>& func)
 	func();
 }
 
-Shader::~Shader() { Destroy(); }
+Shader::~Shader() {  }

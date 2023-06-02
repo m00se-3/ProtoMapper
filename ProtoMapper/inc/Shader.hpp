@@ -38,7 +38,9 @@ struct Shader
 		Same as Link(), but deletes and detaches the vertex and fragment shader pair after finished.
 	*/
 	void Link(const std::pair<unsigned int, unsigned int>& shaders);
+	void Bind();
 	void Bind() const;
+	void Unbind();
 	void Unbind() const;
 	void Destroy();
 
