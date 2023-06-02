@@ -11,21 +11,25 @@
 #include <string>
 #include <functional>
 #include <type_traits>
+#include <optional>
 
 
 class Renderer
 {
 public:
-	enum class mode;
+	enum class mode
+	{
+		Two,
+		Three
+	};
 
 private:
 	glm::mat4 _model, _view, _projection;
 	mode _currentMode = mode::Two;
 	float _vWidth = 0.f, _vHeight = 0.f;
 
-	Shader* _shader = nullptr;
-	Texture2D* _texture = nullptr;
-
+	std::optional<Texture2D> _currentTexture;
+	std::optional<Shader> _currentShader;
 	Shader _defaultShader;
 	Texture2D _defaultTexture;
 
@@ -33,13 +37,8 @@ private:
 
 public:
 
-	enum class mode
-	{
-		Two,
-		Three
-	};
-
 	Renderer(const std::string& dir);
+	~Renderer();
 
 	mode GetRenderMode() const;
 
@@ -50,8 +49,8 @@ public:
 	void SetUniforms(const std::function<void()>& uniforms);
 	void SetViewport(int x, int y, int w, int h);
 	void SetRenderMode(mode m);
-	void UseTexture(Texture2D* texture = nullptr);
-	void UseShader(Shader* shader = nullptr);
+	void UseTexture(std::optional<Texture2D> texture = std::nullopt);
+	void UseShader(std::optional<Shader> shader = std::nullopt);
 	
 	template<typename VertexType>
 	void DrawBuffer(const Buffer<VertexType>& buffer, unsigned int drawMode = GL_TRIANGLES)
@@ -66,21 +65,58 @@ public:
 		{
 			GLIndexType = GL_UNSIGNED_SHORT;
 		}
+
+		auto& shader = (_currentShader) ? *_currentShader : _defaultShader;
+		auto& texture = (_currentTexture) ? *_currentTexture : _defaultTexture;
 		
 		buffer.Bind();
-		_shader->Bind();
-		_texture->Bind();
-		_shader->Uniforms(_uniforms);
+		texture.Bind();
+		shader.Bind();
+		shader.Uniforms(_uniforms);
 
-		glUniformMatrix4fv(glGetUniformLocation(_shader->ID(), "model"), 1, GL_FALSE, &_model[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(_shader->ID(), "view"), 1, GL_FALSE, &_view[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(_shader->ID(), "projection"), 1, GL_FALSE, &_projection[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, &_model[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, &_view[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, &_projection[0][0]);
 
 		glDrawElements(drawMode, buffer.GetNumberOfIndices(), GLIndexType, buffer.Indices());
 
 		buffer.Unbind();
-		_shader->Unbind();
-		_texture->Unbind();
+		texture.Unbind();
+		shader.Unbind();
+	}
+
+	template<typename IndexType, typename OffsetType>
+	void DrawFromExternal(unsigned int vertexArray, int numInds, unsigned int drawMode = GL_TRIANGLES, const OffsetType* offset = nullptr)
+	{
+		unsigned int GLIndexType = 0u;
+
+		if constexpr (std::is_same_v<IndexType, unsigned int>)
+		{
+			GLIndexType = GL_UNSIGNED_INT;
+		}
+		else
+		{
+			GLIndexType = GL_UNSIGNED_SHORT;
+		}
+
+		auto& shader = (_currentShader) ? *_currentShader : _defaultShader;
+		auto& texture = (_currentTexture) ? *_currentTexture : _defaultTexture;
+
+		glBindVertexArray(vertexArray);
+		texture.Bind();
+		shader.Bind();
+		shader.Uniforms(_uniforms);
+
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, &_model[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, &_view[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, &_projection[0][0]);
+
+		glDrawElements(drawMode, numInds, GLIndexType, offset);
+
+		glBindVertexArray(0u);
+
+		texture.Unbind();
+		shader.Unbind();
 	}
 };
 

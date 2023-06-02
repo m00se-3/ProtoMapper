@@ -4,13 +4,10 @@
 #include <cstdio>
 
 Renderer::Renderer(const std::string& dir)
-	: _model(glm::mat4(1.f)), _view(glm::mat4(1.f))
+	: _model(glm::mat4(1.f)), _view(glm::mat4(1.f)), _currentTexture(std::nullopt), _currentShader(std::nullopt)
 {
 
 	_defaultTexture.Create().GenerateBlank(1, 1);
-
-	_shader = &_defaultShader;
-	_texture = &_defaultTexture;
 
 	/*
 		Open the default shader sources and extract the text.
@@ -47,7 +44,8 @@ Renderer::Renderer(const std::string& dir)
 	fclose(vsHandle);
 	fclose(fsHandle);
 
-	_defaultShader.Create(vsSrc.c_str(), fsSrc.c_str());
+	auto objs = _defaultShader.CreateBasic(vsSrc.c_str(), fsSrc.c_str());
+	_defaultShader.Link(objs);
 }
 
 bool Renderer::Init(mode newMode)
@@ -69,16 +67,6 @@ bool Renderer::Init(mode newMode)
 		break;
 	}
 	}
-
-	_shader->Link().Cleanup();
-
-	_shader->Bind();
-
-	glUniformMatrix4fv(glGetUniformLocation(_shader->ID(), "model"), 1, GL_FALSE, &_model[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(_shader->ID(), "view"), 1, GL_FALSE, &_view[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(_shader->ID(), "projection"), 1, GL_FALSE, &_projection[0][0]);
-
-	_shader->Unbind();
 
 	return true;
 }
@@ -137,28 +125,34 @@ void Renderer::SetRenderMode(Renderer::mode m)
 	_currentMode = m;
 }
 
-void Renderer::UseTexture(Texture2D* texture)
+void Renderer::UseTexture(std::optional<Texture2D> texture)
 {
 	if (texture)
 	{
-		_texture = texture;
+		_currentTexture = texture;
 	}
 	else
 	{
-		_texture = &_defaultTexture;
+		_currentTexture = std::nullopt;
 	}
 }
 
-void Renderer::UseShader(Shader* shader)
+void Renderer::UseShader(std::optional<Shader> shader)
 {
 	if (shader)
 	{
-		_shader = shader;
+		_currentShader = shader;
 	}
 	else
 	{
-		_shader = &_defaultShader;
+		_currentShader = std::nullopt;
 	}
 }
 
 void Renderer::SetUniforms(const std::function<void()>& uniforms) { _uniforms = uniforms; }
+
+Renderer::~Renderer()
+{
+	_defaultTexture.Destroy();
+	_defaultShader.Destroy();
+}
