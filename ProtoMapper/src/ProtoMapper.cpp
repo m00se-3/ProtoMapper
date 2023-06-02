@@ -197,7 +197,7 @@ void ProtoMapper::Run()
 
 		_scene.DrawNodes();
 		_scene.CompileUI();
-		_scene.DrawUI();
+		_scene.DrawUI(_renderer.get());
 		
 		SDL_GL_SwapWindow(_window);
 
