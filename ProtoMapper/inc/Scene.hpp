@@ -22,6 +22,7 @@
 
 
 class Scene;	// Forward declaration.
+class Renderer;
 
 /*
 	A tree of SceneNodes is constructed to organize the draw calls, and to allow for Scene customization in-app.
@@ -74,6 +75,10 @@ protected:
 	struct nk_buffer cmds, verts, inds;
 	Texture2D fontTexture;
 
+	unsigned int vertexArray = 0u, vb = 0u, ib = 0u;
+
+	void* vertices = nullptr, * indices = nullptr;
+
 public:
 	Scene() = default;
 
@@ -81,7 +86,7 @@ public:
 	void Update(float dt);
 	void DrawNodes();
 	void CompileUI();
-	void DrawUI();
+	void DrawUI(Renderer* ren);
 	void Cleanup();
 
 	nk_context* Context();

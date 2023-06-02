@@ -1,12 +1,15 @@
 #include "Scene.hpp"
 
 #include "Vertex.hpp"
+#include "Renderer.hpp"
+
+constexpr long long MaxVertexBuffer = 4 * 1024;
 
 
 static const struct nk_draw_vertex_layout_element vertex_layout[] = {
-		{NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct Vertex2D, pos.x)},
-		{NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(struct Vertex2D, texCoords.x)},
-		{NK_VERTEX_COLOR, NK_FORMAT_R32G32B32A32_FLOAT, NK_OFFSETOF(struct Vertex2D, color.x)},
+		{NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct Vertex2D, pos)},
+		{NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(struct Vertex2D, texCoords)},
+		{NK_VERTEX_COLOR, NK_FORMAT_R32G32B32A32_FLOAT, NK_OFFSETOF(struct Vertex2D, color)},
 		{NK_VERTEX_LAYOUT_END}
 };
 
@@ -56,7 +59,7 @@ bool Scene::Init()
 
 	const void* img = nk_font_atlas_bake(&atlas, &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 	fontTexture.WriteData(img, imgWidth, imgHeight);
-	nk_font_atlas_end(&atlas, nk_handle_id(fontTexture.ID()), nullptr);
+	nk_font_atlas_end(&atlas, nk_handle_id(fontTexture.ID), nullptr);
 	nk_font_atlas_cleanup(&atlas);
 
 	if (!nk_init_default(&ctx, &font->handle)) return false;
@@ -69,10 +72,34 @@ bool Scene::Init()
 	configurator.circle_segment_count = 20;
 	configurator.curve_segment_count = 20;
 	configurator.global_alpha = 1.0f;
-	
+
 	nk_buffer_init_default(&cmds);
-	nk_buffer_init_default(&verts);
-	nk_buffer_init_default(&inds);
+
+	/*
+		Because I don't (yet) have the facilities to incorporate nukealr's buffer types into my own Buffer type,
+		I have to set up the buffers manually.
+	*/
+
+	glGenVertexArrays(1, &vertexArray);
+	glGenBuffers(1, &vb);
+	glGenBuffers(1, &ib);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vb);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+
+	// Vertex positions
+	glVertexAttribPointer(0u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), 0);
+	glEnableVertexAttribArray(0);
+
+	// Texture coordinates
+	glVertexAttribPointer(1u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), (const void*)(sizeof(glm::vec2)));
+	glEnableVertexAttribArray(1);
+
+	// Color values
+	glVertexAttribPointer(2u, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), (const void*)(sizeof(glm::vec2) + sizeof(glm::vec2)));
+	glEnableVertexAttribArray(2);
+
+	glBindVertexArray(vertexArray);
 
 	/*
 		Create the root SceneNode, this will draw a background if there are no open files.
@@ -81,10 +108,10 @@ bool Scene::Init()
 	auto rID = manager.create();
 
 	root = new SceneNode(nullptr, rID);
-	root->SetArea(Rectangle{ 50.f, 50.f, 800.f, 600.f });
+	root->SetArea(Rectangle{ 50.f, 50.f, 200.f, 100.f });
 
 	manager.emplace<UIElement>(rID, [](nk_context* context, const Rectangle& rect) {
-		if (nk_begin(context, "Hello world!", nk_rect(rect.x + 0.5f * rect.x, rect.y + 0.5f * rect.y, 0.2f * rect.w, 0.4f * rect.h), 0))
+		if (nk_begin(context, "Hello world!", nk_rect(rect.x, rect.y, rect.w, rect.h), 0))
 		{
 			nk_end(context);
 		}
@@ -105,15 +132,33 @@ void Scene::DrawNodes()
 
 void Scene::CompileUI()
 {
+	glBindVertexArray(vertexArray);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vb);
+	glBufferData(GL_ARRAY_BUFFER, MaxVertexBuffer, nullptr, GL_DYNAMIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, MaxVertexBuffer, nullptr, GL_DYNAMIC_DRAW);
+
+	vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+	indices = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+	nk_buffer_init_fixed(&verts, vertices, MaxVertexBuffer);
+	nk_buffer_init_fixed(&inds, indices, MaxVertexBuffer);
+
 	nk_convert(&ctx, &cmds, &verts, &inds, &configurator);
+
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
+	glBindVertexArray(0u);
 }
 
-void Scene::DrawUI()
+void Scene::DrawUI(Renderer* ren)
 {
 	/*
-		Made using the examples in the nuklear repository. OpenGl must be called directly here because
-		there's no way to know what texture a particular command is wanting. Also the offset variable
-		is not used in my cheap renderer class.
+		Made using the examples in the nuklear repository. Made a rough API for nuklear to use with
+		my Renderer class.
 	*/
 	
 	const nk_draw_command* cmd = nullptr;
@@ -123,8 +168,8 @@ void Scene::DrawUI()
 	nk_draw_foreach(cmd, &ctx, &cmds)
 	{
 		if (!cmd->elem_count) continue;
-		glBindTexture(GL_TEXTURE_2D, cmd->texture.id);
-		glDrawElements(GL_TRIANGLES, cmd->elem_count, GL_UNSIGNED_INT, offset);
+		ren->UseTexture(Texture2D{ (unsigned int)cmd->texture.id});
+		ren->DrawFromExternal<unsigned int>(vertexArray, cmd->elem_count, GL_TRIANGLES, offset);
 		offset += cmd->elem_count;
 	}
 
