@@ -46,6 +46,8 @@ public:
 	void Begin();
 	void End();
 	void SetRenderWindow(float w, float h);
+	float GetRenderWidth() const;
+	float GetRenderHeight() const;
 	void SetUniforms(const std::function<void()>& uniforms);
 	void SetViewport(int x, int y, int w, int h);
 	void SetRenderMode(mode m);

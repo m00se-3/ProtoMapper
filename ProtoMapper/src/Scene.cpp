@@ -67,7 +67,7 @@ bool Scene::Init()
 	configurator.shape_AA = NK_ANTI_ALIASING_ON;
 	configurator.line_AA = NK_ANTI_ALIASING_ON;
 	configurator.vertex_layout = vertex_layout;
-	configurator.vertex_alignment = alignof(Vertex2D);
+	configurator.vertex_alignment = NK_ALIGNOF(Vertex2D);
 	configurator.vertex_size = sizeof(Vertex2D);
 	configurator.circle_segment_count = 20;
 	configurator.curve_segment_count = 20;
@@ -160,7 +160,7 @@ void Scene::DrawUI(Renderer* ren)
 		Made using the examples in the nuklear repository. Made a rough API for nuklear to use with
 		my Renderer class.
 	*/
-	
+
 	const nk_draw_command* cmd = nullptr;
 
 	const nk_draw_index* offset = nullptr;
@@ -168,7 +168,7 @@ void Scene::DrawUI(Renderer* ren)
 	nk_draw_foreach(cmd, &ctx, &cmds)
 	{
 		if (!cmd->elem_count) continue;
-		ren->UseTexture(Texture2D{ (unsigned int)cmd->texture.id});
+		ren->UseTexture(fontTexture);
 		ren->DrawFromExternal<unsigned int>(vertexArray, cmd->elem_count, GL_TRIANGLES, offset);
 		offset += cmd->elem_count;
 	}

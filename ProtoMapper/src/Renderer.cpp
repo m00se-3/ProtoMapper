@@ -74,6 +74,10 @@ bool Renderer::Init(mode newMode)
 	return true;
 }
 
+float Renderer::GetRenderWidth() const { return _vWidth; }
+
+float Renderer::GetRenderHeight() const { return _vHeight; }
+
 void Renderer::Begin()
 {
 	switch (_currentMode)
