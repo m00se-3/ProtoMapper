@@ -77,6 +77,7 @@ public:
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, &_model[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, &_view[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, &_projection[0][0]);
+		glUniform1i(glGetUniformLocation(shader.ID, "textureData"), 0);
 
 		glDrawElements(drawMode, buffer.GetNumberOfIndices(), GLIndexType, buffer.Indices());
 
@@ -110,6 +111,7 @@ public:
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, &_model[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, &_view[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, &_projection[0][0]);
+		glUniform1i(glGetUniformLocation(shader.ID, "textureData"), 0);
 
 		glDrawElements(drawMode, numInds, GLIndexType, offset);
 
