@@ -84,22 +84,23 @@ bool Scene::Init()
 	glGenBuffers(1, &vb);
 	glGenBuffers(1, &ib);
 
+	glBindVertexArray(vertexArray);
 	glBindBuffer(GL_ARRAY_BUFFER, vb);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
 
 	// Vertex positions
 	glVertexAttribPointer(0u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), 0);
-	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(0u);
 
 	// Texture coordinates
 	glVertexAttribPointer(1u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), (const void*)(sizeof(glm::vec2)));
-	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(1u);
 
 	// Color values
 	glVertexAttribPointer(2u, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), (const void*)(sizeof(glm::vec2) + sizeof(glm::vec2)));
-	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(2u);
 
-	glBindVertexArray(vertexArray);
+	glBindVertexArray(0);
 
 	/*
 		Create the root SceneNode, this will draw a background if there are no open files.
@@ -111,7 +112,7 @@ bool Scene::Init()
 	root->SetArea(Rectangle{ 50.f, 50.f, 200.f, 100.f });
 
 	manager.emplace<UIElement>(rID, [](nk_context* context, const Rectangle& rect) {
-		if (nk_begin(context, "Hello world!", nk_rect(rect.x, rect.y, rect.w, rect.h), 0))
+		if (nk_begin_titled(context, "window", "Hello world!", nk_rect(rect.x, rect.y, rect.w, rect.h), 0))
 		{
 			nk_end(context);
 		}
@@ -175,6 +176,7 @@ void Scene::DrawUI(Renderer* ren)
 
 	nk_clear(&ctx);
 	nk_buffer_clear(&cmds);
+
 }
 
 void Scene::Cleanup()
