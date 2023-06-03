@@ -49,18 +49,19 @@ bool Scene::Init()
 	int imgWidth, imgHeight;
 	fontTexture.Create();
 
+
+
 	/*
 		Initialize the UI library and the fonts.
 	*/
 	nk_font_atlas_init_default(&atlas);
 	nk_font_atlas_begin(&atlas);
 
-	font = nk_font_atlas_add_from_file(&atlas, fontFile.c_str(), 12, nullptr);
+	font = nk_font_atlas_add_from_file(&atlas, fontFile.c_str(), 16, nullptr);
 
 	const void* img = nk_font_atlas_bake(&atlas, &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 	fontTexture.WriteData(img, imgWidth, imgHeight);
 	nk_font_atlas_end(&atlas, nk_handle_id(fontTexture.ID), nullptr);
-	nk_font_atlas_cleanup(&atlas);
 
 	if (!nk_init_default(&ctx, &font->handle)) return false;
 
@@ -112,7 +113,7 @@ bool Scene::Init()
 	root->SetArea(Rectangle{ 50.f, 50.f, 200.f, 100.f });
 
 	manager.emplace<UIElement>(rID, [](nk_context* context, const Rectangle& rect) {
-		if (nk_begin_titled(context, "window", "Hello world!", nk_rect(rect.x, rect.y, rect.w, rect.h), 0))
+		if (nk_begin_titled(context, "window", "Hello world!", nk_rect(rect.x, rect.y, rect.w, rect.h), NK_WINDOW_TITLE))
 		{
 			nk_end(context);
 		}
@@ -184,6 +185,7 @@ void Scene::Cleanup()
 	root->Destroy();
 	delete root;
 
+	nk_font_atlas_cleanup(&atlas);
 	nk_font_atlas_clear(&atlas);
 	nk_free(&ctx);
 }

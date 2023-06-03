@@ -59,7 +59,7 @@ public:
 */
 class Scene
 {
-	
+
 protected:
 	SceneNode* root = nullptr;
 	entt::registry manager;
