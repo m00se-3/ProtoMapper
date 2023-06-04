@@ -49,7 +49,9 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/inc/Vertex.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Renderer.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Scene.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/Components.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/components/All.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/components/Common.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/components/UI.hpp
 
 	PRIVATE  
 	${CMAKE_CURRENT_LIST_DIR}/src/external/nuklear.cpp
@@ -59,5 +61,6 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/Vertex.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Renderer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Scene.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Components.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/components/Common.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/components/UI.cpp
 )
