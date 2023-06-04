@@ -35,6 +35,9 @@ struct Texture2D
 	Texture2D(const Texture2D&) = default;
 	explicit Texture2D(IDType id);
 
+	bool operator==(const Texture2D& rhs);
+	const bool operator==(const Texture2D& rhs) const;
+
 	Texture2D& Create();
 	void Destroy();
 	void Bind(unsigned int slot = 0u);

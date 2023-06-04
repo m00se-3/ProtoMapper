@@ -97,3 +97,13 @@ void Shader::Uniforms(const std::function<void()>& func)
 }
 
 Shader::~Shader() {  }
+
+bool Shader::operator==(const Shader& rhs)
+{
+	return ID == rhs.ID;
+}
+
+const bool Shader::operator==(const Shader& rhs) const
+{
+	return ID == rhs.ID;
+}

@@ -17,6 +17,10 @@ struct Shader
 	Shader(const Shader&) = default;
 	~Shader();
 
+	bool operator==(const Shader& rhs);
+
+	const bool operator==(const Shader& rhs) const;
+
 	/*
 		Create a simple shader program from the traditional vertex and fragment shader combo.
 

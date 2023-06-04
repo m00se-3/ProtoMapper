@@ -23,6 +23,16 @@ Texture2D::Texture2D(IDType id)
 
 }
 
+bool Texture2D::operator==(const Texture2D& rhs)
+{
+	return ID == rhs.ID;
+}
+
+const bool Texture2D::operator==(const Texture2D& rhs) const
+{
+	return ID == rhs.ID;
+}
+
 Texture2D& Texture2D::Create()
 {
 	glGenTextures(1, &ID);
