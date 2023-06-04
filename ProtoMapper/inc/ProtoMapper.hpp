@@ -34,8 +34,6 @@ public:
 	ProtoMapper() = default;
 	~ProtoMapper();
 
-	void CreateToolBar();
-
 	bool Configure();
 	void Run();
 
