@@ -13,33 +13,6 @@ static const struct nk_draw_vertex_layout_element vertex_layout[] = {
 		{NK_VERTEX_LAYOUT_END}
 };
 
-Rectangle::Rectangle(float x, float y, float w, float h)
-	: x(x), y(y), w(w), h(h)
-{
-}
-
-bool Rectangle::operator==(const Rectangle& other) const
-{
-	return (x == other.x && y == other.y && w == other.w && h == other.h);
-}
-
-bool Rectangle::Overlaps(const Rectangle& other) const
-{
-	return (
-		x < other.x + other.w && y < other.y + other.h
-		&& x + w > other.x && y + h > other.y
-		);
-}
-
-bool Rectangle::Contains(const Rectangle& other) const
-{
-	return (
-		x < other.x && x + w > other.x + other.w
-		&& y < other.y && y + h > other.y + other.h
-		);
-}
-
-
 
 bool Scene::Init()
 {
@@ -110,14 +83,8 @@ bool Scene::Init()
 	auto rID = manager.create();
 
 	root = new SceneNode(nullptr, rID);
-	root->SetArea(Rectangle{ 50.f, 50.f, 200.f, 100.f });
 
-	manager.emplace<UIElement>(rID, [](nk_context* context, const Rectangle& rect) {
-		if (nk_begin_titled(context, "window", "Hello world!", nk_rect(rect.x, rect.y, rect.w, rect.h), NK_WINDOW_TITLE))
-		{
-			nk_end(context);
-		}
-		});
+
 	
 	return true;
 }
@@ -202,21 +169,13 @@ SceneNode::SceneNode(SceneNode* par, entt::entity inID)
 
 entt::entity SceneNode::ID() const { return id; }
 
-const struct Rectangle& SceneNode::Area() const { return area; }
-
-void SceneNode::SetArea(const struct Rectangle& newArea)
-{
-	area = newArea;
-}
-
 void SceneNode::Update(Scene* container, float dt)
 {
 	auto& man = container->Manager();
 	
-	if (man.any_of<UIElement>(id))
+	if (/* is ui element */1)
 	{
-		auto& ui = man.get<UIElement>(id);
-		ui.func(container->Context(), area);
+		
 	}
 	else
 	{

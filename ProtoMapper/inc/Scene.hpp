@@ -15,7 +15,6 @@
 #include "entt/entt.hpp"
 
 #include "Texture.hpp"
-#include "Components.hpp"
 
 #include <vector>
 #include <list>
@@ -34,8 +33,6 @@ protected:
 
 	SceneNode* parent = nullptr;
 	entt::entity id;
-	bool visible = false;
-	struct Rectangle area;
 	std::list<SceneNode*> children;
 
 public:
@@ -45,11 +42,9 @@ public:
 	SceneNode(SceneNode* par, entt::entity inID);
 
 	entt::entity ID() const;
-	const struct Rectangle& Area() const;
 	void Update(Scene* container, float dt);
 	void Draw();
 	void Destroy();
-	void SetArea(const struct Rectangle& newArea);
 };
 
 /*
