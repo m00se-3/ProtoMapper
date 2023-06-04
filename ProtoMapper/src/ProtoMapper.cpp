@@ -2,6 +2,7 @@
 
 #include "SDL2/SDL_image.h"
 #include "Renderer.hpp"
+#include "ResourceManager.hpp"
 #include "Shader.hpp"
 
 #include <chrono>
@@ -77,6 +78,14 @@ bool ProtoMapper::Configure()
 		return false;
 	}
 
+	/*
+		Set up the ResourceManager object and hook it up to the resource types it needs to track.
+	*/
+
+	_resources.reset();
+
+	Texture2D::SetResourceManager(_resources.get());
+	Shader::SetResourceManager(_resources.get());
 
 	return true;
 }

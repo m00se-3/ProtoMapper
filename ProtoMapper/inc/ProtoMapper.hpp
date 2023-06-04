@@ -11,6 +11,7 @@
 
 // Forward declarations.
 class Renderer;
+class ResourceManager;
 
 class ProtoMapper
 {
@@ -26,6 +27,7 @@ class ProtoMapper
 	SDL_Window* _window = nullptr;
 	SDL_GLContext _mapContext;
 	std::unique_ptr<Renderer> _renderer;
+	std::unique_ptr<ResourceManager> _resources;
 
 	std::string _configFile;
 	CSimpleIniA _configData;
