@@ -5,13 +5,17 @@
 
 #include <functional>
 
+class ResourceManager;
+
 /*
 	TODO: Add reference counting mechanism.
 */
 
 struct Shader
 {
-	unsigned int ID = 0u;
+	using IDType = unsigned int;
+	
+	IDType ID = 0u;
 
 	Shader() = default;
 	Shader(const Shader&) = default;
@@ -19,7 +23,7 @@ struct Shader
 
 	bool operator==(const Shader& rhs);
 
-	const bool operator==(const Shader& rhs) const;
+	bool operator==(const Shader& rhs) const;
 
 	/*
 		Create a simple shader program from the traditional vertex and fragment shader combo.
@@ -50,6 +54,13 @@ struct Shader
 
 	// Pass in a lambda that sets up the uniforms for the shader.
 	void Uniforms(const std::function<void()>& func);
+
+
+	static void SetResourceManager(ResourceManager* ptr);
+
+private:
+	static ResourceManager* _manager;
+
 };
 
 #endif // !PROTOMAPPER_SHADER_HPP

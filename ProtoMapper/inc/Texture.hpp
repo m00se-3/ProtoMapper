@@ -1,6 +1,8 @@
 #ifndef PROTOMAPPER_TEXTURE_HPP
 #define PROTOMAPPER_TEXTURE_HPP
 
+class ResourceManager;
+
 extern "C"
 {
 	struct SDL_Surface;
@@ -34,9 +36,10 @@ struct Texture2D
 	Texture2D() = default;
 	Texture2D(const Texture2D&) = default;
 	explicit Texture2D(IDType id);
+	~Texture2D();
 
 	bool operator==(const Texture2D& rhs);
-	const bool operator==(const Texture2D& rhs) const;
+	bool operator==(const Texture2D& rhs) const;
 
 	Texture2D& Create();
 	void Destroy();
@@ -49,6 +52,12 @@ struct Texture2D
 	Texture2D& GenerateBlank(int w, int h, unsigned int colorValue = 0xFFFFFFFF);
 
 	IDType Target() const;
+
+	static void SetResourceManager(ResourceManager* ptr);
+
+
+private:
+	static ResourceManager* _manager;
 };
 
 #endif

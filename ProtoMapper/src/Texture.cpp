@@ -1,8 +1,16 @@
 #include "Texture.hpp"
+#include "ResourceManager.hpp"
 
 #include "glad/glad.h"
 #include "SDL2/SDL_surface.h"
 #include "SDL2/SDL_image.h"
+
+ResourceManager* Texture2D::_manager = nullptr;
+
+void Texture2D::SetResourceManager(ResourceManager* ptr)
+{
+	_manager = ptr;
+}
 
 
 SDL_Surface* CreateImageBlank(int width, int height)
@@ -28,7 +36,7 @@ bool Texture2D::operator==(const Texture2D& rhs)
 	return ID == rhs.ID;
 }
 
-const bool Texture2D::operator==(const Texture2D& rhs) const
+bool Texture2D::operator==(const Texture2D& rhs) const
 {
 	return ID == rhs.ID;
 }
@@ -42,6 +50,8 @@ Texture2D& Texture2D::Create()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	_manager->AddReference(ID, Texture2D{});
 
 	return *this;
 }
@@ -89,4 +99,7 @@ Texture2D& Texture2D::GenerateBlank(int w, int h, unsigned int colorValue)
 }
 
 Texture2D::IDType Texture2D::Target() const { return GL_TEXTURE_2D; }
+
+
+Texture2D::~Texture2D() { _manager->SubReference(ID, Texture2D{}); }
 
