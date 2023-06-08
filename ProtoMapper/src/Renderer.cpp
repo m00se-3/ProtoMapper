@@ -1,10 +1,16 @@
 #include "Renderer.hpp"
+#include "ResourceManager.hpp"
 
 #include <filesystem>
 #include <cstdio>
 
+ResourceManager* Renderer::_resources = nullptr;
+
+void Renderer::SetResourceManager(ResourceManager* res) { _resources = res; }
+
 Renderer::Renderer(const std::string& dir)
-	: _model(glm::mat4(1.f)), _view(glm::mat4(1.f)), _currentTexture(std::nullopt), _currentShader(std::nullopt)
+	: _model(glm::mat4(1.f)), _view(glm::mat4(1.f)), _currentTexture(std::nullopt), _currentShader(std::nullopt),
+	_defaultShader(_resources->LoadResource(Shader{}, "default")), _defaultTexture(_resources->LoadResource(Texture2D{}, "default"))
 {
 
 	_defaultTexture.Create().GenerateBlank(1, 1);

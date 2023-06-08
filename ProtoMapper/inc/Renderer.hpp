@@ -13,6 +13,8 @@
 #include <type_traits>
 #include <optional>
 
+class ResourceManager;
+
 
 class Renderer
 {
@@ -35,10 +37,14 @@ private:
 
 	std::function<void()> _uniforms = []() {};
 
+	static ResourceManager* _resources;
+
 public:
 
 	Renderer(const std::string& dir);
 	~Renderer();
+
+	static void SetResourceManager(ResourceManager* res);
 
 	mode GetRenderMode() const;
 
