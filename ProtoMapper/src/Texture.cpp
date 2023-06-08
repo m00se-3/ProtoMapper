@@ -67,6 +67,8 @@ Texture2D& Texture2D::Create()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	_manager->AddReference(ID, Texture2D{});
+
 	return *this;
 }
 

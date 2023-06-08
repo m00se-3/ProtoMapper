@@ -46,6 +46,7 @@ class ResourceManager
 	template<typename ResType>
 	std::unordered_map<unsigned int, uint16_t>& GetReferenceMap(const ResType&);
 
+
 	// Resource Destruction.
 
 	template<typename ResType>
@@ -58,10 +59,21 @@ public:
 		Loading, getting, and unloading resources.
 	*/
 
-	template<typename ResType>
-	ResType LoadResource(const std::string_view& name)
+	template<typename ResType, typename... Args>
+	ResType LoadResource(const std::string_view& name, Args&&... args)
 	{
+		auto& map = GetStorageMap(ResType{});
 
+		if (map.count(name.data()))
+		{
+			ResType& res = map.at(name.data());
+
+			return ResType{ res };
+		}
+
+		auto result = map.insert_or_assign(name.data(), ResType{ std::forward<Args>(args)... });
+
+		return result.first->second;
 	}
 
 	template<typename ResType>
@@ -80,7 +92,12 @@ public:
 	template<typename ResType>
 	void UnloadResource(const std::string_view& name)
 	{
+		auto& map = GetStorageMap(ResType{});
 
+		if (map.count(name.data()) > 0)
+		{
+			map.erase(name.data());
+		 }
 	}
 
 

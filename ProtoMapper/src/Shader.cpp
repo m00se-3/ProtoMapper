@@ -18,6 +18,8 @@ std::pair<unsigned int, unsigned int> Shader::CreateBasic(const char* srcVert, c
 	glDeleteShader(vs);
 	glDeleteShader(fs);
 
+	_manager->AddReference(ID, Shader{});
+
 	return std::make_pair(vs, fs);
 }
 
