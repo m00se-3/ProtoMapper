@@ -21,11 +21,18 @@ public:
 	Image(const std::filesystem::path& filename);
 	~Image();
 
-	void Create(int w, int h, uint8_t* data = nullptr);
+	// Load a fresh image from a file.
+	void Load(const std::filesystem::path& filename);
+
+	// Copy image data from an existing memory buffer.
+	// This will erase any data already contained in the Image buffer.
+	void LoadCopy(int w, int h, uint8_t* ptr = nullptr);
 
 	uint8_t* Data() const;
 	int Width() const;
 	int Height() const;
+
+	void Destroy();
 
 };
 
