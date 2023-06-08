@@ -60,7 +60,7 @@ public:
 	*/
 
 	template<typename ResType, typename... Args>
-	ResType LoadResource(const std::string_view& name, Args&&... args)
+	ResType LoadResource(const ResType&, const std::string_view& name, Args&&... args)
 	{
 		auto& map = GetStorageMap(ResType{});
 
@@ -77,7 +77,7 @@ public:
 	}
 
 	template<typename ResType>
-	ResType GetResource(const std::string_view& name, const ResType&)
+	ResType GetResource(const ResType&, const std::string_view& name)
 	{
 		auto& map = GetStorageMap(ResType{});
 		
@@ -90,7 +90,7 @@ public:
 	}
 
 	template<typename ResType>
-	void UnloadResource(const std::string_view& name)
+	void UnloadResource(const ResType&, const std::string_view& name)
 	{
 		auto& map = GetStorageMap(ResType{});
 
