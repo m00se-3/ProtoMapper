@@ -55,6 +55,8 @@ public:
 class Scene
 {
 
+	static ResourceManager* _resources;
+
 protected:
 	SceneNode* root = nullptr;
 	entt::registry manager;
@@ -86,6 +88,8 @@ public:
 
 	nk_context* Context();
 	entt::registry& Manager();
+
+	static void SetResourceManager(ResourceManager* ptr);
 
 };
 

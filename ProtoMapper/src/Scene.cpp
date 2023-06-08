@@ -1,7 +1,10 @@
 #include "Scene.hpp"
+#include "ResourceManager.hpp"
 
 #include "Vertex.hpp"
 #include "Renderer.hpp"
+
+ResourceManager* Scene::_resources = nullptr;
 
 constexpr long long MaxVertexBuffer = 4 * 1024;
 
@@ -13,6 +16,8 @@ static const struct nk_draw_vertex_layout_element vertex_layout[] = {
 		{NK_VERTEX_LAYOUT_END}
 };
 
+void Scene::SetResourceManager(ResourceManager* ptr) { _resources = ptr; }
+
 
 bool Scene::Init()
 {
@@ -20,6 +25,7 @@ bool Scene::Init()
 	fontFile += "/fonts/keep_calm/KeepCalm-Medium.ttf";
 
 	int imgWidth, imgHeight;
+	fontTexture = _resources->LoadResource(Texture2D{}, "KeepCalm-Medium");
 	fontTexture.Create();
 
 
@@ -134,10 +140,11 @@ void Scene::DrawUI(Renderer* ren)
 
 	const nk_draw_index* offset = nullptr;
 
+	ren->UseTexture(fontTexture);
+
 	nk_draw_foreach(cmd, &ctx, &cmds)
 	{
 		if (!cmd->elem_count) continue;
-		ren->UseTexture(fontTexture);
 		ren->DrawFromExternal<unsigned int>(vertexArray, cmd->elem_count, GL_TRIANGLES, offset);
 		offset += cmd->elem_count;
 	}
