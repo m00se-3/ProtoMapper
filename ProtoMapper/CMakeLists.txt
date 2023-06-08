@@ -23,6 +23,7 @@ target_include_directories(
 	PRIVATE 
 	${CMAKE_CURRENT_LIST_DIR}/inc
 	${SIMPLEINI_INCLUDE_DIRS}
+	${stb_INCLUDE_DIR}
 )
 
 target_link_libraries(
@@ -32,9 +33,7 @@ target_link_libraries(
 
 	glad::glad
 	glm::glm
-	SDL2::SDL2
-	SDL2::SDL2main
-	$<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>
+	glfw
 	nuklear
 	EnTT::EnTT
 )

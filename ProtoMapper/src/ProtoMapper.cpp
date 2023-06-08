@@ -1,6 +1,5 @@
 ﻿#include "ProtoMapper.hpp"
 
-#include "SDL2/SDL_image.h"
 #include "Renderer.hpp"
 #include "ResourceManager.hpp"
 #include "Shader.hpp"
@@ -14,6 +13,23 @@ void ProtoMapper::DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severit
 	printf_s("Error [%u] [%u] [%u] - %s", src, type, severity, message);
 }
 
+void ProtoMapper::ContextErrorMessage([[maybe_unused]]int code, const char* description)
+{
+	printf_s("s", description);
+}
+
+void ProtoMapper::MonitorCallback(GLFWmonitor* monitor, int event)
+{
+	if (event == GLFW_CONNECTED)
+	{
+
+	}
+	else if(event == GLFW_DISCONNECTED)
+	{
+
+	}
+}
+
 ProtoMapper::~ProtoMapper() 
 {
 	if (_configUpdate)
@@ -24,15 +40,21 @@ ProtoMapper::~ProtoMapper()
 	_configData.Reset();
 	_scene.Cleanup();
 
-	SDL_GL_DeleteContext(_mapContext);
-	SDL_DestroyWindow(_window);
+	glfwDestroyWindow(_window);
 
-	IMG_Quit();
-	SDL_Quit();
+	glfwTerminate();
 }
 
 bool ProtoMapper::Configure()
 {
+	glfwSetErrorCallback(ProtoMapper::ContextErrorMessage);
+
+	if (!glfwInit())
+	{
+		return false;
+	}
+
+
 #if defined(_DEBUG_) || defined(_RELEASE_)
 
 	_assetsDir = ASSETS_DIR;
@@ -72,12 +94,6 @@ bool ProtoMapper::Configure()
 		_fullscreen = false;
 	}
 
-	if (SDL_Init(SDL_INIT_VIDEO) != 0 || IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
-	{
-		SDL_Log("%s", SDL_GetError());
-		return false;
-	}
-
 	/*
 		Set up the ResourceManager object and hook it up to the resource types it needs to track.
 	*/
@@ -95,34 +111,31 @@ void ProtoMapper::Run()
 {
 	using time = std::chrono::high_resolution_clock;
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	_monitor = glfwGetPrimaryMonitor();
 	
 	if (_fullscreen)
 	{
-		_window = SDL_CreateWindow(std::string{_title + VERSION_NUMBER}.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			_wWidth, _wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_HIDDEN);
+		_window = glfwCreateWindow(_wWidth, _wHeight, std::string{_title + VERSION_NUMBER}.c_str(), _monitor, nullptr);
 	}
 	else
 	{
-		_window = SDL_CreateWindow(std::string{ _title + VERSION_NUMBER }.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _wWidth, _wHeight,
-			SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
+		_window = glfwCreateWindow(_wWidth, _wHeight, std::string{_title + VERSION_NUMBER}.c_str(), nullptr, nullptr);
 	}
 
 	if (_window)
 	{
-		_mapContext = SDL_GL_CreateContext(_window);
+		glfwMakeContextCurrent(_window);
 
-		SDL_GL_MakeCurrent(_window, _mapContext);
-
-		if (!gladLoadGLLoader(static_cast<GLADloadproc>(SDL_GL_GetProcAddress))) return;
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return;
 
 		glDebugMessageCallback((GLDEBUGPROC)ProtoMapper::DebugOpenGL, nullptr);
 	}
 	else
 	{
-		SDL_Log("%s", SDL_GetError());
 		return;
 	}
 
@@ -138,67 +151,14 @@ void ProtoMapper::Run()
 
 	_scene.Init();
 
-	SDL_ShowWindow(_window);
+	glfwShowWindow(_window);
 
 	while (_appRunning)
 	{
-		SDL_Event event;
-
 		time::time_point current = time::now();
 		float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
 
-		while (SDL_PollEvent(&event))
-		{
-			
-			switch (event.type)
-			{
-			case SDL_QUIT:
-			{
-				_appRunning = false;
-				break;
-			}
-			case SDL_MOUSEBUTTONDOWN:
-			{
-				if (event.button.button == SDL_BUTTON_MIDDLE) _panning = true;
-				break;
-			}
-			case SDL_MOUSEBUTTONUP:
-			{
-				if (event.button.button == SDL_BUTTON_MIDDLE) _panning = false;
-				break;
-			}
-			case SDL_MOUSEWHEEL:
-			{
-
-				break;
-			}
-			case SDL_MOUSEMOTION:
-			{
-
-				break;
-			}
-			case SDL_WINDOWEVENT_RESIZED:
-			{
-				_wWidth = event.window.data1;
-				_wHeight = event.window.data2;
-				_fWidth = (float)event.window.data1;
-				_fHeight = (float)event.window.data2;
-
-				auto err1 = _configData.SetLongValue("display", "width", event.window.data1);
-				auto err2 = _configData.SetLongValue("display", "height", event.window.data2);
-
-				if (err1 != SI_UPDATED || err2 != SI_UPDATED)
-				{
-					fprintf_s(stdout, "New display values failed to save. Possibly a corrupt config file.");
-					return;
-				}
-
-				_configUpdate = true;
-
-				break;
-			}
-			}
-		}
+		
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -208,7 +168,7 @@ void ProtoMapper::Run()
 		_scene.CompileUI();
 		_scene.DrawUI(_renderer.get());
 		
-		SDL_GL_SwapWindow(_window);
+		glfwSwapBuffers(_window);
 
 	}
 

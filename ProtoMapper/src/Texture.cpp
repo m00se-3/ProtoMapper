@@ -2,8 +2,6 @@
 #include "ResourceManager.hpp"
 
 #include "glad/glad.h"
-#include "SDL2/SDL_surface.h"
-#include "SDL2/SDL_image.h"
 
 ResourceManager* Texture2D::_manager = nullptr;
 
@@ -13,17 +11,6 @@ void Texture2D::SetResourceManager(ResourceManager* ptr)
 }
 
 
-SDL_Surface* CreateImageBlank(int width, int height)
-{
-	return SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 255u);
-}
-
-SDL_Surface* CreateImageFromPNG(const char* file)
-{
-	return IMG_Load(file);
-}
-
-void FreeImageSurface(SDL_Surface* image) { SDL_FreeSurface(image); }
 
 Texture2D::Texture2D(const Texture2D& other)
 	:ID(other.ID)
@@ -89,14 +76,6 @@ void Texture2D::Bind(unsigned int slot) const
 void Texture2D::Unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
 
 void Texture2D::Unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
-
-Texture2D& Texture2D::WriteImage(SDL_Surface* image)
-{
-	Bind();
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, image->w, image->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->pixels);
-	Unbind();
-	return *this;
-}
 
 Texture2D& Texture2D::WriteData(const void* data, int width, int height)
 {

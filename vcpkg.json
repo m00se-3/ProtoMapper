@@ -3,8 +3,8 @@
   "version-string": "0.1.0",
   "description": "A tool for prototyping map generators.",
   "dependencies": [
-    "sdl2",
-    "sdl2-image",
+    "glfw3",
+    "stb",
     "glm",
     "glad",
     "entt",
