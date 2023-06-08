@@ -108,6 +108,7 @@ bool ProtoMapper::Configure()
 
 	_resources.reset();
 
+	Renderer::SetResourceManager(_resources.get());
 	Texture2D::SetResourceManager(_resources.get());
 	Shader::SetResourceManager(_resources.get());
 
