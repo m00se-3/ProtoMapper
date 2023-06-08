@@ -25,10 +25,16 @@ SDL_Surface* CreateImageFromPNG(const char* file)
 
 void FreeImageSurface(SDL_Surface* image) { SDL_FreeSurface(image); }
 
+Texture2D::Texture2D(const Texture2D& other)
+	:ID(other.ID)
+{
+	_manager->AddReference(ID, Texture2D{});
+}
+
 Texture2D::Texture2D(IDType id)
 	:ID(id)
 {
-
+	_manager->AddReference(ID, Texture2D{});
 }
 
 bool Texture2D::operator==(const Texture2D& rhs)
@@ -41,6 +47,16 @@ bool Texture2D::operator==(const Texture2D& rhs) const
 	return ID == rhs.ID;
 }
 
+Texture2D& Texture2D::operator=(const Texture2D& rhs)
+{
+	if (ID != 0u) _manager->SubReference(ID, Texture2D{});
+
+	ID = rhs.ID;
+	_manager->AddReference(ID, Texture2D{});
+
+	return *this;
+}
+
 Texture2D& Texture2D::Create()
 {
 	glGenTextures(1, &ID);
@@ -50,8 +66,6 @@ Texture2D& Texture2D::Create()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	_manager->AddReference(ID, Texture2D{});
 
 	return *this;
 }

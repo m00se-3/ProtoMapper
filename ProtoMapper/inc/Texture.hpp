@@ -16,11 +16,6 @@ SDL_Surface* CreateImageBlank(int width, int height);
 SDL_Surface* CreateImageFromPNG(const char* file);
 void FreeImageSurface(SDL_Surface* image);
 
-
-/*
-	TODO: Add reference counting mechanism.
-*/
-
 /*
 	This 2D Texture format is designed to be used with SDL_Surfaces.
 */
@@ -34,12 +29,13 @@ struct Texture2D
 	IDType ID = 0u;
 
 	Texture2D() = default;
-	Texture2D(const Texture2D&) = default;
+	Texture2D(const Texture2D&);
 	explicit Texture2D(IDType id);
 	~Texture2D();
 
 	bool operator==(const Texture2D& rhs);
 	bool operator==(const Texture2D& rhs) const;
+	Texture2D& operator=(const Texture2D& rhs);
 
 	Texture2D& Create();
 	void Destroy();

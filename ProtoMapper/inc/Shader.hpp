@@ -7,10 +7,6 @@
 
 class ResourceManager;
 
-/*
-	TODO: Add reference counting mechanism.
-*/
-
 struct Shader
 {
 	using IDType = unsigned int;
@@ -18,12 +14,13 @@ struct Shader
 	IDType ID = 0u;
 
 	Shader() = default;
-	Shader(const Shader&) = default;
+	Shader(const Shader&);
+	explicit Shader(IDType id);
 	~Shader();
 
 	bool operator==(const Shader& rhs);
-
 	bool operator==(const Shader& rhs) const;
+	Shader& operator=(const Shader& rhs);
 
 	/*
 		Create a simple shader program from the traditional vertex and fragment shader combo.
