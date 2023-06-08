@@ -77,6 +77,14 @@ void Texture2D::Unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
 
 void Texture2D::Unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
 
+Texture2D& Texture2D::WriteImage(const Image& img)
+{
+	Bind();
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.Width(), img.Height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.Data());
+	Unbind();
+	return *this;
+}
+
 Texture2D& Texture2D::WriteData(const void* data, int width, int height)
 {
 	Bind();

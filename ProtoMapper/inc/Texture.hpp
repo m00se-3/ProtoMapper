@@ -1,6 +1,8 @@
 #ifndef PROTOMAPPER_TEXTURE_HPP
 #define PROTOMAPPER_TEXTURE_HPP
 
+#include "Image.hpp"
+
 class ResourceManager;
 
 
@@ -31,6 +33,7 @@ struct Texture2D
 	void Bind(unsigned int slot = 0u) const;
 	void Unbind();
 	void Unbind() const;
+	Texture2D& WriteImage(const Image& img);
 	Texture2D& WriteData(const void* data, int width, int height);
 	Texture2D& GenerateBlank(int w, int h, unsigned int colorValue = 0xFFFFFFFF);
 
