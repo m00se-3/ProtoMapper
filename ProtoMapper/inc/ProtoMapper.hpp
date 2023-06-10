@@ -72,6 +72,7 @@ public:
 	static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
 	static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
 	static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
+	static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
 
 };
 

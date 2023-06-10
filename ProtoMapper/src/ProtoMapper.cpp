@@ -69,6 +69,11 @@ void ProtoMapper::MouseScrollEventCallback(GLFWwindow* window, double offX, doub
 {
 }
 
+void ProtoMapper::DropEventCallback(GLFWwindow* window, int count, const char** paths)
+{
+
+}
+
 ProtoMapper::~ProtoMapper() 
 {
 	if (_configUpdate)
@@ -187,6 +192,7 @@ void ProtoMapper::Run()
 		glfwSetCharCallback(_window, ProtoMapper::TextEventCallback);
 		glfwSetMouseButtonCallback(_window, ProtoMapper::MouseButtonEventCallback);
 		glfwSetScrollCallback(_window, ProtoMapper::MouseScrollEventCallback);
+		glfwSetDropCallback(_window, ProtoMapper::DropEventCallback);
 	}
 	else
 	{
