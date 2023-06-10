@@ -50,6 +50,9 @@ class ProtoMapper
 	std::string _configFile;
 	CSimpleIniA _configData;
 
+	// Self pointer for use in the GLFW callbacks.
+	static ProtoMapper* self;
+
 public:
 	ProtoMapper() = default;
 	~ProtoMapper();
@@ -65,6 +68,11 @@ public:
 
 	static void ContextErrorMessage(int code, const char* description);
 	static void MonitorCallback(GLFWmonitor* monitor, int event);
+	static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
+	static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
+	static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
+	static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
+
 };
 
 #endif

@@ -28,15 +28,17 @@
 #include <chrono>
 #include <filesystem>
 
+ProtoMapper* ProtoMapper::self = nullptr;
+
 
 void ProtoMapper::DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, [[maybe_unused]]GLsizei length, const GLchar* message, [[maybe_unused]]const void* userParam)
 {
 	printf_s("Error [%u] [%u] [%u] - %s", src, type, severity, message);
 }
 
-void ProtoMapper::ContextErrorMessage([[maybe_unused]]int code, const char* description)
+void ProtoMapper::ContextErrorMessage(int code, const char* description)
 {
-	printf_s("s", description);
+	printf_s("Error code [%u] - %s\n", code, description);
 }
 
 void ProtoMapper::MonitorCallback(GLFWmonitor* monitor, int event)
@@ -49,6 +51,22 @@ void ProtoMapper::MonitorCallback(GLFWmonitor* monitor, int event)
 	{
 
 	}
+}
+
+void ProtoMapper::KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods)
+{
+}
+
+void ProtoMapper::TextEventCallback(GLFWwindow* window, unsigned int codepoint)
+{
+}
+
+void ProtoMapper::MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods)
+{
+}
+
+void ProtoMapper::MouseScrollEventCallback(GLFWwindow* window, double offX, double offY)
+{
 }
 
 ProtoMapper::~ProtoMapper() 
@@ -68,6 +86,8 @@ ProtoMapper::~ProtoMapper()
 
 bool ProtoMapper::Configure()
 {
+	self = this;
+	
 	glfwSetErrorCallback(ProtoMapper::ContextErrorMessage);
 
 	if (!glfwInit())
@@ -161,6 +181,12 @@ void ProtoMapper::Run()
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return;
 
 		glDebugMessageCallback((GLDEBUGPROC)ProtoMapper::DebugOpenGL, nullptr);
+
+		glfwSetMonitorCallback(ProtoMapper::MonitorCallback);
+		glfwSetKeyCallback(_window, ProtoMapper::KeyboardEventCallback);
+		glfwSetCharCallback(_window, ProtoMapper::TextEventCallback);
+		glfwSetMouseButtonCallback(_window, ProtoMapper::MouseButtonEventCallback);
+		glfwSetScrollCallback(_window, ProtoMapper::MouseScrollEventCallback);
 	}
 	else
 	{
@@ -186,8 +212,6 @@ void ProtoMapper::Run()
 		time::time_point current = time::now();
 		float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
 
-		
-
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		_scene.Update(microseconds * 1000000.f);
@@ -198,6 +222,7 @@ void ProtoMapper::Run()
 		
 		glfwSwapBuffers(_window);
 
+		glfwPollEvents();
 	}
 
 }
