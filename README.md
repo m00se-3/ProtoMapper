@@ -38,7 +38,7 @@ working prototype exists yet.
 
 If you are interested in seeing this project grow, please give the repository a star. 
 
-For inquiries about the project, you can contact me via the email address on my Github profile.
+For inquiries about the project, you can contact me via the email address on my GitHub profile.
 
 ---
 
