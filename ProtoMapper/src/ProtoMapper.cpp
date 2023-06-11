@@ -28,7 +28,7 @@
 #include <chrono>
 #include <filesystem>
 
-ProtoMapper* ProtoMapper::self = nullptr;
+ProtoMapper* ProtoMapper::_self = nullptr;
 
 
 void ProtoMapper::DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, [[maybe_unused]]GLsizei length, const GLchar* message, [[maybe_unused]]const void* userParam)
@@ -91,7 +91,7 @@ ProtoMapper::~ProtoMapper()
 
 bool ProtoMapper::Configure()
 {
-	self = this;
+	_self = this;
 	
 	glfwSetErrorCallback(ProtoMapper::ContextErrorMessage);
 
@@ -127,8 +127,8 @@ bool ProtoMapper::Configure()
 			return false;
 
 
-	auto width = _configData.GetLongValue("display", "width", -1);
-	auto height = _configData.GetLongValue("display", "height", -1);
+	auto width = _configData.GetLongValue("startup_display", "width", -1);
+	auto height = _configData.GetLongValue("startup_display", "height", -1);
 
 	if (width < 0 || height < 0)
 		return false;

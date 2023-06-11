@@ -51,7 +51,7 @@ class ProtoMapper
 	CSimpleIniA _configData;
 
 	// Self pointer for use in the GLFW callbacks.
-	static ProtoMapper* self;
+	static ProtoMapper* _self;
 
 public:
 	ProtoMapper() = default;
