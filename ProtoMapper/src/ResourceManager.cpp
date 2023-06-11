@@ -18,6 +18,14 @@
 
 #include "ResourceManager.hpp"
 
+ResourceManager::~ResourceManager()
+{
+    _textures.clear();
+    _shaders.clear();
+    _textureRefCount.clear();
+    _shaderRefCount.clear();
+}
+
 template<>
 std::unordered_map<const std::string, Texture2D>& ResourceManager::GetStorageMap(const Texture2D&) { return _textures; }
 

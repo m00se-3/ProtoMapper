@@ -72,6 +72,7 @@ class ResourceManager
 
 public:
 	ResourceManager() = default;
+	~ResourceManager();
 
 	/*
 		Loading, getting, and unloading resources.
