@@ -9,6 +9,8 @@
     "glad",
     "entt",
     "nuklear",
-    "simpleini"
+    "simpleini",
+    "nlohmann-json",
+    "chaiscript"
   ]
 }

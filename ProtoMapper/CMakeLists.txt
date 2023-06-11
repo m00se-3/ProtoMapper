@@ -24,6 +24,7 @@ target_include_directories(
 	${CMAKE_CURRENT_LIST_DIR}/inc
 	${SIMPLEINI_INCLUDE_DIRS}
 	${stb_INCLUDE_DIR}
+	${CHAISCRIPT_INCLUDE_DIRS}
 )
 
 target_link_libraries(
@@ -36,6 +37,7 @@ target_link_libraries(
 	glfw
 	nuklear
 	EnTT::EnTT
+	nlohmann_json::nlohmann_json
 )
 
 target_sources(
