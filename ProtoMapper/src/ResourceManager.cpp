@@ -18,12 +18,48 @@
 
 #include "ResourceManager.hpp"
 
+ResourceManager::ResourceManager()
+    : _stringMap(std::pmr::map<const std::pmr::string, std::pmr::string>(std::pmr::polymorphic_allocator(&_textAllocator)))
+{
+
+}
+
 ResourceManager::~ResourceManager()
 {
     _textures.clear();
     _shaders.clear();
+    _stringMap.clear();
     _textureRefCount.clear();
     _shaderRefCount.clear();
+}
+
+std::string_view ResourceManager::LoadString(const std::string_view& name, const std::string_view& content)
+{
+    auto& str = _stringMap.insert_or_assign(
+        std::pmr::string{name, std::pmr::polymorphic_allocator(&_textAllocator)},
+        std::pmr::string{content, std::pmr::polymorphic_allocator(&_textAllocator)}
+        );
+
+    return std::string_view{str.first->second.c_str(), str.first->second.size()};
+}
+
+std::string_view ResourceManager::GetString(const std::string_view& name)
+{
+    if (_stringMap.count(name.data()) > 0)
+    {
+        auto& result = _stringMap.at(name.data());
+        
+        std::string_view view { result.c_str(), result.size() };
+
+        return view;
+    }
+
+    return std::string_view{};
+}
+
+void ResourceManager::UnloadString(const std::string_view& name)
+{
+    _stringMap.erase(name.data());
 }
 
 template<>

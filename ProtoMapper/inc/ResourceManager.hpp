@@ -21,9 +21,11 @@
 
 #include "Texture.hpp"
 #include "Shader.hpp"
+#include "TextAllocator.hpp"
 
 #include <string>
 #include <string_view>
+#include <memory>
 #include <unordered_map>
 #include <map>
 #include <optional>
@@ -39,11 +41,13 @@ class ResourceManager
 {
 	using IDType = unsigned int;
 	
+	TextAllocator _textAllocator;
 	
 	// Storage maps
 
 	std::unordered_map<const std::string, Shader> _shaders;
 	std::unordered_map<const std::string, Texture2D> _textures;
+	std::pmr::map<const std::pmr::string, std::pmr::string> _stringMap;
 
 	// Reference counting maps
 
@@ -71,8 +75,14 @@ class ResourceManager
 	void DestroyResource(IDType id, ResType temp);
 
 public:
-	ResourceManager() = default;
+	ResourceManager();
 	~ResourceManager();
+
+	// Strings are handled internally, so using the reference counting templates doesn't make sense.
+
+	std::string_view LoadString(const std::string_view& name, const std::string_view& content);
+	std::string_view GetString(const std::string_view& name);
+	void UnloadString(const std::string_view& name);
 
 	/*
 		Loading, getting, and unloading resources.
