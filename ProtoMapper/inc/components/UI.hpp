@@ -20,9 +20,8 @@
 #define PROTOMAPPER_COMPONENTS_UI_HPP
 
 #include "Common.hpp"
-#include "entt/entt.hpp"
 
-#include <vector>
+#include <string_view>
 
 // Forward declarations.
 struct nk_context;
@@ -30,13 +29,13 @@ struct nk_context;
 /*
 	A std::vector of entities that represent the various elements contained within a UI container.
 */
-struct UIStructure
+struct UIWindow
 {
-	std::vector<entt::entity> entities;
+    std::string_view id, title;
 
-	UIStructure() = default;
-	UIStructure(const UIStructure&) = delete;
-	UIStructure(UIStructure&& other);
+	UIWindow() = default;
+	UIWindow(const UIWindow&) = delete;
+	UIWindow(UIWindow&& other);
 };
 
 /*

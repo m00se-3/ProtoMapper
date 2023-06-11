@@ -18,7 +18,7 @@
 
 #include "components/UI.hpp"
 
-UIStructure::UIStructure(UIStructure&& other)
-	: entities(std::move(other.entities))
+UIWindow::UIWindow(UIWindow&& other)
+	: id(other.id.data(), other.id.size()), title(other.title.data(), other.title.size())
 {
 }
