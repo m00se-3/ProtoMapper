@@ -52,7 +52,6 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/inc/Renderer.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Scene.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/ResourceManager.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/TextAllocator.hpp
 
 
 	${CMAKE_CURRENT_LIST_DIR}/inc/components/All.hpp
@@ -69,7 +68,6 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/Renderer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Scene.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ResourceManager.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/TextAllocator.cpp
 
 
 	${CMAKE_CURRENT_LIST_DIR}/src/components/Common.cpp
