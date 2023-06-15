@@ -37,7 +37,7 @@ void Image::Load(const std::filesystem::path& filename)
 	}
 }
 
-void Image::LoadCopy(int w, int h, uint8_t* ptr = nullptr)
+void Image::LoadCopy(int w, int h, uint8_t* ptr)
 {
 	Destroy();
 
