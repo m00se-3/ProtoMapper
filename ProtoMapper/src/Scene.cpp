@@ -43,7 +43,7 @@ bool Scene::Init()
 	fontFile += "/fonts/keep_calm/KeepCalm-Medium.ttf";
 
 	int imgWidth, imgHeight;
-	fontTexture = _resources->LoadResource(Texture2D{}, "KeepCalm-Medium");
+	fontTexture = _resources->LoadTexture("KeepCalm-Medium");
 	fontTexture.Create();
 
 
@@ -180,6 +180,9 @@ void Scene::Cleanup()
 	nk_font_atlas_cleanup(&atlas);
 	nk_font_atlas_clear(&atlas);
 	nk_free(&ctx);
+
+	fontTexture.Reset();
+	_resources->UnloadTexture("KeepCalm-Medium");
 }
 
 nk_context* Scene::Context() { return &ctx; }
