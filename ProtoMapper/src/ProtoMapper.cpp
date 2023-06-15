@@ -30,6 +30,8 @@
 
 ProtoMapper* ProtoMapper::_self = nullptr;
 
+constexpr const size_t InitialTextBufferSize = 4u * 1024u;	// Allocate 4 KB for the text memory buffer. Can change later if needed.
+
 
 void ProtoMapper::DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, [[maybe_unused]]GLsizei length, const GLchar* message, [[maybe_unused]]const void* userParam)
 {
@@ -82,7 +84,12 @@ ProtoMapper::~ProtoMapper()
 	}
 
 	_configData.Reset();
-	_scene.Cleanup();
+	_scene->Cleanup();
+	_scene.reset(nullptr);
+	_renderer.reset(nullptr);
+	_resources.reset(nullptr);
+
+	delete[] _textMemoryBuffer;
 
 	glfwDestroyWindow(_window);
 
@@ -149,7 +156,9 @@ bool ProtoMapper::Configure()
 		Set up the ResourceManager object and hook it up to the resource types it needs to track.
 	*/
 
-	_resources.reset();
+	_textMemoryBuffer = new char[InitialTextBufferSize];
+
+	_resources = std::make_unique<ResourceManager>(_textMemoryBuffer, InitialTextBufferSize);
 
 	Renderer::SetResourceManager(_resources.get());
 	Texture2D::SetResourceManager(_resources.get());
@@ -199,7 +208,7 @@ void ProtoMapper::Run()
 		return;
 	}
 
-	_renderer.reset(new Renderer(_assetsDir));
+	_renderer = std::make_unique<Renderer>(_assetsDir);
 
 	_renderer->SetRenderWindow(_fWidth, _fHeight);
 	_renderer->Init(Renderer::mode::Two);
@@ -209,22 +218,23 @@ void ProtoMapper::Run()
 
 	time::time_point last = time::now();
 
-	_scene.Init();
+	_scene = std::make_unique<Scene>();
+	_scene->Init();
 
 	glfwShowWindow(_window);
 
-	while (_appRunning)
+	while (!glfwWindowShouldClose(_window) && _appRunning)
 	{
 		time::time_point current = time::now();
 		float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		_scene.Update(microseconds * 1000000.f);
+		_scene->Update(microseconds * 1000000.f);
 
-		_scene.DrawNodes();
-		_scene.CompileUI();
-		_scene.DrawUI(_renderer.get());
+		_scene->DrawNodes();
+		_scene->CompileUI();
+		_scene->DrawUI(_renderer.get());
 		
 		glfwSwapBuffers(_window);
 

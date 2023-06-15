@@ -37,15 +37,17 @@ class ProtoMapper
 	std::string _assetsDir;
 	bool _appRunning = true, _mapOpen = true, _panning = false, _fullscreen = true, _configUpdate = false;
 	
-	Scene _scene;
-
 	float _fWidth = 1024.f, _fHeight = 768.f;
 	int _wWidth = 1024, _wHeight = 768;
 
 	GLFWwindow* _window = nullptr;
 	GLFWmonitor* _monitor = nullptr;
+
+	std::unique_ptr <Scene> _scene;
 	std::unique_ptr<Renderer> _renderer;
 	std::unique_ptr<ResourceManager> _resources;
+
+	char* _textMemoryBuffer = nullptr;
 
 	std::string _configFile;
 	CSimpleIniA _configData;
