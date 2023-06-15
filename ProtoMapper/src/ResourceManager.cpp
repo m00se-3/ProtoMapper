@@ -18,26 +18,25 @@
 
 #include "ResourceManager.hpp"
 
-ResourceManager::ResourceManager()
-    : _stringMap(std::pmr::map<const std::pmr::string, std::pmr::string>(std::pmr::polymorphic_allocator(&_textAllocator)))
+ResourceManager::ResourceManager(void* memory, size_t size)
+    : _textResource(memory, size), _textAllocator(&_textResource), _stringMap(std::pmr::map<std::pmr::string, std::pmr::string>(&_textAllocator))
 {
 
 }
 
 ResourceManager::~ResourceManager()
-{
+{    
     _textures.clear();
     _shaders.clear();
     _stringMap.clear();
-    _textureRefCount.clear();
-    _shaderRefCount.clear();
+    _textAllocator.release();
 }
 
-std::string_view ResourceManager::LoadString(const std::string_view& name, const std::string_view& content)
+std::string_view ResourceManager::LoadString(const std::string& name, const std::string& content)
 {
-    auto& str = _stringMap.insert_or_assign(
-        std::pmr::string{name, std::pmr::polymorphic_allocator(&_textAllocator)},
-        std::pmr::string{content, std::pmr::polymorphic_allocator(&_textAllocator)}
+    auto str = _stringMap.emplace(
+        std::pmr::string{name, &_textAllocator},
+        std::pmr::string{content, &_textAllocator}
         );
 
     return std::string_view{str.first->second.c_str(), str.first->second.size()};
@@ -47,7 +46,7 @@ std::string_view ResourceManager::GetString(const std::string_view& name)
 {
     if (_stringMap.count(name.data()) > 0)
     {
-        auto& result = _stringMap.at(name.data());
+        auto& result = _stringMap.at(std::pmr::string{ name.data(), name.size(), &_textAllocator });
         
         std::string_view view { result.c_str(), result.size() };
 
@@ -59,31 +58,127 @@ std::string_view ResourceManager::GetString(const std::string_view& name)
 
 void ResourceManager::UnloadString(const std::string_view& name)
 {
-    _stringMap.erase(name.data());
+    _stringMap.erase(std::pmr::string{ name.data(), name.size(), &_textAllocator });
 }
 
-template<>
-std::unordered_map<const std::string, Texture2D>& ResourceManager::GetStorageMap(const Texture2D&) { return _textures; }
-
-template<>
-std::unordered_map<const std::string, Shader>& ResourceManager::GetStorageMap(const Shader&) { return _shaders; }
-
-template<>
-std::unordered_map<ResourceManager::IDType, uint16_t>& ResourceManager::GetReferenceMap(const Texture2D&) { return _textureRefCount; }
-
-template<>
-std::unordered_map<ResourceManager::IDType, uint16_t>& ResourceManager::GetReferenceMap(const Shader&) { return _shaderRefCount; }
-
-template<>
-void ResourceManager::DestroyResource(IDType id, Texture2D temp)
+Texture2D ResourceManager::LoadTexture(const std::string_view& name)
 {
-	temp.ID = id;
-	temp.Destroy();
+    if (_textures.count(std::string{name.data(), name.size()}) > 0)
+    {
+        auto& res = _textures.at(std::string{name.data(), name.size()});
+
+        return Texture2D{ res };
+    }
+
+    auto result = _textures.emplace(std::string{name.data(), name.size()}, Texture2D{});
+
+    return result.first->second;
 }
 
-template<>
-void ResourceManager::DestroyResource(IDType id, Shader temp)
+Texture2D ResourceManager::GetTexture(const std::string_view& name)
 {
-	temp.ID = id;
-	temp.Destroy();
+    if (_textures.count(std::string{name.data(), name.size()}) > 0)
+    {
+        return _textures.at(std::string{name.data(), name.size()});
+    }
+
+    return Texture2D{};
+}
+
+void ResourceManager::UnloadTexture(const std::string_view& name)
+{
+    if (_textures.count(std::string{name.data(), name.size()}) > 0)
+    {
+        _textures.erase(std::string{name.data(), name.size()});
+    }
+}
+
+void ResourceManager::AddRefTexture(IDType id)
+{
+    if (_textureRefCount.count(id) == 0u)
+    {
+        _textureRefCount.insert_or_assign(id, 1u);
+    }
+    else
+    {
+        auto& count = _textureRefCount.at(id);
+        ++count;
+    }
+}
+
+void ResourceManager::SubRefTexture(IDType id)
+{
+    if (_textureRefCount.count(id) > 0u)
+    {
+        auto& count = _textureRefCount.at(id);
+        --count;
+
+        if (count == 0u)
+        {
+            auto tex = Texture2D{};
+            tex.ID = id;
+            tex.Destroy();
+        }
+    }
+}
+
+Shader ResourceManager::LoadShader(const std::string_view& name)
+{
+    if (_shaders.count(std::string{ name.data(), name.size() }) > 0)
+    {
+        auto& res = _shaders.at(std::string{name.data(), name.size()});
+
+        return Shader{ res };
+    }
+
+    auto result = _shaders.emplace(name, Shader{});
+
+    return result.first->second;
+}
+
+Shader ResourceManager::GetShader(const std::string_view& name)
+{
+    if (_shaders.count(std::string{ name.data(), name.size() }) > 0)
+    {
+        return _shaders.at(std::string{ name.data(), name.size() });
+    }
+
+    return Shader{};
+}
+
+void ResourceManager::UnloadShader(const std::string_view& name)
+{
+    if (_shaders.count(std::string{ name.data(), name.size() }) > 0)
+    {
+        _shaders.erase(std::string{ name.data(), name.size() });
+    }
+}
+
+void ResourceManager::AddRefShader(IDType id)
+{
+    if (_shaderRefCount.count(id) == 0u)
+    {
+        _shaderRefCount.insert_or_assign(id, 1u);
+    }
+    else
+    {
+        auto& count = _shaderRefCount.at(id);
+        ++count;
+    }
+}
+
+void ResourceManager::SubRefShader(IDType id)
+{
+    if (_shaderRefCount.count(id) > 0u)
+    {
+        auto& count = _shaderRefCount.at(id);
+        --count;
+
+        if (count == 0u)
+        {
+            auto shad = Shader{};
+            shad.ID = id;
+            shad.Destroy();
+        }
+    }
 }

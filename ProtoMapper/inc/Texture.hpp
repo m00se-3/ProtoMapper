@@ -46,6 +46,10 @@ struct Texture2D
 	Texture2D& operator=(const Texture2D& rhs);
 
 	Texture2D& Create();
+
+	// Resets the current reference object to 0.
+	void Reset();
+
 	void Destroy();
 	void Bind(unsigned int slot = 0u);
 	void Bind(unsigned int slot = 0u) const;

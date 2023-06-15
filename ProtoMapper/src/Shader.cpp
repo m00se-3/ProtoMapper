@@ -36,7 +36,7 @@ std::pair<unsigned int, unsigned int> Shader::CreateBasic(const char* srcVert, c
 	glDeleteShader(vs);
 	glDeleteShader(fs);
 
-	_manager->AddReference(ID, Shader{});
+	_manager->AddRefShader(ID);
 
 	return std::make_pair(vs, fs);
 }
@@ -73,6 +73,8 @@ unsigned int Shader::Attach(const char* src, unsigned int type)
 
 		return shader;
 }
+
+void Shader::Reset() { ID = 0u; }
 
 void Shader::Link() 
 {
@@ -127,16 +129,16 @@ void Shader::Uniforms(const std::function<void()>& func)
 Shader::Shader(const Shader& other)
 	:ID(other.ID)
 {
-	_manager->AddReference(ID, Shader{});
+	_manager->AddRefShader(ID);
 }
 
 Shader::Shader(IDType id)
 	:ID(id)
 {
-	_manager->AddReference(ID, Shader{});
+	_manager->AddRefShader(ID);
 }
 
-Shader::~Shader() { _manager->SubReference(ID, Shader{}); }
+Shader::~Shader() { _manager->SubRefShader(ID); }
 
 bool Shader::operator==(const Shader& rhs)
 {
@@ -150,10 +152,10 @@ bool Shader::operator==(const Shader& rhs) const
 
 Shader& Shader::operator=(const Shader& rhs)
 {
-	if (ID != 0u) _manager->SubReference(ID, Shader{});
+	if (ID != 0u) _manager->SubRefShader(ID);
 
 	ID = rhs.ID;
-	_manager->AddReference(ID, Shader{});
+	_manager->AddRefShader(ID);
 
 	return *this;
 }

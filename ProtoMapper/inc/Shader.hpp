@@ -47,6 +47,9 @@ struct Shader
 	*/
 	std::pair<unsigned int, unsigned int> CreateBasic(const char* srcVert, const char* srcFrag);
 
+	// Resets the current reference object to 0.
+	void Reset();
+
 	/*
 		Attach an individual shader object and return the id.
 	*/

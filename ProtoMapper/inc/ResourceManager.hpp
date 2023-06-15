@@ -21,8 +21,8 @@
 
 #include "Texture.hpp"
 #include "Shader.hpp"
-#include "TextAllocator.hpp"
 
+#include <memory_resource>
 #include <string>
 #include <string_view>
 #include <memory>
@@ -41,132 +41,51 @@ class ResourceManager
 {
 	using IDType = unsigned int;
 	
-	TextAllocator _textAllocator;
+	std::pmr::monotonic_buffer_resource _textResource;
+	std::pmr::synchronized_pool_resource _textAllocator;
 	
 	// Storage maps
 
-	std::unordered_map<const std::string, Shader> _shaders;
-	std::unordered_map<const std::string, Texture2D> _textures;
-	std::pmr::map<const std::pmr::string, std::pmr::string> _stringMap;
+	std::unordered_map<std::string, Shader> _shaders;
+	std::unordered_map<std::string, Texture2D> _textures;
+	std::pmr::map<std::pmr::string, std::pmr::string> _stringMap;
 
 	// Reference counting maps
 
 	std::unordered_map<IDType, uint16_t> _shaderRefCount;
 	std::unordered_map<IDType, uint16_t> _textureRefCount;
 
-	/*
-		The following private functions must be specialized in the corresponding .cpp file.
-	*/
-
-	/*
-		Map retrieving functions.
-	*/
-
-	template<typename ResType>
-	std::unordered_map<const std::string, ResType>& GetStorageMap(const ResType&);
-
-	template<typename ResType>
-	std::unordered_map<unsigned int, uint16_t>& GetReferenceMap(const ResType&);
-
-
-	// Resource Destruction.
-
-	template<typename ResType>
-	void DestroyResource(IDType id, ResType temp);
 
 public:
-	ResourceManager();
+	ResourceManager(void* memory, size_t size);
 	~ResourceManager();
 
 	// Strings are handled internally, so using the reference counting templates doesn't make sense.
 
-	std::string_view LoadString(const std::string_view& name, const std::string_view& content);
+	std::string_view LoadString(const std::string& name, const std::string& content);
 	std::string_view GetString(const std::string_view& name);
 	void UnloadString(const std::string_view& name);
 
 	/*
-		Loading, getting, and unloading resources.
+		Loading, getting, and unloading reference counted resources.
 	*/
 
-	template<typename ResType, typename... Args>
-	ResType LoadResource(const ResType&, const std::string_view& name, Args&&... args)
-	{
-		auto& map = GetStorageMap(ResType{});
+	Texture2D LoadTexture(const std::string_view& name);
+	Texture2D GetTexture(const std::string_view& name);
+	void UnloadTexture(const std::string_view& name);
 
-		if (map.count(name.data()))
-		{
-			ResType& res = map.at(name.data());
-
-			return ResType{ res };
-		}
-
-		auto result = map.insert_or_assign(name.data(), ResType{ std::forward<Args>(args)... });
-
-		return result.first->second;
-	}
-
-	template<typename ResType>
-	ResType GetResource(const ResType&, const std::string_view& name)
-	{
-		auto& map = GetStorageMap(ResType{});
-		
-		if (map.count(name.data()) > 0)
-		{
-			return map.at(name.data());
-		}
-
-		return ResType{};
-	}
-
-	template<typename ResType>
-	void UnloadResource(const ResType&, const std::string_view& name)
-	{
-		auto& map = GetStorageMap(ResType{});
-
-		if (map.count(name.data()) > 0)
-		{
-			map.erase(name.data());
-		 }
-	}
-
+	Shader LoadShader(const std::string_view& name);
+	Shader GetShader(const std::string_view& name);
+	void UnloadShader(const std::string_view& name);
 
 	/*
-		Reference counting functions. Do not touch in client code.
+		Reference counting functions.
 	*/
 
-	template<typename ResType>
-	void AddReference(IDType id, const ResType&)
-	{
-		auto& map = GetReferenceMap(ResType{});
-
-		if (map.count(id) == 0u)
-		{
-			map.insert_or_assign(id, 1u);
-		}
-		else
-		{
-			auto& count = map.at(id);
-			++count;
-		}
-	}
-
-	template<typename ResType>
-	void SubReference(IDType id, const ResType&)
-	{
-		auto& map = GetReferenceMap(ResType{});
-
-		if (map.count(id) > 0u)
-		{
-			auto& count = map.at(id);
-			--count;
-
-			if (count == 0u)
-			{
-				DestroyResource(id, ResType{});
-			}
-		}
-	}
-
+	void AddRefTexture(IDType id);
+	void SubRefTexture(IDType id);
+	void AddRefShader(IDType id);
+	void SubRefShader(IDType id);
 };
 
 #endif // !PROTOMAPPER_RESOURCE_MANAGER_HPP

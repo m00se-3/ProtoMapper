@@ -33,13 +33,13 @@ void Texture2D::SetResourceManager(ResourceManager* ptr)
 Texture2D::Texture2D(const Texture2D& other)
 	:ID(other.ID)
 {
-	_manager->AddReference(ID, Texture2D{});
+	_manager->AddRefTexture(ID);
 }
 
 Texture2D::Texture2D(IDType id)
 	:ID(id)
 {
-	_manager->AddReference(ID, Texture2D{});
+	_manager->AddRefTexture(ID);
 }
 
 bool Texture2D::operator==(const Texture2D& rhs)
@@ -54,10 +54,10 @@ bool Texture2D::operator==(const Texture2D& rhs) const
 
 Texture2D& Texture2D::operator=(const Texture2D& rhs)
 {
-	if (ID != 0u) _manager->SubReference(ID, Texture2D{});
+	if (ID != 0u) _manager->SubRefTexture(ID);
 
 	ID = rhs.ID;
-	_manager->AddReference(ID, Texture2D{});
+	_manager->AddRefTexture(ID);
 
 	return *this;
 }
@@ -72,10 +72,12 @@ Texture2D& Texture2D::Create()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	_manager->AddReference(ID, Texture2D{});
+	_manager->AddRefTexture(ID);
 
 	return *this;
 }
+
+void Texture2D::Reset() { ID = 0u; }
 
 void Texture2D::Destroy() { glDeleteTextures(1, &ID);  }
 
@@ -122,5 +124,5 @@ Texture2D& Texture2D::GenerateBlank(int w, int h, unsigned int colorValue)
 Texture2D::IDType Texture2D::Target() const { return GL_TEXTURE_2D; }
 
 
-Texture2D::~Texture2D() { _manager->SubReference(ID, Texture2D{}); }
+Texture2D::~Texture2D() { _manager->SubRefTexture(ID); }
 
