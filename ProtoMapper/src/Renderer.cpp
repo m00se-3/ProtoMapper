@@ -37,8 +37,8 @@ Renderer::Renderer(const std::string& dir)
 		Open the default shader sources and extract the text.
 	*/
 
-	std::filesystem::path vs = dir + "/shaders/DefaultVS.glsl",
-		fs = dir + "/shaders/DefaultFS.glsl";
+	std::filesystem::path vs = dir + "/assets/shaders/DefaultVS.glsl",
+		fs = dir + "/assets/shaders/DefaultFS.glsl";
 
 	// File handles for the shader sources.
 

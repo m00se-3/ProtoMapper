@@ -26,6 +26,7 @@
 
 #include <string>
 #include <memory>
+#include <filesystem>
 
 // Forward declarations.
 class Renderer;
@@ -34,7 +35,7 @@ class ResourceManager;
 class ProtoMapper
 {
 	const std::string _title = "ProtoMapper - ";
-	std::string _assetsDir;
+	std::filesystem::path _rootDir;
 	bool _appRunning = true, _mapOpen = true, _panning = false, _fullscreen = true, _configUpdate = false;
 	
 	float _fWidth = 1024.f, _fHeight = 768.f;
@@ -49,7 +50,7 @@ class ProtoMapper
 
 	char* _textMemoryBuffer = nullptr;
 
-	std::string _configFile;
+	std::filesystem::path _configFile;
 	CSimpleIniA _configData;
 
 	// Self pointer for use in the GLFW callbacks.

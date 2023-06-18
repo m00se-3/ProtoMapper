@@ -39,8 +39,8 @@ void Scene::SetResourceManager(ResourceManager* ptr) { _resources = ptr; }
 
 bool Scene::Init()
 {
-	std::string fontFile = ASSETS_DIR;
-	fontFile += "/fonts/keep_calm/KeepCalm-Medium.ttf";
+	std::string fontFile = ROOT_DIR;
+	fontFile += "/assets/fonts/keep_calm/KeepCalm-Medium.ttf";
 
 	int imgWidth, imgHeight;
 	fontTexture = _resources->LoadTexture("KeepCalm-Medium");

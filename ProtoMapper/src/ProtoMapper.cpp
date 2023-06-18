@@ -26,7 +26,6 @@
 #include "stb_image.h"
 
 #include <chrono>
-#include <filesystem>
 
 ProtoMapper* ProtoMapper::_self = nullptr;
 
@@ -115,18 +114,18 @@ bool ProtoMapper::Configure()
 
 #if defined(_DEBUG_) || defined(_RELEASE_)
 
-	_assetsDir = ASSETS_DIR;
-	_configFile = _assetsDir + "/config/config.ini";
+	_rootDir = ROOT_DIR;
+	_configFile = _rootDir.string() + "/config/config.ini";
 
 #else
-	_assetsDir = "./assets"
-	_configFile = _assetsDir + "/config/config.ini"
+	_rootDir = "."
+	_configFile = _rootDir.string() + "/config/config.ini"
 
 #endif // _DEBUG_
 
 		if (std::filesystem::exists(_configFile))
 		{
-			auto err = _configData.LoadFile(_configFile.c_str());
+			auto err = _configData.LoadFile(_configFile.string().c_str());
 
 			if (err < 0) return false;
 		}
@@ -208,7 +207,7 @@ void ProtoMapper::Run()
 		return;
 	}
 
-	_renderer = std::make_unique<Renderer>(_assetsDir);
+	_renderer = std::make_unique<Renderer>(_rootDir.string().c_str());
 
 	_renderer->SetRenderWindow(_fWidth, _fHeight);
 	_renderer->Init(Renderer::mode::Two);
