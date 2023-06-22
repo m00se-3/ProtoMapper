@@ -3,7 +3,11 @@
 #
 cmake_minimum_required (VERSION 3.21)
 
-project ("ProtoMapper" LANGUAGES CXX)
+project ("ProtoMapper" 
+VERSION "$ENV{PROGRAM_VERSION}"
+DESCRIPTION "$ENV{PROGRAM_DESCRIPTION}"
+HOMEPAGE_URL "$ENV{PROGRAM_URL}"
+LANGUAGES CXX)
 
 list(APPEND flags "-Wall" "-Wextra" "-Wpedantic" "-Wno-newline-eof" "-Wno-c++98-compat" "-Wno-c++98-compat-pedantic")
 

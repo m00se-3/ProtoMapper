@@ -180,11 +180,11 @@ void ProtoMapper::Run()
 	
 	if (_fullscreen)
 	{
-		_window = glfwCreateWindow(_wWidth, _wHeight, std::string{_title + VERSION_NUMBER}.c_str(), _monitor, nullptr);
+		_window = glfwCreateWindow(_wWidth, _wHeight, _title.c_str(), _monitor, nullptr);
 	}
 	else
 	{
-		_window = glfwCreateWindow(_wWidth, _wHeight, std::string{_title + VERSION_NUMBER}.c_str(), nullptr, nullptr);
+		_window = glfwCreateWindow(_wWidth, _wHeight, _title.c_str(), nullptr, nullptr);
 	}
 
 	if (_window)

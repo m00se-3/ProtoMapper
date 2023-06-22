@@ -34,7 +34,7 @@ class ResourceManager;
 
 class ProtoMapper
 {
-	const std::string _title = "ProtoMapper - ";
+	const std::string _title = "ProtoMapper";
 	std::filesystem::path _rootDir;
 	bool _appRunning = true, _mapOpen = true, _panning = false, _fullscreen = true, _configUpdate = false;
 	

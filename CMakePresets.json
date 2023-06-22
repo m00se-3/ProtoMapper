@@ -13,6 +13,8 @@
         },
         "environment": {
           "PROGRAM_VERSION": "0.1.0",
+          "PROGRAM_DESCRIPTION": "A prototyping tool for level design, map generation, and pathfinding algorithms.",
+          "PROGRAM_URL": "https://github.com/m00se-3/ProtoMapper",
           "ROOT_FOLDER": "${sourceDir}"
         }
       },
