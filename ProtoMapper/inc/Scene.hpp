@@ -29,7 +29,7 @@
 
 // We have to explicitly undefine NK_IMPLEMENTATION here to avoid linking errors.
 #undef NK_IMPLEMENTATION
-#include "nuklear.h"
+#include "nuklear/nuklear.h"
 #include "entt/entt.hpp"
 
 #include "Texture.hpp"

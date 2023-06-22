@@ -156,8 +156,8 @@ bool ProtoMapper::Configure()
 	_configFile = _rootDir.string() + "/config/config.ini";
 
 #else
-	_rootDir = "."
-	_configFile = _rootDir.string() + "/config/config.ini"
+	_rootDir = ".";
+	_configFile = _rootDir.string() + "/config/config.ini";
 
 #endif // _DEBUG_
 
