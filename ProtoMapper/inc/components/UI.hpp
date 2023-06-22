@@ -27,7 +27,7 @@
 struct nk_context;
 
 /*
-	A std::vector of entities that represent the various elements contained within a UI container.
+	Represents a window and it's identifier.
 */
 struct UIWindow
 {
