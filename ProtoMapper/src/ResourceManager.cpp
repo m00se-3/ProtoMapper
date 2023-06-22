@@ -98,6 +98,7 @@ void ResourceManager::UnloadTexture(const std::string_view& name)
 
         auto& reference = _textureRefCount.at(texture.ID);
         reference.first = true;
+        _textures.erase(std::string{name.data(), name.size()});
     }
 }
 
@@ -167,6 +168,7 @@ void ResourceManager::UnloadShader(const std::string_view& name)
 
         auto& reference = _shaderRefCount.at(shader.ID);
         reference.first = true;
+        _shaders.erase(std::string{name.data(), name.size()});
     }
 }
 
