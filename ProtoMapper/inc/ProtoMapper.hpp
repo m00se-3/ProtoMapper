@@ -31,6 +31,7 @@
 // Forward declarations.
 class Renderer;
 class ResourceManager;
+struct nk_context;
 
 class ProtoMapper
 {
@@ -60,8 +61,14 @@ public:
 	ProtoMapper() = default;
 	~ProtoMapper();
 
+	static ProtoMapper* GetInstance();
+	static int GLFWKeytoNKKey(int key, int mods);
+	static int GLFWButtontoNKButton(int button);
+
 	bool Configure();
 	void Run();
+
+	nk_context* GetContext();
 
 	static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
@@ -74,6 +81,7 @@ public:
 	static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
 	static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
 	static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
+	static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
 	static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
 	static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
 
