@@ -87,9 +87,17 @@ Texture2D ResourceManager::GetTexture(const std::string_view& name)
 
 void ResourceManager::UnloadTexture(const std::string_view& name)
 {
+    /*
+        When we unload a resource, we flag it for removal until the
+        las reference to it is destroyed.
+    */
+    
     if (_textures.count(std::string{name.data(), name.size()}) > 0)
     {
-        _textures.erase(std::string{name.data(), name.size()});
+        auto& texture = _textures.at(std::string{name.data(), name.size()});
+
+        auto& reference = _textureRefCount.at(texture.ID);
+        reference.first = true;
     }
 }
 
@@ -97,12 +105,12 @@ void ResourceManager::AddRefTexture(IDType id)
 {
     if (_textureRefCount.count(id) == 0u)
     {
-        _textureRefCount.insert_or_assign(id, 1u);
+        _textureRefCount.insert_or_assign(id, std::make_pair(false, 1u));
     }
     else
     {
         auto& count = _textureRefCount.at(id);
-        ++count;
+        ++count.second;
     }
 }
 
@@ -111,9 +119,9 @@ void ResourceManager::SubRefTexture(IDType id)
     if (_textureRefCount.count(id) > 0u)
     {
         auto& count = _textureRefCount.at(id);
-        --count;
+        --count.second;
 
-        if (count == 0u)
+        if (count.first && count.second == 0u)
         {
             auto tex = Texture2D{};
             tex.ID = id;
@@ -148,9 +156,17 @@ Shader ResourceManager::GetShader(const std::string_view& name)
 
 void ResourceManager::UnloadShader(const std::string_view& name)
 {
+    /*
+        When we unload a resource, we flag it for removal until the
+        las reference to it is destroyed.
+    */
+    
     if (_shaders.count(std::string{ name.data(), name.size() }) > 0)
     {
-        _shaders.erase(std::string{ name.data(), name.size() });
+        auto& shader = _shaders.at(std::string{name.data(), name.size()});
+
+        auto& reference = _shaderRefCount.at(shader.ID);
+        reference.first = true;
     }
 }
 
@@ -158,12 +174,12 @@ void ResourceManager::AddRefShader(IDType id)
 {
     if (_shaderRefCount.count(id) == 0u)
     {
-        _shaderRefCount.insert_or_assign(id, 1u);
+        _shaderRefCount.insert_or_assign(id, std::make_pair(false, 1u));
     }
     else
     {
         auto& count = _shaderRefCount.at(id);
-        ++count;
+        ++count.second;
     }
 }
 
@@ -172,9 +188,9 @@ void ResourceManager::SubRefShader(IDType id)
     if (_shaderRefCount.count(id) > 0u)
     {
         auto& count = _shaderRefCount.at(id);
-        --count;
+        --count.second;
 
-        if (count == 0u)
+        if (count.first && count.second == 0u)
         {
             auto shad = Shader{};
             shad.ID = id;

@@ -44,7 +44,7 @@ class ProtoMapper
 	GLFWwindow* _window = nullptr;
 	GLFWmonitor* _monitor = nullptr;
 
-	std::unique_ptr <Scene> _scene;
+	std::unique_ptr<Scene> _scene;
 	std::unique_ptr<Renderer> _renderer;
 	std::unique_ptr<ResourceManager> _resources;
 

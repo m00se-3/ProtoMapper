@@ -52,8 +52,8 @@ class ResourceManager
 
 	// Reference counting maps
 
-	std::unordered_map<IDType, uint16_t> _shaderRefCount;
-	std::unordered_map<IDType, uint16_t> _textureRefCount;
+	std::unordered_map<IDType, std::pair<bool, uint16_t>> _shaderRefCount;
+	std::unordered_map<IDType, std::pair<bool, uint16_t>> _textureRefCount;
 
 
 public:
