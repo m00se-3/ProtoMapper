@@ -52,6 +52,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/inc/Scene.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/ResourceManager.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/TS_Queue.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/UIContainer.hpp
 
 
 	${CMAKE_CURRENT_LIST_DIR}/inc/components/All.hpp
@@ -68,6 +69,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/Renderer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Scene.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ResourceManager.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/UIContainer.cpp
 
 
 	${CMAKE_CURRENT_LIST_DIR}/src/components/Common.cpp
