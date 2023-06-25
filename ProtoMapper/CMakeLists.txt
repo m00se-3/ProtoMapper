@@ -51,6 +51,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/inc/Renderer.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/Scene.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/ResourceManager.hpp
+	${CMAKE_CURRENT_LIST_DIR}/inc/TS_Queue.hpp
 
 
 	${CMAKE_CURRENT_LIST_DIR}/inc/components/All.hpp
