@@ -23,6 +23,7 @@
 #include "GLFW/glfw3.h"
 #include "SimpleIni.h"
 #include "Scene.hpp"
+#include "UIContainer.hpp"
 
 #include <string>
 #include <memory>
@@ -31,7 +32,6 @@
 // Forward declarations.
 class Renderer;
 class ResourceManager;
-struct nk_context;
 
 class ProtoMapper
 {
@@ -46,6 +46,7 @@ class ProtoMapper
 	GLFWmonitor* _monitor = nullptr;
 
 	std::unique_ptr<Scene> _scene;
+	std::unique_ptr<UIContainer> _ui;
 	std::unique_ptr<Renderer> _renderer;
 	std::unique_ptr<ResourceManager> _resources;
 
@@ -57,6 +58,7 @@ class ProtoMapper
 	// Self pointer for use in the GLFW callbacks.
 	static ProtoMapper* _self;
 
+	
 public:
 	ProtoMapper() = default;
 	~ProtoMapper();
@@ -67,6 +69,8 @@ public:
 
 	bool Configure();
 	void Run();
+	void GetUILock();
+	void ReleaseUILock();
 
 	nk_context* GetContext();
 

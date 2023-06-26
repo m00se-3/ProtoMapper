@@ -26,6 +26,7 @@
 #include "stb_image.h"
 
 #include <chrono>
+#include <functional>
 
 ProtoMapper* ProtoMapper::_self = nullptr;
 
@@ -66,7 +67,9 @@ void ProtoMapper::KeyboardEventCallback(GLFWwindow* window, int keyn, int scanco
 
 	if (key > -1)
 	{
+		self->GetUILock();
 		nk_input_key(self->GetContext(), (nk_keys)key, (action == GLFW_PRESS || action == GLFW_REPEAT));
+		self->ReleaseUILock();
 	}
 }
 
@@ -74,7 +77,9 @@ void ProtoMapper::TextEventCallback(GLFWwindow* window, unsigned int codepoint)
 {
 	auto* self = ProtoMapper::GetInstance();
 
+	self->GetUILock();
 	nk_input_unicode(self->GetContext(), codepoint);
+	self->ReleaseUILock();
 }
 
 void ProtoMapper::MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods)
@@ -87,7 +92,9 @@ void ProtoMapper::MouseButtonEventCallback(GLFWwindow* window, int button, int a
 
 	if (result > -1)
 	{
+		self->GetUILock();
 		nk_input_button(self->GetContext(), (nk_buttons)result, (int)std::floor(mx), (int)std::floor(my), (action == GLFW_PRESS));
+		self->ReleaseUILock();
 	}
 	
 }
@@ -97,13 +104,19 @@ void ProtoMapper::MouseButtonEventCallback(GLFWwindow* window, int button, int a
 void ProtoMapper::MouseMotionEventCallback(GLFWwindow*, double x, double y)
 {
 	auto* self = ProtoMapper::GetInstance();
+
+	self->GetUILock();
 	nk_input_motion(self->GetContext(), (int)std::floor(x), (int)std::floor(y));
+	self->ReleaseUILock();
 }
 
 void ProtoMapper::MouseScrollEventCallback(GLFWwindow* window, double offX, double offY)
 {
 	auto* self = ProtoMapper::GetInstance();
+
+	self->GetUILock();
 	nk_input_scroll(self->GetContext(), nk_vec2((float)offX, (float)offY));
+	self->ReleaseUILock();
 }
 
 void ProtoMapper::DropEventCallback(GLFWwindow* window, int count, const char** paths)
@@ -111,7 +124,7 @@ void ProtoMapper::DropEventCallback(GLFWwindow* window, int count, const char** 
 	auto* self = ProtoMapper::GetInstance();
 }
 
-nk_context* ProtoMapper::GetContext() { return _scene->Context(); }
+nk_context* ProtoMapper::GetContext() { return _ui->Context(); }
 
 ProtoMapper::~ProtoMapper() 
 {
@@ -123,6 +136,7 @@ ProtoMapper::~ProtoMapper()
 	_configData.Reset();
 	_scene->Cleanup();
 	_scene.reset(nullptr);
+	_ui.reset(nullptr);
 	_renderer.reset(nullptr);
 	_resources.reset(nullptr);
 
@@ -201,6 +215,7 @@ bool ProtoMapper::Configure()
 	Texture2D::SetResourceManager(_resources.get());
 	Shader::SetResourceManager(_resources.get());
 	Scene::SetResourceManager(_resources.get());
+	UIContainer::SetResourceManager(_resources.get());
 
 	return true;
 }
@@ -256,7 +271,9 @@ void ProtoMapper::Run()
 
 	time::time_point last = time::now();
 
-	_scene = std::make_unique<Scene>();
+	_ui = std::make_unique<UIContainer>();
+
+	_scene = std::make_unique<Scene>(_ui.get());
 	_scene->Init();
 
 	glfwShowWindow(_window);
@@ -271,8 +288,8 @@ void ProtoMapper::Run()
 		_scene->Update(microseconds * 1000000.f);
 
 		_scene->DrawNodes();
-		_scene->CompileUI();
-		_scene->DrawUI(_renderer.get());
+		_ui->CompileUI();
+		_ui->DrawUI(_renderer.get());
 		
 		glfwSwapBuffers(_window);
 
@@ -280,12 +297,16 @@ void ProtoMapper::Run()
 			Capture input events for the GUI and the simulation.
 		*/
 
-		nk_input_begin(_scene->Context());
+		nk_input_begin(_ui->Context());
 		glfwPollEvents();
-		nk_input_end(_scene->Context());
+		nk_input_end(_ui->Context());
 	}
 
 }
+
+void ProtoMapper::GetUILock() { _ui->Lock(); }
+
+void ProtoMapper::ReleaseUILock() { _ui->Unlock(); }
 
 int ProtoMapper::GLFWKeytoNKKey(int key, int mods)
 {
