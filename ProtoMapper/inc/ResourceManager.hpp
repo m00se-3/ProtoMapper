@@ -29,6 +29,7 @@
 #include <unordered_map>
 #include <map>
 #include <optional>
+#include <shared_mutex>
 
 /*
 	The ResouceManager is in charge of storing shaders, textures, and other external data resources.
@@ -40,6 +41,8 @@
 class ResourceManager
 {
 	using IDType = unsigned int;
+
+	std::shared_mutex _mutex;
 	
 	std::pmr::monotonic_buffer_resource _textResource;
 	std::pmr::synchronized_pool_resource _textAllocator;
@@ -59,6 +62,11 @@ class ResourceManager
 public:
 	ResourceManager(void* memory, size_t size);
 	~ResourceManager();
+
+	void Lock();
+	void Unlock();
+	void Shared_Lock();
+	void Shared_Unlock();
 
 	// Strings are handled internally, so using the reference counting templates doesn't make sense.
 

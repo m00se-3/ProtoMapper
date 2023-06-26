@@ -32,6 +32,26 @@ ResourceManager::~ResourceManager()
     _textAllocator.release();
 }
 
+void ResourceManager::Lock()
+{
+    _mutex.lock();
+}
+
+void ResourceManager::Unlock()
+{
+    _mutex.unlock();
+}
+
+void ResourceManager::Shared_Lock()
+{
+    _mutex.lock_shared();
+}
+
+void ResourceManager::Shared_Unlock()
+{
+    _mutex.unlock_shared();
+}
+
 std::string_view ResourceManager::LoadString(const std::string& name, const std::string& content)
 {
     auto str = _stringMap.emplace(
