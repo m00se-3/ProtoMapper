@@ -23,8 +23,6 @@
 #include "UIContainer.hpp"
 
 
-void Scene::SetResourceManager(ResourceManager* ptr) { _resources = ptr; }
-
 Scene::Scene(UIContainer* ptr)
 	: _uiInternal(ptr)
 {

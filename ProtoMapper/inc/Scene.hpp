@@ -81,8 +81,6 @@ public:
 
 	entt::registry& Manager();
 
-	static void SetResourceManager(ResourceManager* ptr);
-
 };
 
 #endif // !PROTOMAPPER_SCENE_HPP
