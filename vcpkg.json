@@ -10,7 +10,6 @@
     "entt",
     "nuklear",
     "simpleini",
-    "nlohmann-json",
-    "chaiscript"
+    "nlohmann-json"
   ]
 }

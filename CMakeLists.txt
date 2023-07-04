@@ -18,7 +18,6 @@ find_package(stb REQUIRED)
 find_package(unofficial-nuklear CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_path(CHAISCRIPT_INCLUDE_DIRS "chaiscript/chaiscript.hpp")
 find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 
 # Include sub-projects.

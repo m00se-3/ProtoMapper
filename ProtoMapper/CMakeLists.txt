@@ -23,7 +23,6 @@ target_include_directories(
 	${CMAKE_CURRENT_LIST_DIR}/inc
 	${SIMPLEINI_INCLUDE_DIRS}
 	${stb_INCLUDE_DIR}
-	${CHAISCRIPT_INCLUDE_DIRS}
 )
 
 target_link_libraries(
