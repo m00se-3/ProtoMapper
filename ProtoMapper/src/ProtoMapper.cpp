@@ -212,10 +212,9 @@ bool ProtoMapper::Configure()
 	_resources = std::make_unique<ResourceManager>(_textMemoryBuffer, InitialTextBufferSize);
 
 	Renderer::SetResourceManager(_resources.get());
-	Texture2D::SetResourceManager(_resources.get());
-	Shader::SetResourceManager(_resources.get());
-	Scene::SetResourceManager(_resources.get());
-	UIContainer::SetResourceManager(_resources.get());
+	Texture2D::SetResourceManager(_resources->Textures());
+	Shader::SetResourceManager(_resources->Shaders());
+	UIContainer::SetResourceManager(_resources->Textures());
 
 	return true;
 }
