@@ -111,6 +111,7 @@ public:
 	Texture2DManager() = default;
 	Texture2DManager(const Texture2DManager&) = delete;
 	Texture2DManager(Texture2DManager&&) = delete;
+	~Texture2DManager();
 
 	Texture2D Load(const std::string_view& name);
 	Texture2D Get(const std::string_view& name);
@@ -133,6 +134,7 @@ public:
 	ShaderManager() = default;
 	ShaderManager(const ShaderManager&) = delete;
 	ShaderManager(ShaderManager&&) = delete;
+	~ShaderManager();
 
 	Shader Load(const std::string_view& name);
 	Shader Get(const std::string_view& name);

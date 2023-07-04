@@ -76,6 +76,12 @@ void ResourceManager::UnloadString(const std::string_view& name)
     _stringMap.erase(std::pmr::string{ name.data(), name.size(), &_textAllocator });
 }
 
+Texture2DManager::~Texture2DManager()
+{
+    _references.clear();
+    _storage.clear();
+}
+
 Texture2D Texture2DManager::Load(const std::string_view& name)
 {
     m_Storage.lock();
@@ -157,6 +163,8 @@ void Texture2DManager::AddReference(IDType id)
 void Texture2DManager::SubReference(IDType id)
 {
     m_References.lock();
+
+    Texture2D* tex = nullptr;
     
     if (_references.count(id) > 0u)
     {
@@ -165,13 +173,21 @@ void Texture2DManager::SubReference(IDType id)
 
         if (count.first && count.second == 0u)
         {
-            auto tex = Texture2D{};
-            tex.ID = id;
-            tex.Destroy();
+            tex = new Texture2D{};
+            tex->ID = id;
+            tex->Destroy();
         }
     }
 
     m_References.unlock();
+
+    if (tex) delete tex;
+}
+
+ShaderManager::~ShaderManager()
+{
+    _references.clear();
+    _storage.clear();
 }
 
 Shader ShaderManager::Load(const std::string_view& name)
@@ -256,6 +272,8 @@ void ShaderManager::SubReference(IDType id)
 {
     m_References.lock();
 
+    Shader* shad = nullptr;
+
     if (_references.count(id) > 0u)
     {
         auto& count = _references.at(id);
@@ -263,11 +281,13 @@ void ShaderManager::SubReference(IDType id)
 
         if (count.first && count.second == 0u)
         {
-            auto shad = Shader{};
-            shad.ID = id;
-            shad.Destroy();
+            shad = new Shader{};
+            shad->ID = id;
+            shad->Destroy();
         }
     }
 
     m_References.unlock();
+
+    if (shad) delete shad;
 }
