@@ -28,8 +28,29 @@
 #include <memory>
 #include <unordered_map>
 #include <map>
-#include <optional>
-#include <shared_mutex>
+#include <mutex>
+
+class Texture2DManager;
+class ShaderManager;
+
+template<typename Key, typename Value>
+struct StorageMap
+{
+	std::unordered_map<Key, Value> map;
+
+	Value Load(const std::string_view& name);
+	Value Get(const std::string_view& name);
+	void Unload(const std::string_view& name);
+};
+
+template<typename IDType>
+struct ReferenceMap
+{
+	std::unordered_map<IDType, std::pair<bool, uint16_t>> _references;
+
+	void AddReference(IDType id);
+	void SubReference(IDType id);
+};
 
 /*
 	The ResouceManager is in charge of storing shaders, textures, and other external data resources.
@@ -40,23 +61,19 @@
 */
 class ResourceManager
 {
-	using IDType = unsigned int;
-
-	std::shared_mutex _mutex;
-	
 	std::pmr::monotonic_buffer_resource _textResource;
 	std::pmr::synchronized_pool_resource _textAllocator;
-	
-	// Storage maps
 
-	std::unordered_map<std::string, Shader> _shaders;
-	std::unordered_map<std::string, Texture2D> _textures;
+	std::mutex _mutex;
+	
+	// String storage map.
+
 	std::pmr::map<std::pmr::string, std::pmr::string> _stringMap;
 
-	// Reference counting maps
+	// Separate handlers for textures and shaders allows for easier data sharing between threads.
 
-	std::unordered_map<IDType, std::pair<bool, uint16_t>> _shaderRefCount;
-	std::unordered_map<IDType, std::pair<bool, uint16_t>> _textureRefCount;
+	std::unique_ptr<Texture2DManager> _textures;
+	std::unique_ptr<ShaderManager> _shaders;
 
 
 public:
@@ -65,35 +82,64 @@ public:
 
 	void Lock();
 	void Unlock();
-	void Shared_Lock();
-	void Shared_Unlock();
 
-	// Strings are handled internally, so using the reference counting templates doesn't make sense.
+	/*
+		Functions for assigning data references to the appropriate parts.
+	*/
+	
+	Texture2DManager* Textures();
+	ShaderManager* Shaders();
+
+	// String handling functions.
 
 	std::string_view LoadString(const std::string& name, const std::string& content);
 	std::string_view GetString(const std::string_view& name);
 	void UnloadString(const std::string_view& name);
 
-	/*
-		Loading, getting, and unloading reference counted resources.
-	*/
+};
 
-	Texture2D LoadTexture(const std::string_view& name);
-	Texture2D GetTexture(const std::string_view& name);
-	void UnloadTexture(const std::string_view& name);
+class Texture2DManager
+{
+	using IDType = unsigned int;
 
-	Shader LoadShader(const std::string_view& name);
-	Shader GetShader(const std::string_view& name);
-	void UnloadShader(const std::string_view& name);
+	std::mutex m_Storage, m_References;
 
-	/*
-		Reference counting functions.
-	*/
+	std::unordered_map<std::string, Texture2D> _storage;
+	std::unordered_map<IDType, std::pair<bool, uint16_t>> _references;
 
-	void AddRefTexture(IDType id);
-	void SubRefTexture(IDType id);
-	void AddRefShader(IDType id);
-	void SubRefShader(IDType id);
+public:
+	Texture2DManager() = default;
+	Texture2DManager(const Texture2DManager&) = delete;
+	Texture2DManager(Texture2DManager&&) = delete;
+
+	Texture2D Load(const std::string_view& name);
+	Texture2D Get(const std::string_view& name);
+	void Unload(const std::string_view& name);
+
+	void AddReference(IDType id);
+	void SubReference(IDType id);
+};
+
+class ShaderManager
+{
+	using IDType = unsigned int;
+
+	std::mutex m_Storage, m_References;
+
+	std::unordered_map<std::string, Shader> _storage;
+	std::unordered_map<IDType, std::pair<bool, uint16_t>> _references;
+
+public:
+	ShaderManager() = default;
+	ShaderManager(const ShaderManager&) = delete;
+	ShaderManager(ShaderManager&&) = delete;
+
+	Shader Load(const std::string_view& name);
+	Shader Get(const std::string_view& name);
+	void Unload(const std::string_view& name);
+
+	void AddReference(IDType id);
+	void SubReference(IDType id);
 };
 
 #endif // !PROTOMAPPER_RESOURCE_MANAGER_HPP

@@ -19,18 +19,23 @@
 #include "ResourceManager.hpp"
 
 ResourceManager::ResourceManager(void* memory, size_t size)
-    : _textResource(memory, size), _textAllocator(&_textResource), _stringMap(std::pmr::map<std::pmr::string, std::pmr::string>(&_textAllocator))
+    : _textResource(memory, size), _textAllocator(&_textResource), _stringMap(std::pmr::map<std::pmr::string, std::pmr::string>(&_textAllocator)),
+    _textures(std::make_unique<Texture2DManager>()), _shaders(std::make_unique<ShaderManager>())
 {
 
 }
 
 ResourceManager::~ResourceManager()
 {    
-    _textures.clear();
-    _shaders.clear();
+    _textures.reset(nullptr);
+    _shaders.reset(nullptr);
     _stringMap.clear();
     _textAllocator.release();
 }
+
+Texture2DManager* ResourceManager::Textures() { return _textures.get(); }
+
+ShaderManager* ResourceManager::Shaders() { return _shaders.get(); }
 
 void ResourceManager::Lock()
 {
@@ -40,16 +45,6 @@ void ResourceManager::Lock()
 void ResourceManager::Unlock()
 {
     _mutex.unlock();
-}
-
-void ResourceManager::Shared_Lock()
-{
-    _mutex.lock_shared();
-}
-
-void ResourceManager::Shared_Unlock()
-{
-    _mutex.unlock_shared();
 }
 
 std::string_view ResourceManager::LoadString(const std::string& name, const std::string& content)
@@ -81,65 +76,91 @@ void ResourceManager::UnloadString(const std::string_view& name)
     _stringMap.erase(std::pmr::string{ name.data(), name.size(), &_textAllocator });
 }
 
-Texture2D ResourceManager::LoadTexture(const std::string_view& name)
+Texture2D Texture2DManager::Load(const std::string_view& name)
 {
-    if (_textures.count(std::string{name.data(), name.size()}) > 0)
+    m_Storage.lock();
+
+    if (_storage.count(std::string{name.data(), name.size()}) > 0)
     {
-        auto& res = _textures.at(std::string{name.data(), name.size()});
+        auto& res = _storage.at(std::string{name.data(), name.size()});
+
+        m_Storage.unlock();
 
         return Texture2D{ res };
     }
 
-    auto result = _textures.emplace(std::string{name.data(), name.size()}, Texture2D{});
+    auto result = _storage.emplace(std::string{name.data(), name.size()}, Texture2D{});
+
+    m_Storage.unlock();
 
     return result.first->second;
 }
 
-Texture2D ResourceManager::GetTexture(const std::string_view& name)
+Texture2D Texture2DManager::Get(const std::string_view& name)
 {
-    if (_textures.count(std::string{name.data(), name.size()}) > 0)
+    Texture2D res;
+
+    m_Storage.lock();    
+
+    if (_storage.count(std::string{name.data(), name.size()}) > 0)
     {
-        return _textures.at(std::string{name.data(), name.size()});
+        res = _storage.at(std::string{name.data(), name.size()});
     }
 
-    return Texture2D{};
+    m_Storage.unlock();
+
+    return res;
 }
 
-void ResourceManager::UnloadTexture(const std::string_view& name)
+void Texture2DManager::Unload(const std::string_view& name)
 {
     /*
         When we unload a resource, we flag it for removal until the
         las reference to it is destroyed.
     */
-    
-    if (_textures.count(std::string{name.data(), name.size()}) > 0)
-    {
-        auto& texture = _textures.at(std::string{name.data(), name.size()});
+    m_Storage.lock();
 
-        auto& reference = _textureRefCount.at(texture.ID);
+    if (_storage.count(std::string{name.data(), name.size()}) > 0)
+    {
+        auto& texture = _storage.at(std::string{name.data(), name.size()});
+
+        m_References.lock();
+
+        auto& reference = _references.at(texture.ID);
         reference.first = true;
-        _textures.erase(std::string{name.data(), name.size()});
+
+        m_References.unlock();
+
+        _storage.erase(std::string{name.data(), name.size()});
     }
+
+    m_Storage.unlock();
 }
 
-void ResourceManager::AddRefTexture(IDType id)
+void Texture2DManager::AddReference(IDType id)
 {
-    if (_textureRefCount.count(id) == 0u)
+    m_References.lock();
+    
+    if (_references.count(id) == 0u)
     {
-        _textureRefCount.insert_or_assign(id, std::make_pair(false, 1u));
+        _references.insert_or_assign(id, std::make_pair(false, 1u));
     }
     else
     {
-        auto& count = _textureRefCount.at(id);
+        auto& count = _references.at(id);
         ++count.second;
     }
+
+    m_References.unlock();
 }
 
-void ResourceManager::SubRefTexture(IDType id)
+void Texture2DManager::SubReference(IDType id)
 {
-    if (_textureRefCount.count(id) > 0u)
+    m_References.lock();
+    
+    if (_references.count(id) > 0u)
     {
-        auto& count = _textureRefCount.at(id);
+        auto& count = _references.at(id);
         --count.second;
 
         if (count.first && count.second == 0u)
@@ -149,67 +170,95 @@ void ResourceManager::SubRefTexture(IDType id)
             tex.Destroy();
         }
     }
+
+    m_References.unlock();
 }
 
-Shader ResourceManager::LoadShader(const std::string_view& name)
+Shader ShaderManager::Load(const std::string_view& name)
 {
-    if (_shaders.count(std::string{ name.data(), name.size() }) > 0)
+    m_Storage.lock();
+
+    if (_storage.count(std::string{name.data(), name.size()}) > 0)
     {
-        auto& res = _shaders.at(std::string{name.data(), name.size()});
+        auto& res = _storage.at(std::string{name.data(), name.size()});
+
+        m_Storage.unlock();
 
         return Shader{ res };
     }
 
-    auto result = _shaders.emplace(name, Shader{});
+    auto result = _storage.emplace(std::string{name.data(), name.size()}, Shader{});
+
+    m_Storage.unlock();
 
     return result.first->second;
 }
 
-Shader ResourceManager::GetShader(const std::string_view& name)
+Shader ShaderManager::Get(const std::string_view& name)
 {
-    if (_shaders.count(std::string{ name.data(), name.size() }) > 0)
+    Shader res;
+
+    m_Storage.lock();
+
+    if (_storage.count(std::string{name.data(), name.size()}) > 0)
     {
-        return _shaders.at(std::string{ name.data(), name.size() });
+        res = _storage.at(std::string{name.data(), name.size()});
     }
 
-    return Shader{};
+    m_Storage.unlock();
+
+    return res;
 }
 
-void ResourceManager::UnloadShader(const std::string_view& name)
+void ShaderManager::Unload(const std::string_view& name)
 {
     /*
         When we unload a resource, we flag it for removal until the
         las reference to it is destroyed.
     */
-    
-    if (_shaders.count(std::string{ name.data(), name.size() }) > 0)
-    {
-        auto& shader = _shaders.at(std::string{name.data(), name.size()});
+    m_Storage.lock();
 
-        auto& reference = _shaderRefCount.at(shader.ID);
+    if (_storage.count(std::string{name.data(), name.size()}) > 0)
+    {
+        auto& shader = _storage.at(std::string{name.data(), name.size()});
+
+        m_References.lock();
+
+        auto& reference = _references.at(shader.ID);
         reference.first = true;
-        _shaders.erase(std::string{name.data(), name.size()});
+
+        m_References.unlock();
+
+        _storage.erase(std::string{name.data(), name.size()});
     }
+
+    m_Storage.unlock();
 }
 
-void ResourceManager::AddRefShader(IDType id)
+void ShaderManager::AddReference(IDType id)
 {
-    if (_shaderRefCount.count(id) == 0u)
+    m_References.lock();
+
+    if (_references.count(id) == 0u)
     {
-        _shaderRefCount.insert_or_assign(id, std::make_pair(false, 1u));
+        _references.insert_or_assign(id, std::make_pair(false, 1u));
     }
     else
     {
-        auto& count = _shaderRefCount.at(id);
+        auto& count = _references.at(id);
         ++count.second;
     }
+
+    m_References.unlock();
 }
 
-void ResourceManager::SubRefShader(IDType id)
+void ShaderManager::SubReference(IDType id)
 {
-    if (_shaderRefCount.count(id) > 0u)
+    m_References.lock();
+
+    if (_references.count(id) > 0u)
     {
-        auto& count = _shaderRefCount.at(id);
+        auto& count = _references.at(id);
         --count.second;
 
         if (count.first && count.second == 0u)
@@ -219,4 +268,6 @@ void ResourceManager::SubRefShader(IDType id)
             shad.Destroy();
         }
     }
+
+    m_References.unlock();
 }
