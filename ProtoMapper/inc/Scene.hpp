@@ -63,8 +63,6 @@ public:
 class Scene
 {
 
-	static ResourceManager* _resources;
-
 	// Should be thread-safe.
 	UIContainer* _uiInternal = nullptr;
 

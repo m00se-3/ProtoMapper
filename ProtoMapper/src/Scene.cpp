@@ -17,14 +17,10 @@
 */
 
 #include "Scene.hpp"
-#include "ResourceManager.hpp"
 
 #include "Vertex.hpp"
 #include "Renderer.hpp"
 #include "UIContainer.hpp"
-
-ResourceManager* Scene::_resources = nullptr;
-
 
 
 void Scene::SetResourceManager(ResourceManager* ptr) { _resources = ptr; }
