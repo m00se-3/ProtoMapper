@@ -21,7 +21,7 @@
 
 #include "Image.hpp"
 
-class ResourceManager;
+class Texture2DManager;
 
 
 /*
@@ -61,11 +61,11 @@ struct Texture2D
 
 	IDType Target() const;
 
-	static void SetResourceManager(ResourceManager* ptr);
+	static void SetResourceManager(Texture2DManager* ptr);
 
 
 private:
-	static ResourceManager* _manager;
+	static Texture2DManager* _manager;
 };
 
 #endif

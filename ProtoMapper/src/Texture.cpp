@@ -21,9 +21,9 @@
 
 #include "glad/glad.h"
 
-ResourceManager* Texture2D::_manager = nullptr;
+Texture2DManager* Texture2D::_manager = nullptr;
 
-void Texture2D::SetResourceManager(ResourceManager* ptr)
+void Texture2D::SetResourceManager(Texture2DManager* ptr)
 {
 	_manager = ptr;
 }
@@ -33,13 +33,13 @@ void Texture2D::SetResourceManager(ResourceManager* ptr)
 Texture2D::Texture2D(const Texture2D& other)
 	:ID(other.ID)
 {
-	_manager->AddRefTexture(ID);
+	_manager->AddReference(ID);
 }
 
 Texture2D::Texture2D(IDType id)
 	:ID(id)
 {
-	_manager->AddRefTexture(ID);
+	_manager->AddReference(ID);
 }
 
 bool Texture2D::operator==(const Texture2D& rhs)
@@ -54,10 +54,10 @@ bool Texture2D::operator==(const Texture2D& rhs) const
 
 Texture2D& Texture2D::operator=(const Texture2D& rhs)
 {
-	if (ID != 0u) _manager->SubRefTexture(ID);
+	if (ID != 0u) _manager->SubReference(ID);
 
 	ID = rhs.ID;
-	_manager->AddRefTexture(ID);
+	_manager->AddReference(ID);
 
 	return *this;
 }
@@ -72,7 +72,7 @@ Texture2D& Texture2D::Create()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	_manager->AddRefTexture(ID);
+	_manager->AddReference(ID);
 
 	return *this;
 }
@@ -124,5 +124,5 @@ Texture2D& Texture2D::GenerateBlank(int w, int h, unsigned int colorValue)
 Texture2D::IDType Texture2D::Target() const { return GL_TEXTURE_2D; }
 
 
-Texture2D::~Texture2D() { _manager->SubRefTexture(ID); }
+Texture2D::~Texture2D() { _manager->SubReference(ID); }
 
