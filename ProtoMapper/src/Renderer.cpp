@@ -22,13 +22,14 @@
 #include <filesystem>
 #include <cstdio>
 
-ResourceManager* Renderer::_resources = nullptr;
+Texture2DManager* Renderer::_texMan = nullptr;
+ShaderManager* Renderer::_shadMan = nullptr;
 
-void Renderer::SetResourceManager(ResourceManager* res) { _resources = res; }
+void Renderer::SetResourceManager(ResourceManager* res) { _texMan = res->Textures(); _shadMan = res->Shaders(); }
 
 Renderer::Renderer(const std::string& dir)
 	: _model(glm::mat4(1.f)), _view(glm::mat4(1.f)), _currentTexture(std::nullopt), _currentShader(std::nullopt),
-	_defaultShader(_resources->LoadShader("default")), _defaultTexture(_resources->LoadTexture("default"))
+	_defaultShader(_shadMan->Load("default")), _defaultTexture(_texMan->Load("default"))
 {
 
 	_defaultTexture.Create().GenerateBlank(1, 1);

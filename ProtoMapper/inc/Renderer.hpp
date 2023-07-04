@@ -32,6 +32,8 @@
 #include <optional>
 
 class ResourceManager;
+class Texture2DManager;
+class ShaderManager;
 
 
 class Renderer
@@ -55,7 +57,15 @@ private:
 
 	std::function<void()> _uniforms = []() {};
 
-	static ResourceManager* _resources;
+	/*
+		Thus far, Renderer only needs these on creation, when it needs to construct
+		it's default shader and texture.
+
+		This could be a canidate for further optimization.
+	*/
+
+	static Texture2DManager* _texMan;
+	static ShaderManager* _shadMan;
 
 public:
 
