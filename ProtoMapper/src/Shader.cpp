@@ -19,9 +19,9 @@
 #include "Shader.hpp"
 #include "ResourceManager.hpp"
 
-ResourceManager* Shader::_manager = nullptr;
+ShaderManager* Shader::_manager = nullptr;
 
-void Shader::SetResourceManager(ResourceManager* ptr)
+void Shader::SetResourceManager(ShaderManager* ptr)
 {
 	_manager = ptr;
 }
@@ -36,7 +36,7 @@ std::pair<unsigned int, unsigned int> Shader::CreateBasic(const char* srcVert, c
 	glDeleteShader(vs);
 	glDeleteShader(fs);
 
-	_manager->AddRefShader(ID);
+	_manager->AddReference(ID);
 
 	return std::make_pair(vs, fs);
 }
@@ -129,16 +129,16 @@ void Shader::Uniforms(const std::function<void()>& func)
 Shader::Shader(const Shader& other)
 	:ID(other.ID)
 {
-	_manager->AddRefShader(ID);
+	_manager->AddReference(ID);
 }
 
 Shader::Shader(IDType id)
 	:ID(id)
 {
-	_manager->AddRefShader(ID);
+	_manager->AddReference(ID);
 }
 
-Shader::~Shader() { _manager->SubRefShader(ID); }
+Shader::~Shader() { _manager->SubReference(ID); }
 
 bool Shader::operator==(const Shader& rhs)
 {
@@ -152,10 +152,10 @@ bool Shader::operator==(const Shader& rhs) const
 
 Shader& Shader::operator=(const Shader& rhs)
 {
-	if (ID != 0u) _manager->SubRefShader(ID);
+	if (ID != 0u) _manager->SubReference(ID);
 
 	ID = rhs.ID;
-	_manager->AddRefShader(ID);
+	_manager->AddReference(ID);
 
 	return *this;
 }

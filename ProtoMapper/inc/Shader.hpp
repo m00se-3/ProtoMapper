@@ -23,7 +23,7 @@
 
 #include <functional>
 
-class ResourceManager;
+class ShaderManager;
 
 struct Shader
 {
@@ -74,10 +74,10 @@ struct Shader
 	void Uniforms(const std::function<void()>& func);
 
 
-	static void SetResourceManager(ResourceManager* ptr);
+	static void SetResourceManager(ShaderManager* ptr);
 
 private:
-	static ResourceManager* _manager;
+	static ShaderManager* _manager;
 
 };
 
