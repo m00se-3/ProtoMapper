@@ -4,7 +4,7 @@
 #include "ResourceManager.hpp"
 #include "Renderer.hpp"
 
-ResourceManager* UIContainer::_resources = nullptr;
+Texture2DManager* UIContainer::_texMan = nullptr;
 
 constexpr long long MaxVertexBuffer = 4 * 1024;
 
@@ -17,7 +17,7 @@ static const struct nk_draw_vertex_layout_element vertex_layout[] = {
 };
 
 
-void UIContainer::SetResourceManager(ResourceManager* ptr) { _resources = ptr; }
+void UIContainer::SetResourceManager(Texture2DManager* ptr) { _texMan = ptr; }
 
 UIContainer::UIContainer()
 {
@@ -25,7 +25,7 @@ UIContainer::UIContainer()
 	fontFile += "/assets/fonts/keep_calm/KeepCalm-Medium.ttf";
 
 	int imgWidth, imgHeight;
-	_fontTexture = _resources->LoadTexture("KeepCalm-Medium");
+	_fontTexture = _texMan->Load("KeepCalm-Medium");
 	_fontTexture.Create();
 
 
@@ -90,12 +90,12 @@ UIContainer::~UIContainer()
 	nk_free(&_ctx);
 
 	_fontTexture.Reset();
-	_resources->UnloadTexture("KeepCalm-Medium");
+	_texMan->Unload("KeepCalm-Medium");
 }
 
 void UIContainer::Lock() { _mutex.lock(); }
 
-void UIContainer::Unlock() { _mutex.unlock() }
+void UIContainer::Unlock() { _mutex.unlock(); }
 
 void UIContainer::CompileUI()
 {

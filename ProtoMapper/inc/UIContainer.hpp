@@ -19,7 +19,6 @@
 #include <functional>
 
 // Forward declarations.
-class ResourceManager;
 class Renderer;
 
 
@@ -53,11 +52,11 @@ public:
 	void Unlock();
 	nk_context* Context();
 
-	static void SetResourceManager(ResourceManager* ptr);
+	static void SetResourceManager(Texture2DManager* ptr);
 
 
 private:
-	static ResourceManager* _resources;
+	static Texture2DManager* _texMan;
 	
 
 };
