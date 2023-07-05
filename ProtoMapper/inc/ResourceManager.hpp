@@ -33,24 +33,6 @@
 class Texture2DManager;
 class ShaderManager;
 
-template<typename Key, typename Value>
-struct StorageMap
-{
-	std::unordered_map<Key, Value> map;
-
-	Value Load(const std::string_view& name);
-	Value Get(const std::string_view& name);
-	void Unload(const std::string_view& name);
-};
-
-template<typename IDType>
-struct ReferenceMap
-{
-	std::unordered_map<IDType, std::pair<bool, uint16_t>> _references;
-
-	void AddReference(IDType id);
-	void SubReference(IDType id);
-};
 
 /*
 	The ResouceManager is in charge of storing shaders, textures, and other external data resources.
