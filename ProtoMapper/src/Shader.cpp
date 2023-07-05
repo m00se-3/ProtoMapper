@@ -138,7 +138,7 @@ Shader::Shader(IDType id)
 	_manager->AddReference(ID);
 }
 
-Shader::~Shader() { _manager->SubReference(ID); }
+Shader::~Shader() { if (_manager->SubReference(ID) == 0u) Destroy(); }
 
 bool Shader::operator==(const Shader& rhs)
 {

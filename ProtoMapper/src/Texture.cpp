@@ -124,5 +124,5 @@ Texture2D& Texture2D::GenerateBlank(int w, int h, unsigned int colorValue)
 Texture2D::IDType Texture2D::Target() const { return GL_TEXTURE_2D; }
 
 
-Texture2D::~Texture2D() { _manager->SubReference(ID); }
+Texture2D::~Texture2D() { if (_manager->SubReference(ID) == 0u) Destroy(); }
 

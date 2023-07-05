@@ -27,8 +27,6 @@ ResourceManager::ResourceManager(void* memory, size_t size)
 
 ResourceManager::~ResourceManager()
 {    
-    _textures.reset(nullptr);
-    _shaders.reset(nullptr);
     _stringMap.clear();
     _textAllocator.release();
 }
@@ -160,28 +158,23 @@ void Texture2DManager::AddReference(IDType id)
     m_References.unlock();
 }
 
-void Texture2DManager::SubReference(IDType id)
+size_t Texture2DManager::SubReference(IDType id)
 {
     m_References.lock();
 
-    Texture2D* tex = nullptr;
-    
+    size_t result = 0u;
+
     if (_references.count(id) > 0u)
     {
         auto& count = _references.at(id);
         --count.second;
 
-        if (count.first && count.second == 0u)
-        {
-            tex = new Texture2D{};
-            tex->ID = id;
-            tex->Destroy();
-        }
+        result = count.second;
     }
 
     m_References.unlock();
 
-    if (tex) delete tex;
+    return result;
 }
 
 ShaderManager::~ShaderManager()
@@ -268,26 +261,21 @@ void ShaderManager::AddReference(IDType id)
     m_References.unlock();
 }
 
-void ShaderManager::SubReference(IDType id)
+size_t ShaderManager::SubReference(IDType id)
 {
     m_References.lock();
 
-    Shader* shad = nullptr;
+    size_t result = 0u;
 
     if (_references.count(id) > 0u)
     {
         auto& count = _references.at(id);
         --count.second;
 
-        if (count.first && count.second == 0u)
-        {
-            shad = new Shader{};
-            shad->ID = id;
-            shad->Destroy();
-        }
+        result = count.second;
     }
 
     m_References.unlock();
 
-    if (shad) delete shad;
+    return result;
 }

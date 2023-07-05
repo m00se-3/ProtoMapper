@@ -80,6 +80,8 @@ public:
 	ResourceManager(void* memory, size_t size);
 	~ResourceManager();
 
+	// Mutex operations.
+
 	void Lock();
 	void Unlock();
 
@@ -117,8 +119,19 @@ public:
 	Texture2D Get(const std::string_view& name);
 	void Unload(const std::string_view& name);
 
+	/*
+		Reference counting.
+	*/
+
+	// Increments the reference count for the resource identified by id.
 	void AddReference(IDType id);
-	void SubReference(IDType id);
+
+	/*
+		Decrements the reference count of the resource identified by id.
+
+		Returns the number of references remaining.
+	*/
+	size_t SubReference(IDType id);
 };
 
 class ShaderManager
@@ -140,8 +153,19 @@ public:
 	Shader Get(const std::string_view& name);
 	void Unload(const std::string_view& name);
 
+	/*
+		Reference counting.
+	*/
+
+	// Increments the reference count for the resource identified by id.
 	void AddReference(IDType id);
-	void SubReference(IDType id);
+
+	/*
+		Decrements the reference count of the resource identified by id.
+
+		Returns the number of references remaining.
+	*/
+	size_t SubReference(IDType id);
 };
 
 #endif // !PROTOMAPPER_RESOURCE_MANAGER_HPP
