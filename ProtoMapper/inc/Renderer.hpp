@@ -93,7 +93,7 @@ public:
 	{		
 		unsigned int GLIndexType = 0u;
 
-		if constexpr (std::is_same_v<Buffer<VertexType>::IndType, unsigned int>)
+		if constexpr (std::is_same_v<typename Buffer<VertexType>::IndType, unsigned int>)
 		{
 			GLIndexType = GL_UNSIGNED_INT;
 		}
