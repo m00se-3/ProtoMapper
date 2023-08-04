@@ -10,6 +10,7 @@
 *.userosscache
 *.sln.docstates
 build/**
+vcpkg_installed/**
 CMakeUserPresets.json
 zig-cache/**
 build.zig
