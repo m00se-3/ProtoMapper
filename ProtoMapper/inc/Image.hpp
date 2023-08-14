@@ -44,6 +44,7 @@ public:
 
 	// Copy image data from an existing memory buffer.
 	// This will erase any data already contained in the Image buffer.
+	// Passing null pointer will zero-initialize the image buffer to requested size.
 	void LoadCopy(int w, int h, uint8_t* ptr = nullptr);
 
 	uint8_t* Data() const;
