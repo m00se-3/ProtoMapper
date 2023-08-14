@@ -1,6 +1,5 @@
 ﻿add_executable (ProtoMapper)
 
-set_target_properties(ProtoMapper PROPERTIES CXX_STANDARD 20)
 target_compile_options(ProtoMapper PRIVATE ${flags})
 
 ####	Meaning of the macros defined below.
@@ -23,6 +22,7 @@ target_include_directories(
 	${CMAKE_CURRENT_LIST_DIR}/inc
 	${SIMPLEINI_INCLUDE_DIRS}
 	${stb_INCLUDE_DIR}
+	${CHAISCRIPT_INCLUDE_DIRS}
 )
 
 target_link_libraries(
@@ -34,8 +34,7 @@ target_link_libraries(
 	glm::glm
 	glfw
 	nuklear
-	EnTT::EnTT
-	nlohmann_json::nlohmann_json
+	EnTT::EnTT	
 )
 
 target_sources(
