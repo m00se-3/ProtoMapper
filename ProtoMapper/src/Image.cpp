@@ -74,5 +74,6 @@ void Image::Destroy()
 	if (_data)
 	{
 		free(_data);
+		_data = nullptr;
 	}
 }
