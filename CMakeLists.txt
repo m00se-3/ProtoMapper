@@ -17,8 +17,8 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(stb REQUIRED)
 find_package(unofficial-nuklear CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
 find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
+find_path(CHAISCRIPT_INCLUDE_DIRS "chaiscript/chaiscript.hpp")
 
 # Include sub-projects.
 add_subdirectory ("ProtoMapper")
