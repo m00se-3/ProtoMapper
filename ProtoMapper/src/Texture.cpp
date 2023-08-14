@@ -54,7 +54,7 @@ bool Texture2D::operator==(const Texture2D& rhs) const
 
 Texture2D& Texture2D::operator=(const Texture2D& rhs)
 {
-	if (ID != 0u) _manager->SubReference(ID);
+	if (ID != 0u && _manager->SubReference(ID)) Destroy();
 
 	ID = rhs.ID;
 	_manager->AddReference(ID);
