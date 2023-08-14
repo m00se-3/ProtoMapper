@@ -22,10 +22,17 @@
 #include "glm/glm.hpp"
 #include "glad/glad.h"
 
+#include <concepts>
 #include <vector>
 #include <functional>
 
-template<typename VertexType> class Buffer;
+template<typename T> class Buffer;
+
+template<typename T>
+concept VertexType = requires(Buffer<T>* ptr)
+{
+	{ T::Attributes(ptr) } -> std::same_as<void>;
+};
 
 struct Vertex2D
 {
