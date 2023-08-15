@@ -7,19 +7,22 @@
 ## High Priority TODOs
 
 The following items need to be designed/decided on and implemented: 
-- [ ] Should EnTT components call nuklear functions themselves, or should that be abstracted?
+- [ ] UI elements to be constructed directly from EnTT components, nuklear exposed for easy interface.
+- [ ] EnTT components for linking UI construction functions to the external data they use.
+- [ ] Should we support multiple external script engines for users to use?
 - [ ] What data format will be used to automate UI building?
 - [ ] How will projects be organized in data format? 
 
 The following items need to be tested and polished:
 - [ ] The ResourceManager's polymorphic allocator. Does it work correctly?
-- [ ] Event handling.
+- [ ] Mouse and keyboard handling.
+- [ ] Handling of window related events.
 
 ---
 
 ## Low Priority TODOs
 
-- [ ] Figure out a method of compressing/hidding shaders so they are not easily tampered with.
+- [ ] Figure out a method of compressing/hidding shaders and other assets so they are not easily tampered with.
 - [ ] Decide whether to allow external scripts to define UI components, if so, how.
 - [ ] Compile sample text, assets, and other things for testing.
 - [ ] Figure out how to make things pretty in the UI.
