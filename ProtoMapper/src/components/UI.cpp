@@ -18,7 +18,12 @@
 
 #include "components/UI.hpp"
 
-UIWindow::UIWindow(UIWindow&& other)
-	: id(other.id.data(), other.id.size()), title(other.title.data(), other.title.size())
+namespace ui
 {
+
+    Window::Window(Window&& other)
+        : id(other.id.data(), other.id.size()), title(other.title.data(), other.title.size())
+    {
+    }
+
 }

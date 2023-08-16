@@ -26,29 +26,33 @@
 // Forward declarations.
 struct nk_context;
 
-/*
-	Represents a window and it's identifier.
-*/
-struct UIWindow
+namespace ui
 {
-    std::string_view id, title;
 
-	UIWindow() = default;
-	UIWindow(const UIWindow&) = delete;
-	UIWindow(UIWindow&& other);
-};
+    /*
+        Represents a window and it's identifier.
+    */
+    struct Window
+    {
+        std::string_view id, title;
 
-/*
-	A rectangle representing the area occupied by the UI element.
-*/
-struct UIBoundingBox
-{
-	struct Rectangle area;
+        Window() = default;
+        Window(const Window&) = delete;
+        Window(Window&& other);
+    };
 
-	UIBoundingBox() = default;
-	UIBoundingBox(const UIBoundingBox&) = default;
+    /*
+        A rectangle representing the area occupied by the UI element.
+    */
+    struct BoundingBox
+    {
+        struct Rectangle area;
 
-};
+        BoundingBox() = default;
+        BoundingBox(const BoundingBox&) = default;
 
+    };
+
+}
 
 #endif // !PROTOMAPPER_COMPONENTS_UI_HPP
