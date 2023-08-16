@@ -55,7 +55,6 @@ target_sources(
 
 	${CMAKE_CURRENT_LIST_DIR}/inc/components/All.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/components/Common.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/components/UI.hpp
 
 	PRIVATE  
 	${CMAKE_CURRENT_LIST_DIR}/src/external/nuklear.cpp
@@ -71,5 +70,4 @@ target_sources(
 
 
 	${CMAKE_CURRENT_LIST_DIR}/src/components/Common.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/components/UI.cpp
 )
