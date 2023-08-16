@@ -7,8 +7,7 @@
 ## High Priority TODOs
 
 The following items need to be designed/decided on and implemented: 
-- [ ] UI elements to be constructed directly from EnTT components, nuklear exposed for easy interface.
-- [ ] EnTT components for linking UI construction functions to the external data they use.
+- [ ] UI elements to be constructed from UIContainer, data stored within .ini files.
 - [ ] Should we support multiple external script engines for users to use?
 - [ ] What data format will be used to automate UI building?
 - [ ] How will projects be organized in data format? 
