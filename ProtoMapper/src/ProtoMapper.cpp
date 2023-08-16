@@ -168,10 +168,12 @@ bool ProtoMapper::Configure()
 
 	_rootDir = ROOT_DIR;
 	_configFile = _rootDir.string() + "/config/config.ini";
+	_uiFile = _rootDir.string() + "/config/ui/data.ini";
 
 #else
 	_rootDir = ".";
 	_configFile = _rootDir.string() + "/config/config.ini";
+	_uiFile = _rootDir.string() + "/config/ui/data.ini";
 
 #endif // _DEBUG_
 
@@ -271,6 +273,8 @@ void ProtoMapper::Run()
 	time::time_point last = time::now();
 
 	_ui = std::make_unique<UIContainer>();
+
+	if (!_ui->SetData(_uiFile)) return;
 
 	_scene = std::make_unique<Scene>(_ui.get());
 	_scene->Init();

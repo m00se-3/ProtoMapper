@@ -91,6 +91,26 @@ UIContainer::~UIContainer()
 
 	_fontTexture.Reset();
 	_texMan->Unload("KeepCalm-Medium");
+
+	if (_updateUIData)
+	{
+		_uiData.SaveFile(_dataFile.c_str());
+	}
+
+	_uiData.Reset();
+}
+
+bool UIContainer::SetData(const std::filesystem::path& filepath)
+{
+	if (std::filesystem::exists(filepath) && filepath.extension() == ".ini")
+	{
+		_dataFile = filepath.string();
+		_uiData.LoadFile(_dataFile.c_str());
+
+		return true;
+	}
+
+	return false;
 }
 
 void UIContainer::Lock() { _mutex.lock(); }
@@ -147,3 +167,8 @@ void UIContainer::DrawUI(Renderer* ren)
 }
 
 nk_context* UIContainer::Context() { return &_ctx; }
+
+void UIContainer::UpdateUI()
+{
+
+}

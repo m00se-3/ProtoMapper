@@ -52,7 +52,7 @@ class ProtoMapper
 
 	char* _textMemoryBuffer = nullptr;
 
-	std::filesystem::path _configFile;
+	std::filesystem::path _configFile, _uiFile;
 	CSimpleIniA _configData;
 
 	// Self pointer for use in the GLFW callbacks.
