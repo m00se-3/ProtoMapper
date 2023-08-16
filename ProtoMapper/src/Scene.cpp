@@ -21,6 +21,7 @@
 #include "Vertex.hpp"
 #include "Renderer.hpp"
 #include "UIContainer.hpp"
+#include "components/All.hpp"
 
 
 Scene::Scene(UIContainer* ptr)
@@ -77,14 +78,6 @@ void SceneNode::Update(Scene* container, float dt)
 {
 	auto& man = container->Manager();
 	
-	if (/* is ui element */1)
-	{
-		
-	}
-	else
-	{
-		// Do other kinds of updates.
-	}
 
 	for (auto& child : children)
 	{
