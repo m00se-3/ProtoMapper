@@ -77,23 +77,6 @@ bool Renderer::Init(mode newMode)
 {
 	SetRenderMode(newMode);
 
-	switch (newMode)
-	{
-	case mode::Two:
-	{
-		_projection = glm::ortho(0.f, _vWidth, _vHeight, 0.f);
-		_view = glm::lookAt(glm::vec3{ 0.0f, 0.0f, 1.f }, glm::vec3{ 0.f, 0.f, -1.f }, glm::vec3{ 0.f, 1.f, 0.f });
-		_model = glm::mat4(1.0f);
-		break;
-	}
-	case mode::Three:
-	{
-		// Make sure this is correct before testing.
-		_projection = glm::perspective(glm::quarter_pi<float>(), _vWidth / _vHeight, 1.f, 10.f);
-		break;
-	}
-	}
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendEquation(GL_FUNC_ADD);
@@ -157,6 +140,23 @@ void Renderer::SetViewport(int x, int y, int w, int h)
 void Renderer::SetRenderMode(Renderer::mode m)
 {
 	_currentMode = m;
+
+	switch (m)
+	{
+	case mode::Two:
+	{
+		_projection = glm::ortho(0.f, _vWidth, _vHeight, 0.f);
+		_view = glm::lookAt(glm::vec3{ 0.0f, 0.0f, 1.f }, glm::vec3{ 0.f, 0.f, -1.f }, glm::vec3{ 0.f, 1.f, 0.f });
+		_model = glm::mat4(1.0f);
+		break;
+	}
+	case mode::Three:
+	{
+		// Make sure this is correct before testing.
+		_projection = glm::perspective(glm::quarter_pi<float>(), _vWidth / _vHeight, 1.f, 10.f);
+		break;
+	}
+	}
 }
 
 void Renderer::UseTexture(std::optional<Texture2D> texture)
