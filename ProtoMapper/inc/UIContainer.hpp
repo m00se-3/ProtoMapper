@@ -47,6 +47,7 @@ class UIContainer
 	struct nk_font* _font;
 	struct nk_convert_config _configurator;
 	struct nk_buffer _cmds, _verts, _inds;
+	struct nk_draw_null_texture _nullTexture;
 	Texture2D _fontTexture;
 
 	unsigned int _vertexArray = 0u, _vb = 0u, _ib = 0u;
@@ -64,7 +65,7 @@ public:
 	~UIContainer();
 
 	bool SetData(const std::filesystem::path& filepath);
-	void UpdateUI(); // This is the big function.
+	void UpdateUI(float wWidth, float wHeight); // This is the big function.
 	void CompileUI();
 	void DrawUI(Renderer* ren);
 
