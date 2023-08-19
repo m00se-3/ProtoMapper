@@ -6,7 +6,7 @@
 
 Texture2DManager* UIContainer::_texMan = nullptr;
 
-constexpr long long MaxVertexBuffer = 4 * 1024;
+constexpr long long MaxVertexBuffer = 8 * 1024;
 
 
 static const struct nk_draw_vertex_layout_element vertex_layout[] = {
@@ -27,7 +27,9 @@ UIContainer::UIContainer()
 	int imgWidth, imgHeight;
 	_fontTexture = _texMan->Load("KeepCalm-Medium");
 	_fontTexture.Create();
-
+	auto nTexture = _texMan->Get("default");
+	_nullTexture.texture = nk_handle_id((int)nTexture.ID);
+	_nullTexture.uv = nk_vec2(0.0f, 0.0f);
 
 
 	/*
@@ -40,9 +42,10 @@ UIContainer::UIContainer()
 
 	const void* img = nk_font_atlas_bake(&_atlas, &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 	_fontTexture.WriteData(img, imgWidth, imgHeight);
-	nk_font_atlas_end(&_atlas, nk_handle_id(_fontTexture.ID), nullptr);
+	nk_font_atlas_end(&_atlas, nk_handle_id((int)_fontTexture.ID), &_nullTexture);
 
 	if (!nk_init_default(&_ctx, &_font->handle)) return;
+	nk_style_set_font(&_ctx, &_font->handle);
 
 	_configurator.shape_AA = NK_ANTI_ALIASING_ON;
 	_configurator.line_AA = NK_ANTI_ALIASING_ON;
@@ -56,7 +59,7 @@ UIContainer::UIContainer()
 	nk_buffer_init_default(&_cmds);
 
 	/*
-		Because I don't (yet) have the facilities to incorporate nukealr's buffer types into my own Buffer type,
+		Because I don't (yet) have the facilities to incorporate nuklear's buffer types into my own Buffer type,
 		I have to set up the buffers manually.
 	*/
 
@@ -150,25 +153,40 @@ void UIContainer::DrawUI(Renderer* ren)
 
 	const nk_draw_command* cmd = nullptr;
 
-	const nk_draw_index* offset = nullptr;
-
-	ren->UseTexture(_fontTexture);
+	const unsigned int* offset = nullptr;
 
 	nk_draw_foreach(cmd, &_ctx, &_cmds)
 	{
 		if (!cmd->elem_count) continue;
+		ren->UseTexture(Texture2D{ (Texture2D::IDType)cmd->texture.id });
 		ren->DrawFromExternal<unsigned int>(_vertexArray, cmd->elem_count, GL_TRIANGLES, offset);
 		offset += cmd->elem_count;
 	}
 
 	nk_clear(&_ctx);
 	nk_buffer_clear(&_cmds);
+	nk_buffer_free(&_verts);
+	nk_buffer_free(&_inds);
 
 }
 
 nk_context* UIContainer::Context() { return &_ctx; }
 
-void UIContainer::UpdateUI()
+void UIContainer::UpdateUI(float wWidth, float wHeight)
 {
+
+	if (nk_begin(&_ctx, "ProtoMapper", nk_rect(0.0f, 0.0f, wWidth * 0.5f, wHeight * 0.05f), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
+	{
+		nk_layout_row_dynamic(&_ctx, wHeight * 0.04f, 5);
+		if (nk_menu_begin_label(&_ctx, "File", NK_TEXT_LEFT, nk_vec2(50.0f, wHeight * 0.1f)))
+		{
+			nk_layout_row_dynamic(&_ctx, wHeight * 0.04f, 1);
+			nk_menu_item_label(&_ctx, "New", NK_TEXT_LEFT);
+
+			nk_menu_end(&_ctx);
+		}
+	}
+
+	nk_end(&_ctx);
 
 }
