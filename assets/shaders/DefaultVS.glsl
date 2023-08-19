@@ -15,5 +15,5 @@ void main()
 {
 	out_color = color;
 	textureUV = texCoords;
-	gl_Position = projection * vec4(position.x, position.y, 1.0, 1.0);
+	gl_Position = projection * view * model * vec4(position.x, position.y, 1.0, 1.0);
 }
