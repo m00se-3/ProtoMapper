@@ -268,13 +268,17 @@ void ProtoMapper::Run()
 	_renderer->Init(Renderer::mode::Two);
 
 
-	glClearColor(0.f, 0.f, 0.f, 1.f);
+	glClearColor(0.3f, 0.3f, 0.3f, 1.f);
 
 	time::time_point last = time::now();
 
 	_ui = std::make_unique<UIContainer>();
 
-	if (!_ui->SetData(_uiFile)) return;
+	if (!_ui->SetData(_uiFile))
+	{
+		printf_s("Error: data.ini file not found...\n");
+		return;
+	}
 
 	_scene = std::make_unique<Scene>(_ui.get());
 	_scene->Init();
@@ -288,14 +292,6 @@ void ProtoMapper::Run()
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		_scene->Update(microseconds * 1000000.f);
-
-		_scene->DrawNodes();
-		_ui->CompileUI();
-		_ui->DrawUI(_renderer.get());
-		
-		glfwSwapBuffers(_window);
-
 		/*
 			Capture input events for the GUI and the simulation.
 		*/
@@ -303,6 +299,15 @@ void ProtoMapper::Run()
 		nk_input_begin(_ui->Context());
 		glfwPollEvents();
 		nk_input_end(_ui->Context());
+
+		_scene->Update(microseconds * 1000000.f);
+		_scene->DrawNodes();
+
+		_ui->UpdateUI(_fWidth, _fHeight);
+		_ui->CompileUI();
+		_ui->DrawUI(_renderer.get());
+		
+		glfwSwapBuffers(_window);
 	}
 
 }
