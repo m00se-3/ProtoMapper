@@ -27,64 +27,105 @@
 
 #include <string>
 #include <memory>
+#include <array>
 #include <filesystem>
 
-// Forward declarations.
-class Renderer;
-class ResourceManager;
-
-class ProtoMapper
+namespace proto
 {
-	const std::string _title = "ProtoMapper";
-	std::filesystem::path _rootDir;
-	bool _appRunning = true, _mapOpen = true, _panning = false, _fullscreen = true, _configUpdate = false;
-	
-	float _fWidth = 1024.f, _fHeight = 768.f;
-	int _wWidth = 1024, _wHeight = 768;
 
-	GLFWwindow* _window = nullptr;
-	GLFWmonitor* _monitor = nullptr;
+	// Forward declarations.
+	class Renderer;
+	class ResourceManager;
 
-	std::unique_ptr<Scene> _scene;
-	std::unique_ptr<UIContainer> _ui;
-	std::unique_ptr<Renderer> _renderer;
-	std::unique_ptr<ResourceManager> _resources;
+	enum class ButtonState
+	{
+		up,
+		pressed,
+		released,
+		down
+	};
 
-	char* _textMemoryBuffer = nullptr;
+	struct GlobalState
+	{
+		/*
+			Integer values provided by raygui. These map to GLFW keys 1:1.
+		*/
+		enum Keys
+		{
+			right = 262,
+			left = 263,
+			down = 264,
+			up = 265,
+			back = 259,
+			enter = 257
+		};
 
-	std::filesystem::path _configFile, _uiFile;
-	CSimpleIniA _configData;
+		float mouseX = 0.0f, mouseY = 0.0f;
+		float mouseWheel = 0.0f;
+		ButtonState mouseButtons[3] = { ButtonState::up };
+		std::unordered_map<Keys, ButtonState> keyStates;
 
-	// Self pointer for use in the GLFW callbacks.
-	static ProtoMapper* _self;
+		GlobalState();
 
-	
-public:
-	ProtoMapper() = default;
-	~ProtoMapper();
+		// Revert all non-persistent states to default.
+		void Reset();
 
-	static ProtoMapper* GetInstance();
+	};
 
-	bool Configure();
-	void Run();
-	void GetUILock();
-	void ReleaseUILock();
+	class Mapper
+	{
+		const std::string _title = "ProtoMapper";
+		std::filesystem::path _rootDir;
+		bool _appRunning = true, _mapOpen = true, _panning = false, _fullscreen = true, _configUpdate = false;
 
-	static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+		float _fWidth = 1024.f, _fHeight = 768.f;
+		int _wWidth = 1024, _wHeight = 768;
 
-	/*
-		GLFW callback functions
-	*/
+		GLFWwindow* _window = nullptr;
+		GLFWmonitor* _monitor = nullptr;
 
-	static void ContextErrorMessage(int code, const char* description);
-	static void MonitorCallback(GLFWmonitor* monitor, int event);
-	static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
-	static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
-	static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
-	static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
-	static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
-	static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
+		std::unique_ptr<Scene> _scene;
+		std::unique_ptr<UIContainer> _ui;
+		std::unique_ptr<Renderer> _renderer;
+		std::unique_ptr<ResourceManager> _resources;
 
-};
+		char* _textMemoryBuffer = nullptr;
 
+		std::filesystem::path _configFile, _uiFile;
+		CSimpleIniA _configData;
+
+		// Self pointer for use in the GLFW callbacks.
+		static Mapper* _self;
+		static GlobalState _internalState;
+
+
+	public:
+		Mapper() = default;
+		~Mapper();
+
+		static Mapper* GetInstance();
+		static GlobalState* GetState();
+
+		bool Configure();
+		void Run();
+		void GetUILock();
+		void ReleaseUILock();
+
+		static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+
+		/*
+			GLFW callback functions
+		*/
+
+		static void ContextErrorMessage(int code, const char* description);
+		static void MonitorCallback(GLFWmonitor* monitor, int event);
+		static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
+		static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
+		static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
+		static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
+		static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
+		static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
+
+	};
+}
 #endif
