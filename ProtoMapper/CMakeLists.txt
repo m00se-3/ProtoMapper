@@ -33,7 +33,6 @@ target_link_libraries(
 	glad::glad
 	glm::glm
 	glfw
-	nuklear
 	EnTT::EnTT	
 )
 
@@ -57,7 +56,6 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/inc/components/Common.hpp
 
 	PRIVATE  
-	${CMAKE_CURRENT_LIST_DIR}/src/external/nuklear.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Texture.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Image.cpp

@@ -146,7 +146,7 @@ void Renderer::SetRenderMode(Renderer::mode m)
 	case mode::Two:
 	{
 		_projection = glm::ortho(0.f, _vWidth, _vHeight, 0.f);
-		_view = glm::lookAt(glm::vec3{ 0.0f, 0.0f, 1.f }, glm::vec3{ 0.f, 0.f, -1.f }, glm::vec3{ 0.f, 1.f, 0.f });
+		_view = glm::lookAt(glm::vec3{ 0.0f, 0.0f, 0.f }, glm::vec3{ 0.f, 0.f, -1.f }, glm::vec3{ 0.f, 1.f, 0.f });
 		_model = glm::mat4(1.0f);
 		break;
 	}

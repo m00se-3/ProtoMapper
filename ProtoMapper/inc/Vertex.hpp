@@ -43,6 +43,15 @@ struct Vertex2D
 	static void Attributes(Buffer<Vertex2D>* buffer);
 };
 
+struct NKVertex
+{
+	float pos[2];
+	float texCoords[2];
+	uint8_t color[4];
+
+	static void Attributes(Buffer<NKVertex>* buffer);
+};
+
 
 template <typename VertexType>
 class Buffer

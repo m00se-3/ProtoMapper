@@ -38,12 +38,12 @@ ProtoMapper* ProtoMapper::GetInstance() { return _self; }
 
 void ProtoMapper::DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, [[maybe_unused]]GLsizei length, const GLchar* message, [[maybe_unused]]const void* userParam)
 {
-	printf_s("Error [%u] [%u] [%u] - %s", src, type, severity, message);
+	fprintf_s(stderr, "Error [%u] [%u] [%u] - %s", src, type, severity, message);
 }
 
 void ProtoMapper::ContextErrorMessage(int code, const char* description)
 {
-	printf_s("Error code [%u] - %s\n", code, description);
+	fprintf_s(stderr, "Error code [%u] - %s\n", code, description);
 }
 
 void ProtoMapper::MonitorCallback(GLFWmonitor* monitor, int event)
@@ -63,14 +63,14 @@ void ProtoMapper::MonitorCallback(GLFWmonitor* monitor, int event)
 void ProtoMapper::KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods)
 {
 	auto* self = ProtoMapper::GetInstance();
-	int key = ProtoMapper::GLFWKeytoNKKey(keyn, mods);
+	
 
-	if (key > -1)
+	/*if (key > -1)
 	{
 		self->GetUILock();
-		nk_input_key(self->GetContext(), (nk_keys)key, (action == GLFW_PRESS || action == GLFW_REPEAT));
+		
 		self->ReleaseUILock();
-	}
+	}*/
 }
 
 void ProtoMapper::TextEventCallback(GLFWwindow* window, unsigned int codepoint)
@@ -78,24 +78,24 @@ void ProtoMapper::TextEventCallback(GLFWwindow* window, unsigned int codepoint)
 	auto* self = ProtoMapper::GetInstance();
 
 	self->GetUILock();
-	nk_input_unicode(self->GetContext(), codepoint);
+	
 	self->ReleaseUILock();
 }
 
 void ProtoMapper::MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods)
 {
 	auto* self = ProtoMapper::GetInstance();
-	int result = ProtoMapper::GLFWButtontoNKButton(button);
+	
 
 	double mx = 0.0, my = 0.0;
 	glfwGetCursorPos(window, &mx, &my);
 
-	if (result > -1)
+	/*if (result > -1)
 	{
 		self->GetUILock();
-		nk_input_button(self->GetContext(), (nk_buttons)result, (int)std::floor(mx), (int)std::floor(my), (action == GLFW_PRESS));
+		
 		self->ReleaseUILock();
-	}
+	}*/
 	
 }
 
@@ -106,7 +106,7 @@ void ProtoMapper::MouseMotionEventCallback(GLFWwindow*, double x, double y)
 	auto* self = ProtoMapper::GetInstance();
 
 	self->GetUILock();
-	nk_input_motion(self->GetContext(), (int)std::floor(x), (int)std::floor(y));
+	
 	self->ReleaseUILock();
 }
 
@@ -115,7 +115,7 @@ void ProtoMapper::MouseScrollEventCallback(GLFWwindow* window, double offX, doub
 	auto* self = ProtoMapper::GetInstance();
 
 	self->GetUILock();
-	nk_input_scroll(self->GetContext(), nk_vec2((float)offX, (float)offY));
+	
 	self->ReleaseUILock();
 }
 
@@ -123,8 +123,6 @@ void ProtoMapper::DropEventCallback(GLFWwindow* window, int count, const char** 
 {
 	auto* self = ProtoMapper::GetInstance();
 }
-
-nk_context* ProtoMapper::GetContext() { return _ui->Context(); }
 
 ProtoMapper::~ProtoMapper() 
 {
@@ -276,7 +274,7 @@ void ProtoMapper::Run()
 
 	if (!_ui->SetData(_uiFile))
 	{
-		printf_s("Error: data.ini file not found...\n");
+		fprintf_s(stderr, "Error: data.ini file not found...\n");
 		return;
 	}
 
@@ -290,24 +288,26 @@ void ProtoMapper::Run()
 		time::time_point current = time::now();
 		float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
 
+		_scene->Update(microseconds * 1000000.f);
+		_ui->UpdateUI(_fWidth, _fHeight);
+
+		_renderer->Begin();
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		_scene->DrawNodes();
+		_ui->CompileUI();
+		_ui->DrawUI(_renderer.get());
+
+		_renderer->End();
+		
+		glfwSwapBuffers(_window);
 
 		/*
 			Capture input events for the GUI and the simulation.
 		*/
 
-		nk_input_begin(_ui->Context());
 		glfwPollEvents();
-		nk_input_end(_ui->Context());
-
-		_scene->Update(microseconds * 1000000.f);
-		_scene->DrawNodes();
-
-		_ui->UpdateUI(_fWidth, _fHeight);
-		_ui->CompileUI();
-		_ui->DrawUI(_renderer.get());
-		
-		glfwSwapBuffers(_window);
 	}
 
 }
@@ -315,60 +315,6 @@ void ProtoMapper::Run()
 void ProtoMapper::GetUILock() { _ui->Lock(); }
 
 void ProtoMapper::ReleaseUILock() { _ui->Unlock(); }
-
-int ProtoMapper::GLFWKeytoNKKey(int key, int mods)
-{
-	switch (key)
-	{
-	case GLFW_KEY_LEFT_SHIFT:			return NK_KEY_SHIFT;
-	case GLFW_KEY_RIGHT_SHIFT:			return NK_KEY_SHIFT;
-	case GLFW_KEY_LEFT_CONTROL:			return NK_KEY_CTRL;
-	case GLFW_KEY_RIGHT_CONTROL:		return NK_KEY_CTRL;
-	case GLFW_KEY_DELETE:				return NK_KEY_DEL;
-	case GLFW_KEY_ENTER:				return NK_KEY_ENTER;
-	case GLFW_KEY_TAB:					return NK_KEY_TAB;
-	case GLFW_KEY_BACKSPACE:			return NK_KEY_BACKSPACE;
-	case GLFW_KEY_UP:					return NK_KEY_UP;
-	case GLFW_KEY_DOWN:					return NK_KEY_DOWN;
-	case GLFW_KEY_LEFT:					return NK_KEY_LEFT;
-	case GLFW_KEY_RIGHT:				return NK_KEY_RIGHT;
-	case GLFW_KEY_C:
-	{
-		if (mods & GLFW_MOD_CONTROL)
-			return NK_KEY_COPY;
-		
-		break;
-	}
-	case GLFW_KEY_V:
-	{
-		if (mods & GLFW_MOD_CONTROL)
-			return NK_KEY_PASTE;
-
-		break;
-	}
-	case GLFW_KEY_X:
-	{
-		if (mods & GLFW_MOD_CONTROL)
-			return NK_KEY_CUT;
-
-		break;
-	}
-	default:							return -1;			// Not a nk_key.
-	}
-
-	return -1;			// Not a nk_key.
-}
-
-int ProtoMapper::GLFWButtontoNKButton(int button)
-{
-	switch (button)
-	{
-	case GLFW_MOUSE_BUTTON_LEFT:			return NK_BUTTON_LEFT;
-	case GLFW_MOUSE_BUTTON_RIGHT:			return NK_BUTTON_RIGHT;
-	case GLFW_MOUSE_BUTTON_MIDDLE:			return NK_BUTTON_MIDDLE;
-	default:								return -1;					// Not an nk_button.
-	}
-}
 
 
 int main([[maybe_unused]]int argc, [[maybe_unused]]char** argv)
@@ -384,5 +330,4 @@ int main([[maybe_unused]]int argc, [[maybe_unused]]char** argv)
 		fprintf_s(stdout, "Failed to load application configurations. Please reinstall the program.");
 	}
 
-	return 0; // Don't forget to return 0 from an SDL application. :$
 }
