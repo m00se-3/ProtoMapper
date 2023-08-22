@@ -23,62 +23,65 @@
 
 #include <functional>
 
-class ShaderManager;
-
-struct Shader
+namespace proto
 {
-	using IDType = unsigned int;
-	
-	IDType ID = 0u;
 
-	Shader() = default;
-	Shader(const Shader&);
-	explicit Shader(IDType id);
-	~Shader();
+	class ShaderManager;
 
-	bool operator==(const Shader& rhs);
-	bool operator==(const Shader& rhs) const;
-	Shader& operator=(const Shader& rhs);
+	struct Shader
+	{
+		using IDType = unsigned int;
 
-	/*
-		Create a simple shader program from the traditional vertex and fragment shader combo.
+		IDType ID = 0u;
 
-		Returns the ids to the shader objects, if any are 0 something went wrong.
-	*/
-	std::pair<unsigned int, unsigned int> CreateBasic(const char* srcVert, const char* srcFrag);
+		Shader() = default;
+		Shader(const Shader&);
+		explicit Shader(IDType id);
+		~Shader();
 
-	// Resets the current reference object to 0.
-	void Reset();
+		bool operator==(const Shader& rhs);
+		bool operator==(const Shader& rhs) const;
+		Shader& operator=(const Shader& rhs);
 
-	/*
-		Attach an individual shader object and return the id.
-	*/
-	unsigned int Attach(const char* src, unsigned int type);
+		/*
+			Create a simple shader program from the traditional vertex and fragment shader combo.
 
-	/*
-		Final linking stage of creating an OpenGL shader.
-	*/
-	void Link();
+			Returns the ids to the shader objects, if any are 0 something went wrong.
+		*/
+		std::pair<unsigned int, unsigned int> CreateBasic(const char* srcVert, const char* srcFrag);
 
-	/*
-		Same as Link(), but deletes and detaches the vertex and fragment shader pair after finished.
-	*/
-	void Link(const std::pair<unsigned int, unsigned int>& shaders);
-	void Bind();
-	void Bind() const;
-	void Unbind();
-	void Unbind() const;
-	void Destroy();
+		// Resets the current reference object to 0.
+		void Reset();
 
-	// Pass in a lambda that sets up the uniforms for the shader.
-	void Uniforms(const std::function<void()>& func);
+		/*
+			Attach an individual shader object and return the id.
+		*/
+		unsigned int Attach(const char* src, unsigned int type);
+
+		/*
+			Final linking stage of creating an OpenGL shader.
+		*/
+		void Link();
+
+		/*
+			Same as Link(), but deletes and detaches the vertex and fragment shader pair after finished.
+		*/
+		void Link(const std::pair<unsigned int, unsigned int>& shaders);
+		void Bind();
+		void Bind() const;
+		void Unbind();
+		void Unbind() const;
+		void Destroy();
+
+		// Pass in a lambda that sets up the uniforms for the shader.
+		void Uniforms(const std::function<void()>& func);
 
 
-	static void SetResourceManager(ShaderManager* ptr);
+		static void SetResourceManager(ShaderManager* ptr);
 
-private:
-	static ShaderManager* _manager;
+	private:
+		static ShaderManager* _manager;
 
-};
-
+	};
+}
 #endif // !PROTOMAPPER_SHADER_HPP

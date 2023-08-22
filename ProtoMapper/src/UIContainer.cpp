@@ -22,68 +22,72 @@
 #include "ResourceManager.hpp"
 #include "Renderer.hpp"
 
-Texture2DManager* UIContainer::_texMan = nullptr;
-
-
-void UIContainer::SetResourceManager(Texture2DManager* ptr) { _texMan = ptr; }
-
-UIContainer::UIContainer()
+namespace proto
 {
-	std::string fontFile = ROOT_DIR;
-	fontFile += "/assets/fonts/keep_calm/KeepCalm-Medium.ttf";
 
-	int imgWidth, imgHeight;
-	_fontTexture = _texMan->Load("KeepCalm-Medium");
-	_fontTexture.Create();
-	auto nTexture = _texMan->Get("default");
+	Texture2DManager* UIContainer::_texMan = nullptr;
 
 
-}
+	void UIContainer::SetResourceManager(Texture2DManager* ptr) { _texMan = ptr; }
 
-UIContainer::~UIContainer()
-{
-	_fontTexture.Reset();
-	_texMan->Unload("KeepCalm-Medium");
-
-	if (_updateUIData)
+	UIContainer::UIContainer()
 	{
-		_uiData.SaveFile(_dataFile.c_str());
+		std::string fontFile = ROOT_DIR;
+		fontFile += "/assets/fonts/keep_calm/KeepCalm-Medium.ttf";
+
+		int imgWidth, imgHeight;
+		_fontTexture = _texMan->Load("KeepCalm-Medium");
+		_fontTexture.Create();
+		auto nTexture = _texMan->Get("default");
+
+
 	}
 
-	_uiData.Reset();
-}
-
-bool UIContainer::SetData(const std::filesystem::path& filepath)
-{
-	if (std::filesystem::exists(filepath) && filepath.extension() == ".ini")
+	UIContainer::~UIContainer()
 	{
-		_dataFile = filepath.string();
-		_uiData.LoadFile(_dataFile.c_str());
+		_fontTexture.Reset();
+		_texMan->Unload("KeepCalm-Medium");
 
-		return true;
+		if (_updateUIData)
+		{
+			_uiData.SaveFile(_dataFile.c_str());
+		}
+
+		_uiData.Reset();
 	}
 
-	return false;
-}
+	bool UIContainer::SetData(const std::filesystem::path& filepath)
+	{
+		if (std::filesystem::exists(filepath) && filepath.extension() == ".ini")
+		{
+			_dataFile = filepath.string();
+			_uiData.LoadFile(_dataFile.c_str());
 
-void UIContainer::Lock() { _mutex.lock(); }
+			return true;
+		}
 
-void UIContainer::Unlock() { _mutex.unlock(); }
+		return false;
+	}
 
-void UIContainer::CompileUI()
-{
-	
-}
+	void UIContainer::Lock() { _mutex.lock(); }
 
-void UIContainer::DrawUI(Renderer* ren)
-{
-	
+	void UIContainer::Unlock() { _mutex.unlock(); }
 
-}
+	void UIContainer::CompileUI()
+	{
 
-void UIContainer::UpdateUI(float wWidth, float wHeight)
-{
+	}
 
-	
+	void UIContainer::DrawUI(Renderer* ren)
+	{
 
+
+	}
+
+	void UIContainer::UpdateUI(float wWidth, float wHeight)
+	{
+
+
+
+	}
 }

@@ -21,38 +21,40 @@
 
 #include <filesystem>
 
-// Forward declaration.
-class ResourceManager;
-
-/*
-	Image container class.
-
-	Objects of this type are not, as of yet, handled by the ResourceManager.
-*/
-class Image
+namespace proto
 {
-	int _width = 0, _height = 0, _channels = 4;
-	uint8_t* _data = nullptr;
 
-public:
-	Image() = default;
-	Image(const std::filesystem::path& filename);
-	~Image();
+	// Forward declaration.
+	class ResourceManager;
+	/*
+		Image container class.
 
-	// Load a fresh image from a file.
-	void Load(const std::filesystem::path& filename);
+		Objects of this type are not, as of yet, handled by the ResourceManager.
+	*/
+	class Image
+	{
+		int _width = 0, _height = 0, _channels = 4;
+		uint8_t* _data = nullptr;
 
-	// Copy image data from an existing memory buffer.
-	// This will erase any data already contained in the Image buffer.
-	// Passing null pointer will zero-initialize the image buffer to requested size.
-	void LoadCopy(int w, int h, uint8_t* ptr = nullptr);
+	public:
+		Image() = default;
+		Image(const std::filesystem::path& filename);
+		~Image();
 
-	uint8_t* Data() const;
-	int Width() const;
-	int Height() const;
+		// Load a fresh image from a file.
+		void Load(const std::filesystem::path& filename);
 
-	void Destroy();
+		// Copy image data from an existing memory buffer.
+		// This will erase any data already contained in the Image buffer.
+		// Passing null pointer will zero-initialize the image buffer to requested size.
+		void LoadCopy(int w, int h, uint8_t* ptr = nullptr);
 
-};
+		uint8_t* Data() const;
+		int Width() const;
+		int Height() const;
 
+		void Destroy();
+
+	};
+}
 #endif // !PROTOMAPPER_IMAGE_HPP

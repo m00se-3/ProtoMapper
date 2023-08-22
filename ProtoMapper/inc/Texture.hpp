@@ -21,51 +21,52 @@
 
 #include "Image.hpp"
 
-class Texture2DManager;
-
-
-/*
-	This 2D Texture format is designed to be used with SDL_Surfaces.
-*/
-struct Texture2D
+namespace proto
 {
+
+	class Texture2DManager;
+	/*
+		This 2D Texture format is designed to be used with SDL_Surfaces.
+	*/
+	struct Texture2D
+	{
 #ifdef USE_GLES
-	using IDType = unsigned short;
+		using IDType = unsigned short;
 #else
-	using IDType = unsigned int;
+		using IDType = unsigned int;
 #endif
-	IDType ID = 0u;
+		IDType ID = 0u;
 
-	Texture2D() = default;
-	Texture2D(const Texture2D&);
-	explicit Texture2D(IDType id);
-	~Texture2D();
+		Texture2D() = default;
+		Texture2D(const Texture2D&);
+		explicit Texture2D(IDType id);
+		~Texture2D();
 
-	bool operator==(const Texture2D& rhs);
-	bool operator==(const Texture2D& rhs) const;
-	Texture2D& operator=(const Texture2D& rhs);
+		bool operator==(const Texture2D& rhs);
+		bool operator==(const Texture2D& rhs) const;
+		Texture2D& operator=(const Texture2D& rhs);
 
-	Texture2D& Create();
+		Texture2D& Create();
 
-	// Resets the current reference object to 0.
-	void Reset();
+		// Resets the current reference object to 0.
+		void Reset();
 
-	void Destroy();
-	void Bind(unsigned int slot = 0u);
-	void Bind(unsigned int slot = 0u) const;
-	void Unbind();
-	void Unbind() const;
-	Texture2D& WriteImage(const Image& img);
-	Texture2D& WriteData(const void* data, int width, int height);
-	Texture2D& GenerateBlank(int w, int h, unsigned int colorValue = 0xFFFFFFFF);
+		void Destroy();
+		void Bind(unsigned int slot = 0u);
+		void Bind(unsigned int slot = 0u) const;
+		void Unbind();
+		void Unbind() const;
+		Texture2D& WriteImage(const Image& img);
+		Texture2D& WriteData(const void* data, int width, int height);
+		Texture2D& GenerateBlank(int w, int h, unsigned int colorValue = 0xFFFFFFFF);
 
-	IDType Target() const;
+		IDType Target() const;
 
-	static void SetResourceManager(Texture2DManager* ptr);
+		static void SetResourceManager(Texture2DManager* ptr);
 
 
-private:
-	static Texture2DManager* _manager;
-};
-
+	private:
+		static Texture2DManager* _manager;
+	};
+}
 #endif

@@ -26,61 +26,63 @@
 #include <vector>
 #include <list>
 
-
-class Scene;	// Forward declaration.
-class Renderer;
-class UIContainer;
-
-/*
-	A tree of SceneNodes is constructed to organize the draw calls, and to allow for Scene customization in-app.
-*/
-class SceneNode
+namespace proto
 {
 
-protected:
+	class Scene;	// Forward declaration.
+	class Renderer;
+	class UIContainer;
 
-	SceneNode* parent = nullptr;
-	entt::entity id;
-	std::list<SceneNode*> children;
+	/*
+		A tree of SceneNodes is constructed to organize the draw calls, and to allow for Scene customization in-app.
+	*/
+	class SceneNode
+	{
 
-public:
+	protected:
 
-	friend class Scene;
+		SceneNode* parent = nullptr;
+		entt::entity id;
+		std::list<SceneNode*> children;
 
-	SceneNode(SceneNode* par, entt::entity inID);
+	public:
 
-	entt::entity ID() const;
-	void Update(Scene* container, float dt);
-	void Draw();
-	void Destroy();
-};
+		friend class Scene;
 
-/*
-	The main container class for the many maps and other components in the app.
+		SceneNode(SceneNode* par, entt::entity inID);
 
-	When maps are open they are added to the tree.
-*/
-class Scene
-{
+		entt::entity ID() const;
+		void Update(Scene* container, float dt);
+		void Draw();
+		void Destroy();
+	};
 
-	// Should be thread-safe.
-	UIContainer* _uiInternal = nullptr;
+	/*
+		The main container class for the many maps and other components in the app.
 
-protected:
-	SceneNode* root = nullptr;
-	entt::registry manager;
+		When maps are open they are added to the tree.
+	*/
+	class Scene
+	{
+
+		// Should be thread-safe.
+		UIContainer* _uiInternal = nullptr;
+
+	protected:
+		SceneNode* root = nullptr;
+		entt::registry manager;
 
 
-public:
-	Scene(UIContainer* ptr);
+	public:
+		Scene(UIContainer* ptr);
 
-	bool Init();
-	void Update(float dt);
-	void DrawNodes();
-	void Cleanup();
+		bool Init();
+		void Update(float dt);
+		void DrawNodes();
+		void Cleanup();
 
-	entt::registry& Manager();
+		entt::registry& Manager();
 
-};
-
+	};
+}
 #endif // !PROTOMAPPER_SCENE_HPP

@@ -19,34 +19,37 @@
 #include "Shader.hpp"
 #include "ResourceManager.hpp"
 
-ShaderManager* Shader::_manager = nullptr;
-
-void Shader::SetResourceManager(ShaderManager* ptr)
+namespace proto
 {
-	_manager = ptr;
-}
 
-std::pair<unsigned int, unsigned int> Shader::CreateBasic(const char* srcVert, const char* srcFrag)
-{
-	ID = glCreateProgram();
+	ShaderManager* Shader::_manager = nullptr;
 
-	unsigned int vs = Attach(srcVert, GL_VERTEX_SHADER);
-	unsigned int fs = Attach(srcFrag, GL_FRAGMENT_SHADER);
+	void Shader::SetResourceManager(ShaderManager* ptr)
+	{
+		_manager = ptr;
+	}
 
-	glDeleteShader(vs);
-	glDeleteShader(fs);
+	std::pair<unsigned int, unsigned int> Shader::CreateBasic(const char* srcVert, const char* srcFrag)
+	{
+		ID = glCreateProgram();
 
-	_manager->AddReference(ID);
+		unsigned int vs = Attach(srcVert, GL_VERTEX_SHADER);
+		unsigned int fs = Attach(srcFrag, GL_FRAGMENT_SHADER);
 
-	return std::make_pair(vs, fs);
-}
+		glDeleteShader(vs);
+		glDeleteShader(fs);
 
-unsigned int Shader::Attach(const char* src, unsigned int type)
-{
-	unsigned int shader = glCreateShader(type);
+		_manager->AddReference(ID);
 
-	glShaderSource(shader, 1, &src, nullptr);
-	glCompileShader(shader);
+		return std::make_pair(vs, fs);
+	}
+
+	unsigned int Shader::Attach(const char* src, unsigned int type)
+	{
+		unsigned int shader = glCreateShader(type);
+
+		glShaderSource(shader, 1, &src, nullptr);
+		glCompileShader(shader);
 
 #ifdef _DEBUG_
 
@@ -55,13 +58,13 @@ unsigned int Shader::Attach(const char* src, unsigned int type)
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &test);
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
-		
+
 		if (!test)
 		{
 			char buffer[100u];
 
 			glGetShaderInfoLog(shader, 100u, &length, buffer);
-			
+
 			printf_s("Vertex shader failed to compile: %s\n", buffer);
 
 			return 0u;
@@ -72,90 +75,91 @@ unsigned int Shader::Attach(const char* src, unsigned int type)
 		glAttachShader(ID, shader);
 
 		return shader;
-}
+	}
 
-void Shader::Reset() { ID = 0u; }
+	void Shader::Reset() { ID = 0u; }
 
-void Shader::Link() 
-{
-	glLinkProgram(ID);
+	void Shader::Link()
+	{
+		glLinkProgram(ID);
 
 #ifdef _DEBUG_
-	glValidateProgram(ID);
+		glValidateProgram(ID);
 
-	int result;
-	glGetProgramiv(ID, GL_VALIDATE_STATUS, &result);
+		int result;
+		glGetProgramiv(ID, GL_VALIDATE_STATUS, &result);
 
-	if (!result)
-	{
-		int length;
-		glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &length);
+		if (!result)
+		{
+			int length;
+			glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &length);
 
-		char buffer[100u];
+			char buffer[100u];
 
-		glGetProgramInfoLog(ID, 100u, &length, buffer);
+			glGetProgramInfoLog(ID, 100u, &length, buffer);
 
-		printf_s("Could not link shader program: %s\n", buffer);
-	}
+			printf_s("Could not link shader program: %s\n", buffer);
+		}
 #endif
-}
+	}
 
-void Shader::Link(const std::pair<unsigned int, unsigned int>& shaders)
-{
-	auto [vs, fs] = shaders;
+	void Shader::Link(const std::pair<unsigned int, unsigned int>& shaders)
+	{
+		auto [vs, fs] = shaders;
 
-	Link();
+		Link();
 
-	glDetachShader(ID, vs);
-	glDetachShader(ID, fs);
-}
+		glDetachShader(ID, vs);
+		glDetachShader(ID, fs);
+	}
 
-void Shader::Bind() { glUseProgram(ID); }
+	void Shader::Bind() { glUseProgram(ID); }
 
-void Shader::Bind() const { glUseProgram(ID); }
+	void Shader::Bind() const { glUseProgram(ID); }
 
-void Shader::Unbind() { glUseProgram(0); }
+	void Shader::Unbind() { glUseProgram(0); }
 
-void Shader::Unbind() const { glUseProgram(0); }
+	void Shader::Unbind() const { glUseProgram(0); }
 
-void Shader::Destroy() { glDeleteProgram(ID); }
+	void Shader::Destroy() { glDeleteProgram(ID); }
 
 
-void Shader::Uniforms(const std::function<void()>& func)
-{
-	func();
-}
+	void Shader::Uniforms(const std::function<void()>& func)
+	{
+		func();
+	}
 
-Shader::Shader(const Shader& other)
-	:ID(other.ID)
-{
-	_manager->AddReference(ID);
-}
+	Shader::Shader(const Shader& other)
+		:ID(other.ID)
+	{
+		_manager->AddReference(ID);
+	}
 
-Shader::Shader(IDType id)
-	:ID(id)
-{
-	_manager->AddReference(ID);
-}
+	Shader::Shader(IDType id)
+		:ID(id)
+	{
+		_manager->AddReference(ID);
+	}
 
-Shader::~Shader() { if (_manager->SubReference(ID) == 0u) Destroy(); }
+	Shader::~Shader() { if (_manager->SubReference(ID) == 0u) Destroy(); }
 
-bool Shader::operator==(const Shader& rhs)
-{
-	return ID == rhs.ID;
-}
+	bool Shader::operator==(const Shader& rhs)
+	{
+		return ID == rhs.ID;
+	}
 
-bool Shader::operator==(const Shader& rhs) const
-{
-	return ID == rhs.ID;
-}
+	bool Shader::operator==(const Shader& rhs) const
+	{
+		return ID == rhs.ID;
+	}
 
-Shader& Shader::operator=(const Shader& rhs)
-{
-	if (ID != 0u) _manager->SubReference(ID);
+	Shader& Shader::operator=(const Shader& rhs)
+	{
+		if (ID != 0u) _manager->SubReference(ID);
 
-	ID = rhs.ID;
-	_manager->AddReference(ID);
+		ID = rhs.ID;
+		_manager->AddReference(ID);
 
-	return *this;
+		return *this;
+	}
 }

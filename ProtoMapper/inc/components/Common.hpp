@@ -19,21 +19,24 @@
 #ifndef PROTOMAPPER_COMMON_HPP
 #define PROTOMAPPER_COMMON_HPP
 
-/*
-    Defines the area occupied by the SceneNode. Any position values should be relative to this.
-*/
-struct Rectangle
+namespace proto
 {
-    float x = 0.f, y = 0.f, w = 0.f, h = 0.f;
+    /*
+        Defines the area occupied by the SceneNode. Any position values should be relative to this.
+    */
+    struct Rect
+    {
+        float x = 0.f, y = 0.f, w = 0.f, h = 0.f;
 
-    Rectangle() = default;
-    Rectangle(float x, float y, float w, float h);
+        Rect() = default;
+        Rect(float x, float y, float w, float h);
 
-    bool operator==(const Rectangle& other) const;
+        bool operator==(const Rect& other) const;
 
-    bool Overlaps(const Rectangle& other) const;
-    bool Contains(const Rectangle& other) const;
-};
+        bool Overlaps(const Rect& other) const;
+        bool Contains(const Rect& other) const;
+    };
+}
 
 
 #endif // !PROTOMAPPER_COMMON_HPP

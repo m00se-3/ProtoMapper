@@ -4,66 +4,68 @@
 #include <queue>
 #include <shared_mutex>
 
-/*
-	A thread-safe std::queue wrapper used for passing events around
-	various program components, like the GUI.
-*/
-template<typename T>
-class ts_queue
+namespace proto
 {
-	std::queue<T> _queue;
-	std::shared_mutex _mutex;
-
-public:
-	ts_queue() = default;
-
-	size_t size()
+	/*
+		A thread-safe std::queue wrapper used for passing events around
+		various program components, like the GUI.
+	*/
+	template<typename T>
+	class ts_queue
 	{
-		_mutex.try_lock_shared();
-		auto& s = _queue.size();
-		_mutex.unlock_shared();
-		return s;
-	}
+		std::queue<T> _queue;
+		std::shared_mutex _mutex;
 
-	size_t size() const
-	{
-		_mutex.try_lock_shared();
-		auto& s = _queue.size();
-		_mutex.unlock_shared();
-		return s;
-	}
+	public:
+		ts_queue() = default;
 
-	T pop()
-	{
-		_mutex.try_lock();
-		auto ref = _queue.front();
-		_queue.pop();
-		_mutex.unlock();
-		return ref
-	}
+		size_t size()
+		{
+			_mutex.try_lock_shared();
+			auto& s = _queue.size();
+			_mutex.unlock_shared();
+			return s;
+		}
 
-	void push(const T& value)
-	{
-		_mutex.try_lock();
-		_queue.push(value);
-		_mutex.unlock();
-	}
+		size_t size() const
+		{
+			_mutex.try_lock_shared();
+			auto& s = _queue.size();
+			_mutex.unlock_shared();
+			return s;
+		}
 
-	void push(T&& value)
-	{
-		_mutex.try_lock();
-		_queue.push(std::move(value));
-		_mutex.unlock();
-	}
+		T pop()
+		{
+			_mutex.try_lock();
+			auto ref = _queue.front();
+			_queue.pop();
+			_mutex.unlock();
+			return ref
+		}
 
-	template<typename... Args>
-	void emplace(Args&&... args)
-	{
-		_mutex.try_lock();
-		_queue.emplace(std::forward<Args>(args)...);
-		_mutex.unlock();
-	}
+		void push(const T& value)
+		{
+			_mutex.try_lock();
+			_queue.push(value);
+			_mutex.unlock();
+		}
 
-};
+		void push(T&& value)
+		{
+			_mutex.try_lock();
+			_queue.push(std::move(value));
+			_mutex.unlock();
+		}
 
+		template<typename... Args>
+		void emplace(Args&&... args)
+		{
+			_mutex.try_lock();
+			_queue.emplace(std::forward<Args>(args)...);
+			_mutex.unlock();
+		}
+
+	};
+}
 #endif // !PROTOMAPPER_TS_QUEUE_HPP

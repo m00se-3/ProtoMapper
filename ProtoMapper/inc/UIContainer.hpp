@@ -27,46 +27,47 @@
 #include <string>
 #include <filesystem>
 
-// Forward declarations.
-class Renderer;
-
-
-
-class UIContainer
+namespace proto
 {
-	// For thread-safe access.
-	std::mutex _mutex;
 
-	/*
-		This holds the data that is customizable for the builtin uier interface.
-	*/
-	std::string _dataFile;
-	CSimpleIniA _uiData;
-	bool _updateUIData = false;
+	// Forward declarations.
+	class Renderer;
 
-	Texture2D _fontTexture;
+	class UIContainer
+	{
+		// For thread-safe access.
+		std::mutex _mutex;
 
+		/*
+			This holds the data that is customizable for the builtin uier interface.
+		*/
+		std::string _dataFile;
+		CSimpleIniA _uiData;
+		bool _updateUIData = false;
 
-public:
-	UIContainer();
-	~UIContainer();
-
-	bool SetData(const std::filesystem::path& filepath);
-	void UpdateUI(float wWidth, float wHeight); // This is the big function.
-	void CompileUI();
-	void DrawUI(Renderer* ren);
-
-	void Lock();
-	void Unlock();
+		Texture2D _fontTexture;
 
 
-	static void SetResourceManager(Texture2DManager* ptr);
+	public:
+		UIContainer();
+		~UIContainer();
+
+		bool SetData(const std::filesystem::path& filepath);
+		void UpdateUI(float wWidth, float wHeight); // This is the big function.
+		void CompileUI();
+		void DrawUI(Renderer* ren);
+
+		void Lock();
+		void Unlock();
 
 
-private:
-	static Texture2DManager* _texMan;
-	
+		static void SetResourceManager(Texture2DManager* ptr);
 
-};
 
+	private:
+		static Texture2DManager* _texMan;
+
+
+	};
+}
 #endif // !PROTOMAPPER_UICONTAINER_HPP
