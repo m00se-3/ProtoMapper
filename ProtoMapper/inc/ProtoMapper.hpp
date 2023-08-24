@@ -37,41 +37,6 @@ namespace proto
 	class Renderer;
 	class ResourceManager;
 
-	enum class ButtonState
-	{
-		up,
-		pressed,
-		released,
-		down
-	};
-
-	struct GlobalState
-	{
-		/*
-			Integer values provided by raygui. These map to GLFW keys 1:1.
-		*/
-		enum Keys
-		{
-			right = 262,
-			left = 263,
-			down = 264,
-			up = 265,
-			back = 259,
-			enter = 257
-		};
-
-		float mouseX = 0.0f, mouseY = 0.0f;
-		float mouseWheel = 0.0f;
-		ButtonState mouseButtons[3] = { ButtonState::up };
-		std::unordered_map<Keys, ButtonState> keyStates;
-
-		GlobalState();
-
-		// Revert all non-persistent states to default.
-		void Reset();
-
-	};
-
 	class Mapper
 	{
 		const std::string _title = "ProtoMapper";
@@ -96,7 +61,6 @@ namespace proto
 
 		// Self pointer for use in the GLFW callbacks.
 		static Mapper* _self;
-		static GlobalState _internalState;
 
 
 	public:
@@ -104,7 +68,6 @@ namespace proto
 		~Mapper();
 
 		static Mapper* GetInstance();
-		static GlobalState* GetState();
 
 		bool Configure();
 		void Run();

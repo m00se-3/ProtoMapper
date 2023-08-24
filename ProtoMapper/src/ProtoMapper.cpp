@@ -31,42 +31,13 @@
 namespace proto
 {
 
-	static constexpr std::array<int, 6u> guiKeys = {
-		GlobalState::Keys::right,
-		GlobalState::Keys::left,
-		GlobalState::Keys::down,
-		GlobalState::Keys::up,
-		GlobalState::Keys::back,
-		GlobalState::Keys::enter
-	};
 
 	Mapper* Mapper::_self = nullptr;
-	GlobalState Mapper::_internalState{};
 
 	constexpr const size_t InitialTextBufferSize = 4u * 1024u;	// Allocate 4 KB for the text memory buffer. Can change later if needed.
 
 
 	Mapper* Mapper::GetInstance() { return _self; }
-
-	GlobalState* Mapper::GetState() { return &_internalState; }
-
-	GlobalState::GlobalState()
-	{
-		for (auto key : guiKeys)
-		{
-			keyStates[Keys(key)] = ButtonState::up;
-		}
-	}
-
-	void GlobalState::Reset()
-	{
-		mouseWheel = 0.0f;
-
-		for (auto& key : keyStates)
-		{
-			if (key.second == ButtonState::released) key.second == ButtonState::up;
-		}
-	}
 
 
 	void Mapper::DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, [[maybe_unused]] GLsizei length, const GLchar* message, [[maybe_unused]] const void* userParam)
@@ -95,32 +66,7 @@ namespace proto
 
 	void Mapper::KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods)
 	{
-		auto* state = Mapper::GetState();
-
-		if (state->keyStates.contains(GlobalState::Keys(keyn)))
-		{
-			switch (action)
-			{
-			case GLFW_PRESS:
-			{
-				auto& key = state->keyStates.at(GlobalState::Keys(keyn));
-				key = ButtonState::pressed;
-				break;
-			}
-			case GLFW_REPEAT:
-			{
-				auto& key = state->keyStates.at(GlobalState::Keys(keyn));
-				key = ButtonState::down;
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				auto& key = state->keyStates.at(GlobalState::Keys(keyn));
-				key = ButtonState::released;
-				break;
-			}
-			}
-		}
+		
 
 	}
 
@@ -131,29 +77,7 @@ namespace proto
 
 	void Mapper::MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods)
 	{
-		auto* state = Mapper::GetState();
-
-		if (button < 3)
-		{
-			switch (action)
-			{
-			case GLFW_PRESS:
-			{
-				state->mouseButtons[button] = ButtonState::pressed;
-				break;
-			}
-			case GLFW_REPEAT:
-			{
-				state->mouseButtons[button] = ButtonState::down;
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				state->mouseButtons[button] = ButtonState::released;
-				break;
-			}
-			}
-		}
+		
 
 	}
 
@@ -161,17 +85,12 @@ namespace proto
 
 	void Mapper::MouseMotionEventCallback(GLFWwindow*, double x, double y)
 	{
-		auto* state = Mapper::GetState();
-
-		state->mouseX = static_cast<float>(x);
-		state->mouseY = static_cast<float>(y);
+		
 	}
 
 	void Mapper::MouseScrollEventCallback(GLFWwindow* window, double offX, double offY)
 	{
-		auto* state = Mapper::GetState();
-
-		state->mouseWheel = static_cast<float>(offY);
+		
 	}
 
 	void Mapper::DropEventCallback(GLFWwindow* window, int count, const char** paths)
@@ -361,7 +280,6 @@ namespace proto
 				Capture input events for the GUI and the simulation.
 			*/
 
-			_internalState.Reset();
 			glfwPollEvents();
 		}
 
