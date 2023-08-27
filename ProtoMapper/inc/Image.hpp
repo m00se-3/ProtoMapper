@@ -39,6 +39,7 @@ namespace proto
 	public:
 		Image() = default;
 		Image(const std::filesystem::path& filename);
+		Image(int w, int h, uint8_t* ptr = nullptr);
 		~Image();
 
 		// Load a fresh image from a file.

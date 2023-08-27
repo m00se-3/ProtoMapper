@@ -28,6 +28,13 @@ namespace proto
 		Load(filename);
 	}
 
+	Image::Image(int w, int h, uint8_t* ptr)
+		: _width(w), _height(h), _data(ptr)
+	{
+		// If the pointer passed is nullptr, we allocate a new buffer.
+		if (!_data) _data = (uint8_t*)malloc(size_t(w * h));
+	}
+
 	Image::~Image() { stbi_image_free(_data); }
 
 	void Image::Load(const std::filesystem::path& filename)
