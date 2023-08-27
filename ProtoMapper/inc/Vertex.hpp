@@ -32,9 +32,9 @@ namespace proto
 	template<typename T> class Buffer;
 
 	template<typename T>
-	concept VertexType = requires(Buffer<T>*ptr)
+	concept VertexType = requires()
 	{
-		{ T::Attributes(ptr) } -> std::same_as<void>;
+		{ T::Attributes() } -> std::same_as<void>;
 	};
 
 	struct Vertex2D
@@ -43,7 +43,7 @@ namespace proto
 		glm::vec2 texCoords;
 		glm::vec4 color;
 
-		static void Attributes(Buffer<Vertex2D>* buffer);
+		static void Attributes();
 	};
 
 
@@ -85,16 +85,23 @@ namespace proto
 			_vertices.reserve(numVertices);
 			_indices.reserve(numIndices);
 
+			glBindVertexArray(_vao);
 			glBindBuffer(GL_ARRAY_BUFFER, _vID);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indID);
 
-			VertexType::Attributes(this);
+			glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(Vertex2D), nullptr, GL_DYNAMIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(Buffer<Vertex2D>::IndType), nullptr, GL_DYNAMIC_DRAW);
+
+			VertexType::Attributes();
 
 			glBindVertexArray(0);
 
 			return *this;
 		}
 
+		/*
+			Don't forget to write the data to the GPU with a call to WriteData().
+		*/
 		Buffer& AddValues(const std::vector<VertexType>& verts, const std::vector<IndType>& inds)
 		{
 			for (auto& vert : verts)
@@ -115,11 +122,13 @@ namespace proto
 		Buffer& SetNumberOfIndices(size_t size) { _indices.reserve(size); return *this; }
 
 		Buffer& WriteData() {
+			glBindVertexArray(_vao);
 			glBindBuffer(GL_ARRAY_BUFFER, _vID);
 			glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(VertexType), _vertices.data(), GL_DYNAMIC_DRAW);
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indID);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), _indices.data(), GL_DYNAMIC_DRAW);
+			glBindVertexArray(0);
 
 			return *this;
 		}
