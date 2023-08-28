@@ -117,11 +117,11 @@ namespace proto
 			glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, &_projection[0][0]);
 			glUniform1i(glGetUniformLocation(shader.ID, "textureData"), 0);
 
-			glDrawElements(drawMode, buffer.GetNumberOfIndices(), GLIndexType, buffer.Indices());
+			glDrawElements(drawMode, buffer.GetNumberOfIndices(), GLIndexType, nullptr);
 
-			buffer.Unbind();
 			texture.Unbind();
 			shader.Unbind();
+			buffer.Unbind();
 		}
 
 		template<typename IndexType, typename OffsetType>
