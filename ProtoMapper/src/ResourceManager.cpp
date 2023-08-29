@@ -60,7 +60,7 @@ namespace proto
 
     std::string_view ResourceManager::GetString(const std::string_view& name)
     {
-        if (_stringMap.count(name.data()) > 0)
+        if (_stringMap.contains(name.data()))
         {
             auto& result = _stringMap.at(std::pmr::string{ name.data(), name.size(), &_textAllocator });
 
@@ -87,7 +87,7 @@ namespace proto
     {
         m_Storage.lock();
 
-        if (_storage.count(std::string{ name.data(), name.size() }) > 0)
+        if (_storage.contains(name.data()))
         {
             auto& res = _storage.at(std::string{ name.data(), name.size() });
 
@@ -109,7 +109,7 @@ namespace proto
 
         m_Storage.lock();
 
-        if (_storage.count(std::string{ name.data(), name.size() }) > 0)
+        if (_storage.contains(name.data()))
         {
             res = _storage.at(std::string{ name.data(), name.size() });
         }
@@ -127,7 +127,7 @@ namespace proto
         */
         m_Storage.lock();
 
-        if (_storage.count(std::string{ name.data(), name.size() }) > 0)
+        if (_storage.contains(name.data()))
         {
             auto& texture = _storage.at(std::string{ name.data(), name.size() });
 
@@ -148,7 +148,7 @@ namespace proto
     {
         m_References.lock();
 
-        if (_references.count(id) == 0u)
+        if (!_references.contains(id))
         {
             _references.insert_or_assign(id, std::make_pair(false, 1u));
         }
@@ -167,7 +167,7 @@ namespace proto
 
         size_t result = 0u;
 
-        if (_references.count(id) > 0u)
+        if (_references.contains(id))
         {
             auto& count = _references.at(id);
             --count.second;
@@ -190,7 +190,7 @@ namespace proto
     {
         m_Storage.lock();
 
-        if (_storage.count(std::string{ name.data(), name.size() }) > 0)
+        if (_storage.contains(name.data()))
         {
             auto& res = _storage.at(std::string{ name.data(), name.size() });
 
@@ -212,7 +212,7 @@ namespace proto
 
         m_Storage.lock();
 
-        if (_storage.count(std::string{ name.data(), name.size() }) > 0)
+        if (_storage.contains(name.data()))
         {
             res = _storage.at(std::string{ name.data(), name.size() });
         }
@@ -230,7 +230,7 @@ namespace proto
         */
         m_Storage.lock();
 
-        if (_storage.count(std::string{ name.data(), name.size() }) > 0)
+        if (_storage.contains(name.data()))
         {
             auto& shader = _storage.at(std::string{ name.data(), name.size() });
 
@@ -251,7 +251,7 @@ namespace proto
     {
         m_References.lock();
 
-        if (_references.count(id) == 0u)
+        if (_references.contains(id))
         {
             _references.insert_or_assign(id, std::make_pair(false, 1u));
         }
@@ -270,7 +270,7 @@ namespace proto
 
         size_t result = 0u;
 
-        if (_references.count(id) > 0u)
+        if (_references.contains(id))
         {
             auto& count = _references.at(id);
             --count.second;
