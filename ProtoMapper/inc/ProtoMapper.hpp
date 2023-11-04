@@ -27,8 +27,8 @@
 
 #include <string>
 #include <memory>
-#include <array>
 #include <filesystem>
+#include <unordered_map>
 
 namespace proto
 {
@@ -43,21 +43,23 @@ namespace proto
 		std::filesystem::path _rootDir;
 		bool _appRunning = true, _mapOpen = true, _panning = false, _fullscreen = true, _configUpdate = false;
 
-		float _fWidth = 1024.f, _fHeight = 768.f;
 		int _wWidth = 1024, _wHeight = 768;
 
 		GLFWwindow* _window = nullptr;
 		GLFWmonitor* _monitor = nullptr;
+
+		std::unique_ptr<uint8_t[]> _stringMemoryBuffer;
 
 		std::unique_ptr<Scene> _scene;
 		std::unique_ptr<UIContainer> _ui;
 		std::unique_ptr<Renderer> _renderer;
 		std::unique_ptr<ResourceManager> _resources;
 
-		char* _textMemoryBuffer = nullptr;
-
-		std::filesystem::path _configFile, _uiFile;
+		std::filesystem::path _configFile;
 		CSimpleIniA _configData;
+
+		// Text directories as defined in config.ini section [preload_directories].
+		std::unordered_map<std::string, std::string> _dataTextFields;
 
 		// Self pointer for use in the GLFW callbacks.
 		static Mapper* _self;
@@ -69,10 +71,15 @@ namespace proto
 
 		static Mapper* GetInstance();
 
-		bool Configure();
-		void Run();
-		void GetUILock();
-		void ReleaseUILock();
+		[[nodiscard]]bool Configure();
+		[[nodiscard]]int Run();
+		void SetWindow(int w, int h);
+
+		int GetWindowWidth() const;
+		int GetWindowHeight() const;
+
+		Renderer* GetRenderer();
+		UIContainer* UI();
 
 		static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
@@ -88,6 +95,9 @@ namespace proto
 		static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
 		static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
 		static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
+		static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
+
+		// static protoui::ButtonState GetButtonStateFromGLFWState(int state);
 
 	};
 }

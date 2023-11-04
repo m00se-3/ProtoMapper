@@ -29,8 +29,6 @@
 namespace proto
 {
 
-	template<typename T> class Buffer;
-
 	template<typename T>
 	concept VertexType = requires()
 	{
@@ -52,9 +50,9 @@ namespace proto
 	{
 	public:
 #ifdef USE_GLES
-		using IndType = unsigned short;
+		using IndType = uint16_t;
 #else
-		using IndType = unsigned int;
+		using IndType = uint32_t;
 #endif
 
 	private:
@@ -87,10 +85,10 @@ namespace proto
 
 			glBindVertexArray(_vao);
 			glBindBuffer(GL_ARRAY_BUFFER, _vID);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indID);
+			glBufferData(GL_ARRAY_BUFFER, _vertices.capacity() * sizeof(VertexType), nullptr, GL_DYNAMIC_DRAW);
 
-			glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(Vertex2D), nullptr, GL_DYNAMIC_DRAW);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(Buffer<Vertex2D>::IndType), nullptr, GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indID);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.capacity() * sizeof(IndType), nullptr, GL_DYNAMIC_DRAW);
 
 			VertexType::Attributes();
 
@@ -127,7 +125,7 @@ namespace proto
 			glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(VertexType), _vertices.data(), GL_DYNAMIC_DRAW);
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indID);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), _indices.data(), GL_DYNAMIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(IndType), _indices.data(), GL_DYNAMIC_DRAW);
 			glBindVertexArray(0);
 
 			return *this;
@@ -146,6 +144,8 @@ namespace proto
 		}
 
 		void Unbind() const { glBindVertexArray(0); }
+
+		void Clear() { _vertices.clear(); _indices.clear(); }
 	};
 }
 #endif // !PROTOMAPPER_VERTEX_HPP

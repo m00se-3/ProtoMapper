@@ -18,7 +18,6 @@
 
 #include "Image.hpp"
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 namespace proto
@@ -78,6 +77,8 @@ namespace proto
 		return _height;
 	}
 
+	bool Image::Empty() const { return _data == nullptr; }
+	
 	void Image::Destroy()
 	{
 		if (_data)

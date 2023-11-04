@@ -17,77 +17,120 @@
 */
 
 #include "UIContainer.hpp"
-
-#include "Vertex.hpp"
-#include "ResourceManager.hpp"
-#include "Renderer.hpp"
+#include "Gwork/Controls/Canvas.h"
 
 namespace proto
 {
 
-	Texture2DManager* UIContainer::_texMan = nullptr;
+	ResourceManager* UIContainer::_resources = nullptr;
 
 
-	void UIContainer::SetResourceManager(Texture2DManager* ptr) { _texMan = ptr; }
+	void UIContainer::SetResourceManager(ResourceManager* ptr) { _resources = ptr; }
 
-	UIContainer::UIContainer()
+	/*
+		RootFrame definitions.
+	*/
+
+	GWK_CONTROL_CONSTRUCTOR(RootFrame) // Member initialization is handled by the macro.
 	{
-		std::string fontFile = ROOT_DIR;
-		fontFile += "/assets/fonts/keep_calm/KeepCalm-Medium.ttf";
+		Dock(Gwk::Position::Fill);
 
-		int imgWidth, imgHeight;
-		_fontTexture = _texMan->Load("KeepCalm-Medium");
-		_fontTexture.Create();
-		auto nTexture = _texMan->Get("default");
+		_statusBar = std::make_unique<Gwk::Controls::StatusBar>(this);
+		_statusBar->Dock(Gwk::Position::Bottom);
+		_statusBar->SetTextColor(Gwk::Color{ 0u, 0u, 0u, 255u });
+		_statusBar->SetText("This is working.");
+
+		_button = std::make_unique<Gwk::Controls::Button>(this);
+		_button->SetBounds(Gwk::Rect{ 10, 10, 50, 20 });
+		_button->SetText("Hello!");
+	}
+
+	void RootFrame::Render(Gwk::Skin::Base* skin)
+	{
+		ParentClass::Render(skin);
+	}
+
+	bool RootFrame::Construct(const std::filesystem::path& root)
+	{
 
 
+		return true;
+	}
+
+	/*
+		ProtoResourcePaths definitions
+	*/
+
+	ProtoResourcePaths::ProtoResourcePaths(const std::string& resourcePath)
+		: _path(resourcePath)
+	{}
+
+	std::string ProtoResourcePaths::GetPath(Gwk::ResourcePaths::Type type, std::string const& relPath)
+	{
+		std::string result = _path;
+
+		if (type == Gwk::ResourcePaths::Type::Font)
+		{
+			result += "/fonts/";
+		}
+
+		if (type == Gwk::ResourcePaths::Type::Texture)
+		{
+			result += "/UIskins/";
+		}
+		
+		return (result + relPath);
+	}
+
+
+	/*
+		UIContainer definitions.
+	*/
+
+
+	UIContainer::UIContainer(Gwk::ResourcePaths& paths, int width, int height)
+		: _renderer(std::make_unique<Gwk::Renderer::OpenGLCore>(paths, Gwk::Rect(Gwk::Point(0,0), Gwk::Point(width,height))))
+	{
+		// Finish setup.
+		_renderer->Init();
+		_skin = std::make_unique<Gwk::Skin::TexturedBase>(_renderer.get());
+		_skin->Init("DefaultSkin.png");
+		_skin->SetDefaultFont("OpenSans.ttf");
+		
+		_canvas = std::make_unique<Gwk::Controls::Canvas>(_skin.get());
+		_canvas->SetSize(Gwk::Point(width, height));
+
+		_inputHandle.Initialize(_canvas.get());
+		_frame = std::make_unique<RootFrame>(_canvas.get());
 	}
 
 	UIContainer::~UIContainer()
 	{
-		_fontTexture.Reset();
-		_texMan->Unload("KeepCalm-Medium");
-
-		if (_updateUIData)
-		{
-			_uiData.SaveFile(_dataFile.c_str());
-		}
-
-		_uiData.Reset();
+		_frame.reset(nullptr);
+		_canvas.reset(nullptr);
+		_skin.reset(nullptr);
 	}
 
-	bool UIContainer::SetData(const std::filesystem::path& filepath)
+	bool UIContainer::SetDefinitionsPath(const std::filesystem::path& filepath)
 	{
-		if (std::filesystem::exists(filepath) && filepath.extension() == ".ini")
+		if(std::filesystem::exists(filepath))
 		{
-			_dataFile = filepath.string();
-			_uiData.LoadFile(_dataFile.c_str());
+			_interfaceDir = filepath;
 
 			return true;
 		}
-
+		
 		return false;
 	}
 
-	void UIContainer::Lock() { _mutex.lock(); }
-
-	void UIContainer::Unlock() { _mutex.unlock(); }
-
-	void UIContainer::CompileUI()
-	{
-
+    void UIContainer::AddFont(const std::filesystem::path& filepath)
+    {
 	}
 
-	void UIContainer::DrawUI(Renderer* ren)
+	Gwk::Input::GLFW3* UIContainer::InputHandle() { return &_inputHandle; }
+
+	void UIContainer::Draw()
 	{
-
-
-	}
-
-	void UIContainer::UpdateUI(float wWidth, float wHeight)
-	{
-
-
-
+		_canvas->RenderCanvas();
 	}
 }

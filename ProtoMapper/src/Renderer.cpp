@@ -17,22 +17,16 @@
 */
 
 #include "Renderer.hpp"
-#include "ResourceManager.hpp"
 
 #include <filesystem>
 #include <cstdio>
+#include <array>
 
 namespace proto
 {
 
-	Texture2DManager* Renderer::_texMan = nullptr;
-	ShaderManager* Renderer::_shadMan = nullptr;
-
-	void Renderer::SetResourceManager(ResourceManager* res) { _texMan = res->Textures(); _shadMan = res->Shaders(); }
-
 	Renderer::Renderer(const std::string& dir)
-		: _model(glm::mat4(1.f)), _view(glm::mat4(1.f)), _currentTexture(std::nullopt), _currentShader(std::nullopt),
-		_defaultShader(_shadMan->Load("default")), _defaultTexture(_texMan->Load("default"))
+		: _model(glm::mat4(1.f)), _view(glm::mat4(1.f)), _projection(glm::mat4(1.f)), _currentTexture(std::nullopt), _currentShader(std::nullopt)
 	{
 
 		_defaultTexture.Create().GenerateBlank(1, 1);
@@ -49,31 +43,37 @@ namespace proto
 		FILE* vsHandle;
 		FILE* fsHandle;
 
-		fopen_s(&vsHandle, vs.string().c_str(), "r");
-		fopen_s(&fsHandle, fs.string().c_str(), "r");
+		auto errvs = fopen_s(&vsHandle, vs.string().c_str(), "r");
+		auto errfs = fopen_s(&fsHandle, fs.string().c_str(), "r");
 
-		std::string vsSrc, fsSrc;						// Strings that will hold the source text.
+		if (errvs == 0 && errfs == 0)
+		{
 
-		vsSrc.reserve(std::filesystem::file_size(vs));
-		fsSrc.reserve(std::filesystem::file_size(fs));
+			std::string vsSrc, fsSrc;						// Strings that will hold the source text.
 
-		/*
-			Read each shader file line by line until the end.
-		*/
+			vsSrc.reserve(std::filesystem::file_size(vs));
+			fsSrc.reserve(std::filesystem::file_size(fs));
 
-		char buffer[50u];
+			/*
+				Read each shader file line by line until the end.
+			*/
 
-		while (feof(vsHandle) == 0)
-			vsSrc += fgets(buffer, 50u, vsHandle);
+			std::array<char, 50u> buffer = { 0 };
 
-		while (feof(fsHandle) == 0)
-			fsSrc += fgets(buffer, 50u, fsHandle);
+			while (feof(vsHandle) == 0)
+				vsSrc += fgets(buffer.data(), 50u, vsHandle);
 
-		fclose(vsHandle);
-		fclose(fsHandle);
+			memset(buffer.data(), 0, 50u);	// Reset the buffer memory to ensure no garbage data is present.
 
-		auto objs = _defaultShader.CreateBasic(vsSrc.c_str(), fsSrc.c_str());
-		_defaultShader.Link(objs);
+			while (feof(fsHandle) == 0)
+				fsSrc += fgets(buffer.data(), 50u, fsHandle);
+
+			fclose(vsHandle);
+			fclose(fsHandle);
+
+			auto objs = _defaultShader.CreateBasic(vsSrc.c_str(), fsSrc.c_str());
+			_defaultShader.Link(objs);
+		}
 	}
 
 	bool Renderer::Init(mode newMode)
@@ -87,9 +87,13 @@ namespace proto
 		return true;
 	}
 
-	float Renderer::GetRenderWidth() const { return _vWidth; }
+	int Renderer::GetRenderWidth() const { return _vWidth; }
 
-	float Renderer::GetRenderHeight() const { return _vHeight; }
+	int Renderer::GetRenderHeight() const { return _vHeight; }
+
+	int Renderer::GetRenderX() const { return _vX; }
+
+	int Renderer::GetRenderY() const { return _vY; }
 
 	void Renderer::Begin()
 	{
@@ -101,8 +105,6 @@ namespace proto
 			break;
 		}
 		case Renderer::mode::Three:
-			break;
-		default:
 			break;
 		}
 	}
@@ -118,26 +120,26 @@ namespace proto
 		}
 		case Renderer::mode::Three:
 			break;
-		default:
-			break;
 		}
 	}
 
 	Renderer::mode Renderer::GetRenderMode() const { return _currentMode; }
 
-	void Renderer::SetRenderWindow(float w, float h)
+	void Renderer::SetRenderSize(int w, int h)
 	{
 		_vWidth = w; _vHeight = h;
 	}
 
 	void Renderer::SetViewport(int x, int y, int w, int h)
 	{
+		_vX = x; _vY = y;
+
 		/*
 			We want to set the viewport using the top-left as the point of origin, but openGL uses the bottom-left.
 
 			We quickly transpose the 'y' value to match up with what the user wants.
 		*/
-		glViewport(x, (int)_vHeight - (h + y), w, h);
+		glViewport(_vX, (_vHeight - (h + _vY)), w, h);
 	}
 
 	void Renderer::SetRenderMode(Renderer::mode m)
@@ -148,7 +150,7 @@ namespace proto
 		{
 		case mode::Two:
 		{
-			_projection = glm::ortho(0.f, _vWidth, _vHeight, 0.f);
+			_projection = glm::ortho(0.f, (float)_vWidth, (float)_vHeight, 0.f);
 			_view = glm::lookAt(glm::vec3{ 0.0f, 0.0f, 0.f }, glm::vec3{ 0.f, 0.f, -1.f }, glm::vec3{ 0.f, 1.f, 0.f });
 			_model = glm::mat4(1.0f);
 			break;
@@ -156,7 +158,7 @@ namespace proto
 		case mode::Three:
 		{
 			// Make sure this is correct before testing.
-			_projection = glm::perspective(glm::quarter_pi<float>(), _vWidth / _vHeight, 1.f, 10.f);
+			_projection = glm::perspective(glm::quarter_pi<float>(), (float)_vWidth / (float)_vHeight, 1.f, 10.f);
 			break;
 		}
 		}
@@ -190,6 +192,10 @@ namespace proto
 
 	Renderer::~Renderer()
 	{
+		if (_currentTexture) _currentTexture->Destroy();
+		if (_currentShader) _currentShader->Destroy();
 
+		_defaultTexture.Destroy();
+		_defaultShader.Destroy();
 	}
 }

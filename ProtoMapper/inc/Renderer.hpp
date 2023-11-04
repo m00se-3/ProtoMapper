@@ -34,10 +34,6 @@
 namespace proto
 {
 
-	class ResourceManager;
-	class Texture2DManager;
-	class ShaderManager;
-
 	class Renderer
 	{
 	public:
@@ -50,7 +46,7 @@ namespace proto
 	private:
 		glm::mat4 _model, _view, _projection;
 		mode _currentMode = mode::Two;
-		float _vWidth = 0.f, _vHeight = 0.f;
+		int _vX = 0, _vY = 0, _vWidth = 0, _vHeight = 0;
 
 		std::optional<Texture2D> _currentTexture;
 		std::optional<Shader> _currentShader;
@@ -59,31 +55,23 @@ namespace proto
 
 		std::function<void()> _uniforms = []() {};
 
-		/*
-			Thus far, Renderer only needs these on creation, when it needs to construct
-			it's default shader and texture.
-
-			This could be a canidate for further optimization.
-		*/
-
-		static Texture2DManager* _texMan;
-		static ShaderManager* _shadMan;
-
 	public:
 
 		Renderer(const std::string& dir);
 		~Renderer();
-
-		static void SetResourceManager(ResourceManager* res);
 
 		mode GetRenderMode() const;
 
 		bool Init(mode newMode);
 		void Begin();
 		void End();
-		void SetRenderWindow(float w, float h);
-		float GetRenderWidth() const;
-		float GetRenderHeight() const;
+
+		void SetRenderSize(int w, int h);
+		int GetRenderWidth() const;
+		int GetRenderHeight() const;
+		int GetRenderX() const;
+		int GetRenderY() const;
+
 		void SetUniforms(const std::function<void()>& uniforms);
 		void SetViewport(int x, int y, int w, int h);
 		void SetRenderMode(mode m);
@@ -91,11 +79,13 @@ namespace proto
 		void UseShader(std::optional<Shader> shader = std::nullopt);
 
 		template<typename VertexType>
-		void DrawBuffer(const Buffer<VertexType>& buffer, unsigned int drawMode = GL_TRIANGLES)
+		const unsigned int* DrawBuffer(Buffer<VertexType>& buffer, std::optional<unsigned int> indexCount = std::nullopt, const unsigned int* offset = nullptr, unsigned int drawMode = GL_TRIANGLES)
 		{
 			unsigned int GLIndexType = 0u;
 
-			if constexpr (std::is_same_v<typename Buffer<VertexType>::IndType, unsigned int>)
+			const auto elements = indexCount.value_or(buffer.GetNumberOfIndices());
+
+			if constexpr (std::is_same_v<typename Buffer<VertexType>::IndType, uint32_t>)
 			{
 				GLIndexType = GL_UNSIGNED_INT;
 			}
@@ -117,19 +107,21 @@ namespace proto
 			glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, &_projection[0][0]);
 			glUniform1i(glGetUniformLocation(shader.ID, "textureData"), 0);
 
-			glDrawElements(drawMode, buffer.GetNumberOfIndices(), GLIndexType, nullptr);
+			glDrawElements(drawMode, elements, GLIndexType, offset);
 
 			texture.Unbind();
 			shader.Unbind();
 			buffer.Unbind();
+
+			return offset + elements;
 		}
 
 		template<typename IndexType, typename OffsetType>
-		void DrawFromExternal(unsigned int vertexArray, int numInds, unsigned int drawMode = GL_TRIANGLES, const OffsetType* offset = nullptr)
+		const unsigned int* DrawFromExternal(unsigned int vertexArray, int numInds, unsigned int drawMode = GL_TRIANGLES, const OffsetType* offset = nullptr)
 		{
 			unsigned int GLIndexType = 0u;
 
-			if constexpr (std::is_same_v<IndexType, unsigned int>)
+			if constexpr (std::is_same_v<IndexType, uint32_t>)
 			{
 				GLIndexType = GL_UNSIGNED_INT;
 			}
@@ -157,6 +149,8 @@ namespace proto
 
 			texture.Unbind();
 			shader.Unbind();
+
+			return offset + numInds;
 		}
 	};
 }

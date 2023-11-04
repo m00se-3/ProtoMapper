@@ -20,17 +20,15 @@
 #define PROTOMAPPER_SHADER_HPP
 
 #include "glad/glad.h"
+#include "Concepts.hpp"
 
 #include <functional>
 
 namespace proto
 {
-
-	class ShaderManager;
-
 	struct Shader
 	{
-		using IDType = unsigned int;
+		using IDType = uint32_t;
 
 		IDType ID = 0u;
 
@@ -39,16 +37,18 @@ namespace proto
 		explicit Shader(IDType id);
 		~Shader();
 
-		bool operator==(const Shader& rhs);
 		bool operator==(const Shader& rhs) const;
 		Shader& operator=(const Shader& rhs);
+
+		IDType GetID() const;
+		bool Valid() const;
 
 		/*
 			Create a simple shader program from the traditional vertex and fragment shader combo.
 
 			Returns the ids to the shader objects, if any are 0 something went wrong.
 		*/
-		std::pair<unsigned int, unsigned int> CreateBasic(const char* srcVert, const char* srcFrag);
+		std::pair<IDType, IDType> CreateBasic(const char* srcVert, const char* srcFrag);
 
 		// Resets the current reference object to 0.
 		void Reset();
@@ -56,7 +56,7 @@ namespace proto
 		/*
 			Attach an individual shader object and return the id.
 		*/
-		unsigned int Attach(const char* src, unsigned int type);
+		unsigned int Attach(const char* src, IDType type);
 
 		/*
 			Final linking stage of creating an OpenGL shader.
@@ -66,7 +66,7 @@ namespace proto
 		/*
 			Same as Link(), but deletes and detaches the vertex and fragment shader pair after finished.
 		*/
-		void Link(const std::pair<unsigned int, unsigned int>& shaders);
+		void Link(const std::pair<IDType, IDType>& shaders);
 		void Bind();
 		void Bind() const;
 		void Unbind();
@@ -75,12 +75,6 @@ namespace proto
 
 		// Pass in a lambda that sets up the uniforms for the shader.
 		void Uniforms(const std::function<void()>& func);
-
-
-		static void SetResourceManager(ShaderManager* ptr);
-
-	private:
-		static ShaderManager* _manager;
 
 	};
 }

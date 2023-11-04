@@ -19,21 +19,18 @@
 #ifndef PROTOMAPPER_TEXTURE_HPP
 #define PROTOMAPPER_TEXTURE_HPP
 
+#include "Concepts.hpp"
 #include "Image.hpp"
 
 namespace proto
 {
 
-	class Texture2DManager;
-	/*
-		This 2D Texture format is designed to be used with SDL_Surfaces.
-	*/
 	struct Texture2D
 	{
 #ifdef USE_GLES
-		using IDType = unsigned short;
+		using IDType = uint16_t;
 #else
-		using IDType = unsigned int;
+		using IDType = uint32_t;
 #endif
 		IDType ID = 0u;
 
@@ -42,31 +39,29 @@ namespace proto
 		explicit Texture2D(IDType id);
 		~Texture2D();
 
-		bool operator==(const Texture2D& rhs);
 		bool operator==(const Texture2D& rhs) const;
 		Texture2D& operator=(const Texture2D& rhs);
 
 		Texture2D& Create();
 
+		bool Valid() const; // Is the Texture valid.
+
 		// Resets the current reference object to 0.
 		void Reset();
 
+		IDType GetID() const;
+
 		void Destroy();
-		void Bind(unsigned int slot = 0u);
-		void Bind(unsigned int slot = 0u) const;
+		void Bind(uint32_t slot = 0u);
+		void Bind(uint32_t slot = 0u) const;
 		void Unbind();
 		void Unbind() const;
 		Texture2D& WriteImage(const Image& img);
 		Texture2D& WriteData(const void* data, int width, int height);
-		Texture2D& GenerateBlank(int w, int h, unsigned int colorValue = 0xFFFFFFFF);
+		Texture2D& GenerateBlank(int w, int h, uint32_t colorValue = 0xFFFFFFFF);
 
 		IDType Target() const;
 
-		static void SetResourceManager(Texture2DManager* ptr);
-
-
-	private:
-		static Texture2DManager* _manager;
 	};
 }
 #endif

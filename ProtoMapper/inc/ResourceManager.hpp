@@ -21,136 +21,205 @@
 
 #include "Texture.hpp"
 #include "Shader.hpp"
+#include "Concepts.hpp"
 
 #include <memory_resource>
+#include <span>
 #include <string>
 #include <string_view>
 #include <memory>
 #include <unordered_map>
 #include <map>
-#include <mutex>
 
 namespace proto
 {
 
-	class Texture2DManager;
-	class ShaderManager;
+	template<IdentifiedExternal Resource>
+	class ReferenceCounter;
 
 
 	/*
 		The ResouceManager is in charge of storing shaders, textures, and other external data resources.
 		It also keeps a reference count of each resource.
-
-		The class uses a template structure for modifying the resource containers that I haven't tried before.
-		The purpose is to try and minimize the number of functions that must be added per resource container.
 	*/
 	class ResourceManager
 	{
-		std::pmr::monotonic_buffer_resource _textResource;
+		
+		std::pmr::monotonic_buffer_resource _upstream;
 		std::pmr::synchronized_pool_resource _textAllocator;
 
-		std::mutex _mutex;
-
 		// String storage map.
-
 		std::pmr::map<std::pmr::string, std::pmr::string> _stringMap;
 
-		// Separate handlers for textures and shaders allows for easier data sharing between threads.
-
-		std::unique_ptr<Texture2DManager> _textures;
-		std::unique_ptr<ShaderManager> _shaders;
+		std::unique_ptr<ReferenceCounter<Texture2D>> _textures;
+		std::unique_ptr<ReferenceCounter<Shader>> _shaders;
 
 
 	public:
-		ResourceManager(void* memory, size_t size);
-		~ResourceManager();
+		ResourceManager(const std::span<uint8_t>& resource);
+		~ResourceManager() = default;
+		
+		ReferenceCounter<Texture2D>* Textures();
+		ReferenceCounter<Shader>* Shaders();
 
-		// Mutex operations.
-
-		void Lock();
-		void Unlock();
-
-		/*
-			Functions for assigning data references to the appropriate parts.
-		*/
-
-		Texture2DManager* Textures();
-		ShaderManager* Shaders();
-
-		// String handling functions.
-
-		std::string_view LoadString(const std::string& name, const std::string& content);
+		void LoadStringRes(const std::string& name, const std::string& content);
 		std::string_view GetString(const std::string_view& name);
 		void UnloadString(const std::string_view& name);
 
 	};
 
-	class Texture2DManager
+	template<IdentifiedExternal Resource>
+	class GPUResource
+	{
+		Resource _object;
+
+		static ReferenceCounter<Resource>* _manager;
+
+	public:
+		GPUResource()
+			: _object()
+		{
+			_manager->AddReference(_object.GetID());
+		}
+
+		GPUResource(GPUResource& other)
+			: _object(other.Get())
+		{
+			_manager->AddReference(_object.GetID());
+		}
+
+		template<typename... Args>
+		GPUResource(Args&&... args)
+			: _object(std::forward<Args>(args)...)
+		{
+			_manager->AddReference(_object.GetID());
+		}
+
+		~GPUResource()
+		{
+			if (_manager->SubReference(_object.GetID()) == 0u) _object.Destroy();
+		}
+
+		GPUResource& operator=(const GPUResource& other)
+		{
+			if (!_object.Valid() && !_manager->SubReference(_object.GetID())) _object.Destroy();
+
+			_object = other.Get();
+			_manager->AddReference(_object.GetID());
+
+			return *this;
+		}
+
+		bool operator==(const GPUResource& rhs) { return (_object == rhs.Get()); }
+
+		Resource& Get() { return _object; }
+
+		const Resource& Get() const { return _object; }
+
+		static void SetManager(ReferenceCounter<Resource>* ptr) { _manager = ptr; }
+	};
+
+	template<IdentifiedExternal Resource>
+	class ReferenceCounter
 	{
 		using IDType = unsigned int;
 
-		std::mutex m_Storage, m_References;
-
-		std::unordered_map<std::string, Texture2D> _storage;
+		std::unordered_map<std::string, GPUResource<Resource>> _storage;
 		std::unordered_map<IDType, std::pair<bool, uint16_t>> _references;
 
 	public:
-		Texture2DManager() = default;
-		Texture2DManager(const Texture2DManager&) = delete;
-		Texture2DManager(Texture2DManager&&) = delete;
-		~Texture2DManager();
+		ReferenceCounter() = default;
+		ReferenceCounter(const ReferenceCounter&) = delete;
+		ReferenceCounter(ReferenceCounter&&) = delete;
 
-		Texture2D Load(const std::string_view& name);
-		Texture2D Get(const std::string_view& name);
-		void Unload(const std::string_view& name);
+		~ReferenceCounter()
+		{
+			_references.clear();
+			_storage.clear();
+		}
+
+		GPUResource<Resource> Load(const std::string_view& name)
+		{
+			if (_storage.contains(name.data()))
+			{
+				auto& res = _storage.at(std::string{ name.data(), name.size() });
+
+				return res;
+			}
+
+			auto result = _storage.emplace(std::string{ name.data(), name.size() }, Resource{});
+
+			return result.first->second;
+		}
+
+		GPUResource<Resource> Get(const std::string_view& name)
+		{
+			GPUResource<Resource> res;
+
+			if (_storage.contains(name.data()))
+			{
+				res = _storage.at(std::string{ name.data(), name.size() });
+			}
+
+			return res;
+		}
+
+		void Unload(const std::string_view& name)
+		{
+			/*
+				When we unload a resource, we flag it for removal until the
+				last reference to it is destroyed.
+			*/
+			if (_storage.contains(name.data()))
+			{
+				auto& res = _storage.at(std::string{ name.data(), name.size() });
+
+				auto& reference = _references.at(res.Get().GetID());
+				reference.first = true;
+
+				_storage.erase(std::string{ name.data(), name.size() });
+			}
+
+		}
 
 		/*
 			Reference counting.
 		*/
 
 		// Increments the reference count for the resource identified by id.
-		void AddReference(IDType id);
+		void AddReference(IDType id)
+		{
+			if (!_references.contains(id))
+			{
+				_references.insert_or_assign(id, std::make_pair(false, 1u));
+			}
+			else
+			{
+				auto& count = _references.at(id);
+				++count.second;
+			}
+		}
 
 		/*
 			Decrements the reference count of the resource identified by id.
 
 			Returns the number of references remaining.
 		*/
-		size_t SubReference(IDType id);
+		size_t SubReference(IDType id)
+		{
+			size_t result = 0u;
+
+			if (_references.contains(id))
+			{
+				auto& count = _references.at(id);
+				--count.second;
+
+				result = count.second;
+			}
+
+			return result;
+		}
 	};
 
-	class ShaderManager
-	{
-		using IDType = unsigned int;
-
-		std::mutex m_Storage, m_References;
-
-		std::unordered_map<std::string, Shader> _storage;
-		std::unordered_map<IDType, std::pair<bool, uint16_t>> _references;
-
-	public:
-		ShaderManager() = default;
-		ShaderManager(const ShaderManager&) = delete;
-		ShaderManager(ShaderManager&&) = delete;
-		~ShaderManager();
-
-		Shader Load(const std::string_view& name);
-		Shader Get(const std::string_view& name);
-		void Unload(const std::string_view& name);
-
-		/*
-			Reference counting.
-		*/
-
-		// Increments the reference count for the resource identified by id.
-		void AddReference(IDType id);
-
-		/*
-			Decrements the reference count of the resource identified by id.
-
-			Returns the number of references remaining.
-		*/
-		size_t SubReference(IDType id);
-	};
 }
 #endif // !PROTOMAPPER_RESOURCE_MANAGER_HPP

@@ -1,5 +1,5 @@
 ﻿{
-    "version": 3,
+    "version": 6,
     "configurePresets": [
       {
         "name": "base",
@@ -8,15 +8,19 @@
         "binaryDir": "${sourceDir}/build/${presetName}",
         "installDir": "${sourceDir}/install/${presetName}",
         "cacheVariables": {
-          "CMAKE_C_COMPILER": "clang",
-          "CMAKE_CXX_COMPILER": "clang++",
-          "CMAKE_CXX_STANDARD": "20"
+          "CMAKE_C_COMPILER": "cl",
+          "CMAKE_CXX_COMPILER": "cl",
+          "CMAKE_CXX_STANDARD": "23",
+          "USE_ADDR_SANITIZER": false,
+          "WITH_SAMPLE": false,
+          "WITH_TESTS": false
         },
         "environment": {
           "PROGRAM_VERSION": "0.1.0",
           "PROGRAM_DESCRIPTION": "A prototyping tool for level design, map generation, and pathfinding algorithms.",
           "PROGRAM_URL": "https://github.com/m00se-3/ProtoMapper",
           "ROOT_FOLDER": "${sourceDir}"
+          
         }
       },
       {
@@ -28,7 +32,8 @@
           "strategy": "external"
         },
         "cacheVariables": {
-          "CMAKE_BUILD_TYPE": "Debug"
+          "CMAKE_BUILD_TYPE": "Debug",
+          "GWK_TARGET_ARCH": "x64"
         }
       },
       {
@@ -36,7 +41,8 @@
         "displayName": "x64 Release",
         "inherits": "x64-debug",
         "cacheVariables": {
-          "CMAKE_BUILD_TYPE": "Release"
+          "CMAKE_BUILD_TYPE": "Release",
+          "GWK_TARGET_ARCH": "x64"
         }
       }
     ]

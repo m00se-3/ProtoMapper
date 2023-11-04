@@ -16,20 +16,15 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PROTOMAPPER_IMAGE_HPP
-#define PROTOMAPPER_IMAGE_HPP
+#ifndef PROTO_IMAGE_HPP
+#define PROTO_IMAGE_HPP
 
 #include <filesystem>
 
 namespace proto
 {
-
-	// Forward declaration.
-	class ResourceManager;
 	/*
 		Image container class.
-
-		Objects of this type are not, as of yet, handled by the ResourceManager.
 	*/
 	class Image
 	{
@@ -53,9 +48,10 @@ namespace proto
 		uint8_t* Data() const;
 		int Width() const;
 		int Height() const;
+		[[nodiscard("The boolean returned from Image::Empty() has been ignored.")]] bool Empty() const;
 
 		void Destroy();
 
 	};
 }
-#endif // !PROTOMAPPER_IMAGE_HPP
+#endif // !PROTO_IMAGE_HPP

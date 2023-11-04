@@ -24,30 +24,14 @@
 namespace proto
 {
 
-	Texture2DManager* Texture2D::_manager = nullptr;
-
-	void Texture2D::SetResourceManager(Texture2DManager* ptr)
-	{
-		_manager = ptr;
-	}
-
-
-
 	Texture2D::Texture2D(const Texture2D& other)
 		:ID(other.ID)
 	{
-		_manager->AddReference(ID);
 	}
 
 	Texture2D::Texture2D(IDType id)
 		:ID(id)
 	{
-		_manager->AddReference(ID);
-	}
-
-	bool Texture2D::operator==(const Texture2D& rhs)
-	{
-		return ID == rhs.ID;
 	}
 
 	bool Texture2D::operator==(const Texture2D& rhs) const
@@ -57,10 +41,7 @@ namespace proto
 
 	Texture2D& Texture2D::operator=(const Texture2D& rhs)
 	{
-		if (ID != 0u && _manager->SubReference(ID)) Destroy();
-
 		ID = rhs.ID;
-		_manager->AddReference(ID);
 
 		return *this;
 	}
@@ -75,22 +56,24 @@ namespace proto
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		_manager->AddReference(ID);
-
 		return *this;
 	}
 
 	void Texture2D::Reset() { ID = 0u; }
 
+	bool Texture2D::Valid() const { return ID != 0; }
+
+	Texture2D::IDType Texture2D::GetID() const { return ID; }
+
 	void Texture2D::Destroy() { glDeleteTextures(1, &ID); }
 
-	void Texture2D::Bind(unsigned int slot)
+	void Texture2D::Bind(uint32_t slot)
 	{
 		glActiveTexture(GL_TEXTURE0 + slot);
 		glBindTexture(GL_TEXTURE_2D, ID);
 	}
 
-	void Texture2D::Bind(unsigned int slot) const
+	void Texture2D::Bind(uint32_t slot) const
 	{
 		glActiveTexture(GL_TEXTURE0 + slot);
 		glBindTexture(GL_TEXTURE_2D, ID);
@@ -116,7 +99,7 @@ namespace proto
 		return *this;
 	}
 
-	Texture2D& Texture2D::GenerateBlank(int w, int h, unsigned int colorValue)
+	Texture2D& Texture2D::GenerateBlank(int w, int h, uint32_t colorValue)
 	{
 		Bind();
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, &colorValue);
@@ -127,5 +110,5 @@ namespace proto
 	Texture2D::IDType Texture2D::Target() const { return GL_TEXTURE_2D; }
 
 
-	Texture2D::~Texture2D() { if (_manager->SubReference(ID) == 0u) Destroy(); }
+	Texture2D::~Texture2D() {  }
 }

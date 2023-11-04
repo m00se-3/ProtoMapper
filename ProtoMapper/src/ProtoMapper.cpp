@@ -20,40 +20,35 @@
 
 #include "Renderer.hpp"
 #include "ResourceManager.hpp"
-#include "Shader.hpp"
 
 #undef STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 #include <chrono>
 #include <functional>
+#include <print>
 
 namespace proto
 {
-
+	constexpr const size_t InitialTextBufferSize = 8u * 1024u;	// Allocate 8 KB for the text memory buffer. Can change later if needed.
 
 	Mapper* Mapper::_self = nullptr;
-
-	constexpr const size_t InitialTextBufferSize = 4u * 1024u;	// Allocate 4 KB for the text memory buffer. Can change later if needed.
-
 
 	Mapper* Mapper::GetInstance() { return _self; }
 
 
-	void Mapper::DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, [[maybe_unused]] GLsizei length, const GLchar* message, [[maybe_unused]] const void* userParam)
+	void Mapper::DebugOpenGL(GLenum src, GLenum type, [[maybe_unused]] GLuint id, GLenum severity, [[maybe_unused]] GLsizei length, const GLchar* message, [[maybe_unused]] const void* userParam)
 	{
-		fprintf_s(stderr, "Error [%u] [%u] [%u] - %s", src, type, severity, message);
+		std::println("Error {} {} {} - {}", src, type, severity, message);
 	}
 
 	void Mapper::ContextErrorMessage(int code, const char* description)
 	{
-		fprintf_s(stderr, "Error code [%u] - %s\n", code, description);
+		std::println("Error code {} - {}", code, description);
 	}
 
-	void Mapper::MonitorCallback(GLFWmonitor* monitor, int event)
+	void Mapper::MonitorCallback([[maybe_unused]] GLFWmonitor* monitor, [[maybe_unused]] int event)
 	{
-		auto* self = Mapper::GetInstance();
-
 		if (event == GLFW_CONNECTED)
 		{
 
@@ -64,38 +59,70 @@ namespace proto
 		}
 	}
 
-	void Mapper::KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods)
+	void Mapper::KeyboardEventCallback([[maybe_unused]] GLFWwindow* window, int keyn, int scancode, int action, int mods)
 	{
-		
+		auto* self = Mapper::GetInstance()->UI()->InputHandle();
 
+		auto key = Gwk::Input::GLFW3::KeyEvent{ keyn, scancode, action, mods };
+
+		self->ProcessKeyEvent(key);
 	}
 
-	void Mapper::TextEventCallback(GLFWwindow* window, unsigned int codepoint)
-	{
-
-	}
-
-	void Mapper::MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods)
-	{
-		
-
-	}
-
-	// This function exists mainly to pass the information to raygui.
-
-	void Mapper::MouseMotionEventCallback(GLFWwindow*, double x, double y)
-	{
-		
-	}
-
-	void Mapper::MouseScrollEventCallback(GLFWwindow* window, double offX, double offY)
-	{
-		
-	}
-
-	void Mapper::DropEventCallback(GLFWwindow* window, int count, const char** paths)
+	void Mapper::TextEventCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]] unsigned int codepoint)
 	{
 	}
+
+	void Mapper::MouseButtonEventCallback([[maybe_unused]] GLFWwindow* window, int button, int action, int mods)
+	{
+		Mapper::GetInstance()->UI()->InputHandle()->ProcessMouseButtons(button, action, mods);
+	}
+
+	void Mapper::MouseMotionEventCallback([[maybe_unused]]GLFWwindow*, double x, double y)
+	{
+		Mapper::GetInstance()->UI()->InputHandle()->ProcessMouseMove(x, y);
+	}
+
+	void Mapper::MouseScrollEventCallback([[maybe_unused]] GLFWwindow* window, double offX, double offY)
+	{
+		Mapper::GetInstance()->UI()->InputHandle()->ProcessScroll(offX, offY);
+	}
+
+	void Mapper::DropEventCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]]int count, [[maybe_unused]] const char** paths)
+	{
+	}
+
+	void Mapper::FrameBufferSizeCallback([[maybe_unused]] GLFWwindow* window, int width, int height)
+	{
+		auto* self = Mapper::GetInstance();
+
+		int oW = self->GetWindowWidth(), oH = self->GetWindowHeight();
+		int rX = self->GetRenderer()->GetRenderX(),
+			rY = self->GetRenderer()->GetRenderY(),
+			rW = self->GetRenderer()->GetRenderWidth(),
+			rH = self->GetRenderer()->GetRenderHeight();
+
+		self->SetWindow(width, height);
+
+		float sW = (float)(width / oW);
+		float sH = (float)(height / oH);
+
+		self->GetRenderer()->SetViewport(
+			(int)((float)rX * sW),
+			(int)((float)rY * sH),
+			(int)((float)rW * sW),
+			(int)((float)rH * sH)
+		);
+	}
+
+	void Mapper::SetWindow(int w, int h)
+	{
+		_wWidth = w; _wHeight = h;
+		_renderer->SetRenderSize(w, h);
+	}
+
+	int Mapper::GetWindowWidth() const { return _wWidth; }
+	
+	int Mapper::GetWindowHeight() const { return _wHeight; }
 
 	Mapper::~Mapper()
 	{
@@ -110,8 +137,6 @@ namespace proto
 		_ui.reset(nullptr);
 		_renderer.reset(nullptr);
 		_resources.reset(nullptr);
-
-		delete[] _textMemoryBuffer;
 
 		glfwDestroyWindow(_window);
 
@@ -129,24 +154,21 @@ namespace proto
 			return false;
 		}
 
-		/*
-			Images are loaded the right way up.
-		*/
-		stbi_set_flip_vertically_on_load(1);
-
 
 #if defined(_DEBUG_) || defined(_RELEASE_)
 
 		_rootDir = ROOT_DIR;
 		_configFile = _rootDir.string() + "/config/config.ini";
-		_uiFile = _rootDir.string() + "/config/ui/data.ini";
 
 #else
 		_rootDir = ".";
 		_configFile = _rootDir.string() + "/config/config.ini";
-		_uiFile = _rootDir.string() + "/config/ui/data.ini";
 
 #endif // _DEBUG_
+
+		/*
+			Load the config.ini file.
+		*/
 
 		if (std::filesystem::exists(_configFile))
 		{
@@ -157,6 +179,31 @@ namespace proto
 		else
 			return false;
 
+		/*
+			Read and set the map of data file directories. This will be used to reference all configuration files
+			and assets.
+		*/
+
+		std::list<CSimpleIniA::Entry> preloadDirectoryKeys;
+		if (!_configData.GetAllKeys("preload_directories", preloadDirectoryKeys)) return false;
+
+		auto tmpRoot = _rootDir.string();
+
+		for (auto& key : preloadDirectoryKeys)
+		{
+			auto item = _configData.GetValue("preload_directories", key.pItem);
+
+			if (item != nullptr)
+			{
+				_dataTextFields.insert_or_assign(key.pItem, (tmpRoot + item).c_str());
+			}
+		}
+
+		preloadDirectoryKeys.clear();
+
+		/*
+			Read and set the window dimensions.
+		*/
 
 		auto width = _configData.GetLongValue("startup_display", "width", -1);
 		auto height = _configData.GetLongValue("startup_display", "height", -1);
@@ -165,41 +212,41 @@ namespace proto
 			return false;
 
 		/*
-			If one of the dimensions is zero, it's safe to assume the native display is being used.
+			If one of the dimensions is zero, it's safe to assume the native display resolution is being used.
 		*/
 		if (width != 0 && height != 0)
 		{
-			_wWidth = static_cast<unsigned int>(width);
-			_wHeight = static_cast<unsigned int>(height);
-			_fWidth = static_cast<float>(width);
-			_fHeight = static_cast<float>(height);
+			_wWidth = width;
+			_wHeight = height;
 			_fullscreen = false;
 		}
 
 		/*
-			Set up the ResourceManager object and hook it up to the resource types it needs to track.
+			Setup the ResourceManager.
 		*/
 
-		_textMemoryBuffer = new char[InitialTextBufferSize];
+		_stringMemoryBuffer = std::make_unique<uint8_t[]>(InitialTextBufferSize);
 
-		_resources = std::make_unique<ResourceManager>(_textMemoryBuffer, InitialTextBufferSize);
+		_resources = std::make_unique<ResourceManager>(std::span<uint8_t>{_stringMemoryBuffer.get(), InitialTextBufferSize});
 
-		Renderer::SetResourceManager(_resources.get());
-		Texture2D::SetResourceManager(_resources->Textures());
-		Shader::SetResourceManager(_resources->Shaders());
-		UIContainer::SetResourceManager(_resources->Textures());
+		UIContainer::SetResourceManager(_resources.get());
 
 		return true;
 	}
 
 
-	void Mapper::Run()
+	int Mapper::Run()
 	{
 		using time = std::chrono::high_resolution_clock;
 
+		/*
+			Create the window and the opengl context.
+		*/
+
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		
 
 		_monitor = glfwGetPrimaryMonitor();
 
@@ -215,8 +262,9 @@ namespace proto
 		if (_window)
 		{
 			glfwMakeContextCurrent(_window);
+			glfwSwapInterval(1);
 
-			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return;
+			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return 1;
 
 			glDebugMessageCallback((GLDEBUGPROC)Mapper::DebugOpenGL, nullptr);
 
@@ -227,34 +275,65 @@ namespace proto
 			glfwSetCursorPosCallback(_window, Mapper::MouseMotionEventCallback);
 			glfwSetScrollCallback(_window, Mapper::MouseScrollEventCallback);
 			glfwSetDropCallback(_window, Mapper::DropEventCallback);
+			glfwSetFramebufferSizeCallback(_window, Mapper::FrameBufferSizeCallback);
+
 		}
 		else
 		{
-			return;
+			return 2;
 		}
+
+		/*
+			Create internal Renderer, UIContainer, and Scene objects.
+		*/
 
 		_renderer = std::make_unique<Renderer>(_rootDir.string().c_str());
-
-		_renderer->SetRenderWindow(_fWidth, _fHeight);
+		_renderer->SetRenderSize(_wWidth, _wHeight);
+		_renderer->SetViewport(0, 0, _wWidth, _wHeight);
 		_renderer->Init(Renderer::mode::Two);
 
+		auto paths = ProtoResourcePaths(_dataTextFields.at("assets_dir"));
+		_ui = std::make_unique<UIContainer>(paths, _wWidth, _wHeight);
 
-		glClearColor(0.3f, 0.3f, 0.3f, 1.f);
-
-		time::time_point last = time::now();
-
-		_ui = std::make_unique<UIContainer>();
-
-		if (!_ui->SetData(_uiFile))
-		{
-			fprintf_s(stderr, "Error: data.ini file not found...\n");
-			return;
-		}
+		/*
+			Images are loaded the right way up from this point forward.
+		*/
+		stbi_set_flip_vertically_on_load(1);
 
 		_scene = std::make_unique<Scene>(_ui.get());
 		_scene->Init();
 
+		/*
+			TODO: Load all assets on multiple threads.
+		*/
+
+		/*
+			Load all preload assets and data files. 
+		*/
+		if(!_ui->SetDefinitionsPath(_dataTextFields.at("user_interface_dir"))) return 3;
+
+		// Text files
+		std::filesystem::path textDir = _dataTextFields.at("text_dir");
+
+		for(const auto& entry : std::filesystem::recursive_directory_iterator(textDir))
+		{
+			if(entry.is_regular_file())
+			{
+
+			}
+		}
+
+		
+
+		
+		/*
+			Show main window and start main loop.
+		*/
+
 		glfwShowWindow(_window);
+		glClearColor(0.3f, 0.3f, 0.3f, 1.f);
+
+		time::time_point last = time::now();
 
 		while (!glfwWindowShouldClose(_window) && _appRunning)
 		{
@@ -262,17 +341,15 @@ namespace proto
 			float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
 
 			_scene->Update(microseconds * 1000000.f);
-			_ui->UpdateUI(_fWidth, _fHeight);
 
 			_renderer->Begin();
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			_scene->DrawNodes();
-			_ui->CompileUI();
-			_ui->DrawUI(_renderer.get());
-
 			_renderer->End();
+
+			_ui->Draw();
 
 			glfwSwapBuffers(_window);
 
@@ -283,25 +360,33 @@ namespace proto
 			glfwPollEvents();
 		}
 
+		return EXIT_SUCCESS;
+
 	}
 
-	void Mapper::GetUILock() { _ui->Lock(); }
-
-	void Mapper::ReleaseUILock() { _ui->Unlock(); }
-
-
-	int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
+	Renderer* Mapper::GetRenderer()
 	{
-		Mapper mapper;
-
-		if (mapper.Configure())
-		{
-			mapper.Run();
-		}
-		else
-		{
-			fprintf_s(stdout, "Failed to load application configurations. Please reinstall the program.");
-		}
-
+		return _renderer.get();
 	}
+
+	UIContainer* Mapper::UI()
+	{
+		return _ui.get();
+	}
+
+
+}
+int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
+{
+	proto::Mapper mapper;
+
+	if (!mapper.Configure())
+	{
+		std::println("Failed to load application configurations. Please reinstall the program.");
+		return EXIT_FAILURE;
+	}
+
+	auto result = mapper.Run(); // TODO: Expand this return type to print out error messages.
+
+	return result;
 }

@@ -50,20 +50,20 @@ namespace proto
 
 	void Scene::Update(float dt)
 	{
-		root->Update(this, dt);
+		//root->Update(this, dt);
 	}
 
 	void Scene::DrawNodes()
 	{
-		root->Draw();
+		//root->Draw();
 	}
 
 
 
 	void Scene::Cleanup()
 	{
-		root->Destroy();
-		delete root;
+		//root->Destroy();
+		//delete root;
 	}
 
 	entt::registry& Scene::Manager() { return manager; }

@@ -21,15 +21,7 @@
 
 namespace proto
 {
-
-	ShaderManager* Shader::_manager = nullptr;
-
-	void Shader::SetResourceManager(ShaderManager* ptr)
-	{
-		_manager = ptr;
-	}
-
-	std::pair<unsigned int, unsigned int> Shader::CreateBasic(const char* srcVert, const char* srcFrag)
+	std::pair<Shader::IDType, Shader::IDType> Shader::CreateBasic(const char* srcVert, const char* srcFrag)
 	{
 		ID = glCreateProgram();
 
@@ -39,12 +31,11 @@ namespace proto
 		glDeleteShader(vs);
 		glDeleteShader(fs);
 
-		_manager->AddReference(ID);
 
 		return std::make_pair(vs, fs);
 	}
 
-	unsigned int Shader::Attach(const char* src, unsigned int type)
+	unsigned int Shader::Attach(const char* src, Shader::IDType type)
 	{
 		unsigned int shader = glCreateShader(type);
 
@@ -77,6 +68,10 @@ namespace proto
 		return shader;
 	}
 
+	Shader::IDType Shader::GetID() const { return ID; }
+
+	bool Shader::Valid() const { return ID != 0; }
+
 	void Shader::Reset() { ID = 0u; }
 
 	void Shader::Link()
@@ -103,7 +98,7 @@ namespace proto
 #endif
 	}
 
-	void Shader::Link(const std::pair<unsigned int, unsigned int>& shaders)
+	void Shader::Link(const std::pair<Shader::IDType, Shader::IDType>& shaders)
 	{
 		auto [vs, fs] = shaders;
 
@@ -132,21 +127,14 @@ namespace proto
 	Shader::Shader(const Shader& other)
 		:ID(other.ID)
 	{
-		_manager->AddReference(ID);
 	}
 
 	Shader::Shader(IDType id)
 		:ID(id)
 	{
-		_manager->AddReference(ID);
 	}
 
-	Shader::~Shader() { if (_manager->SubReference(ID) == 0u) Destroy(); }
-
-	bool Shader::operator==(const Shader& rhs)
-	{
-		return ID == rhs.ID;
-	}
+	Shader::~Shader() {  }
 
 	bool Shader::operator==(const Shader& rhs) const
 	{
@@ -155,10 +143,7 @@ namespace proto
 
 	Shader& Shader::operator=(const Shader& rhs)
 	{
-		if (ID != 0u) _manager->SubReference(ID);
-
 		ID = rhs.ID;
-		_manager->AddReference(ID);
 
 		return *this;
 	}

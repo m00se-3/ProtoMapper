@@ -19,10 +19,18 @@
 #ifndef PROTOMAPPER_UICONTAINER_HPP
 #define PROTOMAPPER_UICONTAINER_HPP
 
-#include "Texture.hpp"
+#include "ResourceManager.hpp"
 #include "SimpleIni.h"
+#include "Gwork/Renderers/OpenGLCore.h"
+#include "Gwork/Gwork.h"
+#include "Gwork/Platform.h"
+#include "Gwork/Controls/DockBase.h"
+#include "Gwork/Controls/StatusBar.h"
+#include "Gwork/Skins/Simple.h"
+#include "Gwork/Skins/TexturedBase.h"
+#include "Gwork/Input/GLFW3.h"
 
-#include <mutex>
+#include <memory>
 #include <map>
 #include <string>
 #include <filesystem>
@@ -30,42 +38,68 @@
 namespace proto
 {
 
-	// Forward declarations.
-	class Renderer;
+	/*
+		Root UI Frame
+	*/
+	class RootFrame : public Gwk::Controls::DockBase
+	{
+		public:
+			// Define the constructor and Gwk meta data functions.
+			GWK_CONTROL(RootFrame, Gwk::Controls::DockBase);
+		
+			void Render(Gwk::Skin::Base* skin) override;
+
+			[[nodiscard]]bool Construct(const std::filesystem::path& root);
+		private:
+
+			std::unique_ptr<Gwk::Controls::StatusBar> _statusBar;
+			std::unique_ptr<Gwk::Controls::Button> _button;
+	};
+
+	class ProtoResourcePaths : public Gwk::ResourcePaths
+	{
+		std::string _path;
+
+	public:
+		ProtoResourcePaths(const std::string& resourcePath);
+		virtual ~ProtoResourcePaths() = default;
+
+		std::string GetPath(Gwk::ResourcePaths::Type type, std::string const& relPath) final;
+
+	};
 
 	class UIContainer
 	{
-		// For thread-safe access.
-		std::mutex _mutex;
-
+		std::filesystem::path _interfaceDir;
+		
 		/*
-			This holds the data that is customizable for the builtin uier interface.
+			Gwork stuff.
 		*/
-		std::string _dataFile;
-		CSimpleIniA _uiData;
-		bool _updateUIData = false;
-
-		Texture2D _fontTexture;
+		Gwk::Input::GLFW3 _inputHandle;
+		std::unique_ptr<Gwk::Renderer::OpenGLCore> _renderer;
+		std::unique_ptr<Gwk::Skin::TexturedBase> _skin;
+		std::unique_ptr<Gwk::Controls::Canvas> _canvas;
+		std::unique_ptr<RootFrame> _frame;
 
 
 	public:
-		UIContainer();
+		UIContainer(Gwk::ResourcePaths& paths, int width, int height);
 		~UIContainer();
 
-		bool SetData(const std::filesystem::path& filepath);
-		void UpdateUI(float wWidth, float wHeight); // This is the big function.
-		void CompileUI();
-		void DrawUI(Renderer* ren);
+		[[nodiscard]]bool SetDefaultTexture(const std::filesystem::path& dir);
+		[[nodiscard]]bool SetDefaultFont(const std::filesystem::path& dir);
+		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
+		[[nodiscard]]Gwk::Input::GLFW3* InputHandle();
 
-		void Lock();
-		void Unlock();
+		void AddFont(const std::filesystem::path& filepath);
+		void Draw();
 
 
-		static void SetResourceManager(Texture2DManager* ptr);
+		static void SetResourceManager(ResourceManager* ptr);
 
 
 	private:
-		static Texture2DManager* _texMan;
+		static ResourceManager* _resources;
 
 
 	};
