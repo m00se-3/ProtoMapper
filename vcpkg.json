@@ -1,7 +1,7 @@
 {
   "name": "proto-mapper",
   "version-string": "0.1.0",
-  "description": "A tool for prototyping map generators.",
+  "description": "A tool for prototyping maps and entities.",
   "dependencies": [
     "glfw3",
     "stb",
@@ -9,6 +9,7 @@
     "glad",
     "entt",
     "simpleini",
-    "chaiscript"
+    "sol2",
+    "tinyxml2"
   ]
 }
