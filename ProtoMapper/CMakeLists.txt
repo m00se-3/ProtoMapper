@@ -9,6 +9,8 @@ target_compile_options(ProtoMapper PRIVATE ${flags})
 
 target_compile_definitions(ProtoMapper PUBLIC ROOT_DIR="$ENV{ROOT_FOLDER}" NOMINMAX="1")
 
+set_target_properties(ProtoMapper PROPERTIES CXX_SCAN_FOR_MODULES ON)
+
 if(${CMAKE_BUILD_TYPE} MATCHES Debug)
 	target_compile_definitions(ProtoMapper PUBLIC _DEBUG_)
 elseif(${CMAKE_BUILD_TYPE} MATCHES Release AND NOT $ENV{POST_BUILD_TYPE} MATCHES Distro)
@@ -46,35 +48,32 @@ target_sources(
 
 	PUBLIC 
 	${CMAKE_CURRENT_LIST_DIR}/inc/ProtoMapper.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/Texture.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/Shader.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/Vertex.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/Renderer.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/Scene.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/ResourceManager.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/UIContainer.hpp
-	${CMAKE_CURRENT_LIST_DIR}/inc/Concepts.hpp
-
-
+	
+	
 	${CMAKE_CURRENT_LIST_DIR}/inc/components/All.hpp
 	${CMAKE_CURRENT_LIST_DIR}/inc/components/Common.hpp
+	
+	PRIVATE
 
-	${CMAKE_CURRENT_LIST_DIR}/inc/Image.hpp
-
-
-	PRIVATE  
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Texture.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Shader.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Vertex.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Renderer.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Scene.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ResourceManager.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/UIContainer.cpp
-
-
+	
 	${CMAKE_CURRENT_LIST_DIR}/src/components/Common.cpp
-
+	
+	PUBLIC
+	FILE_SET CXX_MODULES
+	
+	BASE_DIRS ${CMAKE_CURRENT_LIST_DIR}/src/
+	
+	FILES
+	
+	${CMAKE_CURRENT_LIST_DIR}/src/UIContainer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Scene.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Renderer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Vertex.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Concepts.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Shader.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ResourceManager.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Texture.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Image.cpp
 
 )
