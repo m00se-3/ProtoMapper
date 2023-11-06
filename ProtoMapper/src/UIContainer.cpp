@@ -15,12 +15,93 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+module;
 
-#include "UIContainer.hpp"
 #include "Gwork/Controls/Canvas.h"
+#include "SimpleIni.h"
+#include "Gwork/Renderers/OpenGLCore.h"
+#include "Gwork/Gwork.h"
+#include "Gwork/Platform.h"
+#include "Gwork/Controls/DockBase.h"
+#include "Gwork/Controls/StatusBar.h"
+#include "Gwork/Skins/Simple.h"
+#include "Gwork/Skins/TexturedBase.h"
+#include "Gwork/Input/GLFW3.h"
 
-namespace proto
+#include <memory>
+#include <map>
+#include <string>
+#include <filesystem>
+
+export module UIContainer;
+
+import ResourceManager;
+
+export namespace proto
 {
+
+	export class RootFrame : public Gwk::Controls::DockBase
+	{
+		public:
+			// Define the constructor and Gwk meta data functions.
+			GWK_CONTROL(RootFrame, Gwk::Controls::DockBase);
+		
+			void Render(Gwk::Skin::Base* skin) override;
+
+			[[nodiscard]]bool Construct(const std::filesystem::path& root);
+		private:
+
+			std::unique_ptr<Gwk::Controls::StatusBar> _statusBar;
+			std::unique_ptr<Gwk::Controls::Button> _button;
+	};
+
+	export class ProtoResourcePaths : public Gwk::ResourcePaths
+	{
+		std::string _path;
+
+	public:
+		ProtoResourcePaths(const std::string& resourcePath);
+		virtual ~ProtoResourcePaths() = default;
+
+		std::string GetPath(Gwk::ResourcePaths::Type type, std::string const& relPath) final;
+
+	};
+
+	export class UIContainer
+	{
+		std::filesystem::path _interfaceDir;
+		
+		/*
+			Gwork stuff.
+		*/
+		Gwk::Input::GLFW3 _inputHandle;
+		std::unique_ptr<Gwk::Renderer::OpenGLCore> _renderer;
+		std::unique_ptr<Gwk::Skin::TexturedBase> _skin;
+		std::unique_ptr<Gwk::Controls::Canvas> _canvas;
+		std::unique_ptr<RootFrame> _frame;
+
+
+	public:
+		UIContainer(Gwk::ResourcePaths& paths, int width, int height);
+		~UIContainer();
+
+		[[nodiscard]]bool SetDefaultTexture(const std::filesystem::path& dir);
+		[[nodiscard]]bool SetDefaultFont(const std::filesystem::path& dir);
+		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
+		[[nodiscard]]Gwk::Input::GLFW3* InputHandle();
+
+		void AddFont(const std::filesystem::path& filepath);
+		void Draw();
+
+
+		static void SetResourceManager(ResourceManager* ptr);
+
+
+	private:
+		static ResourceManager* _resources;
+
+
+	};
 
 	ResourceManager* UIContainer::_resources = nullptr;
 

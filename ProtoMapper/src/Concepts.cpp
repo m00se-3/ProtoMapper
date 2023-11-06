@@ -1,11 +1,12 @@
-#ifndef PROTOMAPPER_CONCEPTS_HPP
-#define PROTOMAPPER_CONCEPTS_HPP
+module;
 
 #include <concepts>
 
-namespace proto
+export module Concepts;
+
+export namespace proto
 {
-	template<typename T>
+	export template<typename T>
 	concept IdentifiedExternal = requires(T t, T o)
 	{
 		std::default_initializable<T>;
@@ -18,4 +19,3 @@ namespace proto
 	};
 }
 
-#endif // !PROTOMAPPER_CONCEPTS_HPP

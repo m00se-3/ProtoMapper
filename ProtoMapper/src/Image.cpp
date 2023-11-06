@@ -15,76 +15,93 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+module;
 
-#include "Image.hpp"
-
+#include <filesystem>
 #include "stb_image.h"
 
-namespace proto
+export module Image;
+
+
+export namespace proto
 {
-	Image::Image(const std::filesystem::path& filename)
+	/*
+		Image container class.
+	*/
+	export class Image
 	{
-		Load(filename);
-	}
+		int _width = 0, _height = 0, _channels = 4;
+		uint8_t* _data = nullptr;
 
-	Image::Image(int w, int h, uint8_t* ptr)
-		: _width(w), _height(h), _data(ptr)
-	{
-		// If the pointer passed is nullptr, we allocate a new buffer.
-		if (!_data) _data = (uint8_t*)malloc(size_t(w * h));
-	}
+	public:
+		Image() = default;
 
-	Image::~Image() { stbi_image_free(_data); }
-
-	void Image::Load(const std::filesystem::path& filename)
-	{
-		// For now, we will require png images.
-		if (std::filesystem::exists(filename) && filename.extension() == ".png")
+		Image(const std::filesystem::path& filename)
 		{
-			_data = stbi_load(filename.string().c_str(), &_width, &_height, &_channels, 0);
+			Load(filename);
 		}
-	}
 
-	void Image::LoadCopy(int w, int h, uint8_t* ptr)
-	{
-		Destroy();
-
-		_width = w; _height = h;
-
-		size_t size = (size_t)(w * h);
-
-		_data = (uint8_t*)malloc(size);
-
-		if (!ptr)
+		Image(int w, int h, uint8_t* ptr = nullptr)
+			: _width(w), _height(h), _data(ptr)
 		{
-			memset(_data, 0u, size);
+			// If the pointer passed is nullptr, we allocate a new buffer.
+			if (!_data) _data = (uint8_t*)malloc(size_t(w * h));
 		}
-		else
+
+		~Image() { stbi_image_free(_data); }
+
+
+		// Load a fresh image from a file.
+		void Load(const std::filesystem::path& filename)
 		{
-			memcpy(_data, ptr, size);
+			// For now, we will require png images.
+			if (std::filesystem::exists(filename) && filename.extension() == ".png")
+			{
+				_data = stbi_load(filename.string().c_str(), &_width, &_height, &_channels, 0);
+			}
 		}
-	}
 
-	uint8_t* Image::Data() const { return _data; }
-
-	int Image::Width() const
-	{
-		return _width;
-	}
-
-	int Image::Height() const
-	{
-		return _height;
-	}
-
-	bool Image::Empty() const { return _data == nullptr; }
-	
-	void Image::Destroy()
-	{
-		if (_data)
+		// Copy image data from an existing memory buffer.
+		// This will erase any data already contained in the Image buffer.
+		// Passing null pointer will zero-initialize the image buffer to requested size.
+		void LoadCopy(int w, int h, uint8_t* ptr = nullptr)
 		{
-			free(_data);
-			_data = nullptr;
+			Destroy();
+
+			_width = w; _height = h;
+
+			size_t size = (size_t)(w * h);
+
+			_data = (uint8_t*)malloc(size);
+
+			if (!ptr)
+			{
+				memset(_data, 0u, size);
+			}
+			else
+			{
+				memcpy(_data, ptr, size);
+			}
 		}
-	}
+
+		uint8_t* Data() const { return _data; }
+
+		int Width() const { return _width; }
+
+		int Height() const { return _height; }
+
+		[[nodiscard("The boolean returned from Image::Empty() has been ignored.")]] bool Empty() const { return _data == nullptr; }
+
+		void Destroy()
+		{
+			if (_data)
+			{
+				free(_data);
+				_data = nullptr;
+			}
+		}
+
+	};
+
 }
+

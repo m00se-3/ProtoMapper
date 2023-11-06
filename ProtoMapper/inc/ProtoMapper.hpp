@@ -22,13 +22,14 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "SimpleIni.h"
-#include "Scene.hpp"
-#include "UIContainer.hpp"
 
 #include <string>
 #include <memory>
 #include <filesystem>
 #include <unordered_map>
+
+import Scene;
+import UIContainer;
 
 namespace proto
 {

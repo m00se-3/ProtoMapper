@@ -15,100 +15,112 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-#include "Texture.hpp"
-#include "ResourceManager.hpp"
+module;
 
 #include "glad/glad.h"
 
-namespace proto
+#include <cstdint>
+
+export module Texture;
+
+import Concepts;
+import Image;
+
+export namespace proto
 {
-
-	Texture2D::Texture2D(const Texture2D& other)
-		:ID(other.ID)
+	export struct Texture2D
 	{
-	}
+		using IDType = uint32_t;
+		IDType ID = 0u;
 
-	Texture2D::Texture2D(IDType id)
-		:ID(id)
-	{
-	}
+		Texture2D() = default;
+		Texture2D(const Texture2D& other)
+			:ID(other.ID)
+		{
+		}
 
-	bool Texture2D::operator==(const Texture2D& rhs) const
-	{
-		return ID == rhs.ID;
-	}
+		explicit Texture2D(IDType id)
+			:ID(id)
+		{
+		}
 
-	Texture2D& Texture2D::operator=(const Texture2D& rhs)
-	{
-		ID = rhs.ID;
+		~Texture2D() = default;
 
-		return *this;
-	}
+		bool operator==(const Texture2D& rhs) const
+		{
+			return ID == rhs.ID;
+		}
 
-	Texture2D& Texture2D::Create()
-	{
-		glGenTextures(1, &ID);
-		glBindTexture(GL_TEXTURE_2D, ID);
+		Texture2D& operator=(const Texture2D& rhs)
+		{
+			ID = rhs.ID;
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			return *this;
+		}
 
-		return *this;
-	}
+		Texture2D& Create()
+		{
+			glGenTextures(1, &ID);
+			glBindTexture(GL_TEXTURE_2D, ID);
 
-	void Texture2D::Reset() { ID = 0u; }
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	bool Texture2D::Valid() const { return ID != 0; }
+			return *this;
+		}
 
-	Texture2D::IDType Texture2D::GetID() const { return ID; }
+		bool Valid() const { return ID != 0; } // Is the Texture valid.
 
-	void Texture2D::Destroy() { glDeleteTextures(1, &ID); }
+		// Resets the current reference object to 0.
+		void Reset() { ID = 0u; }
 
-	void Texture2D::Bind(uint32_t slot)
-	{
-		glActiveTexture(GL_TEXTURE0 + slot);
-		glBindTexture(GL_TEXTURE_2D, ID);
-	}
+		IDType GetID() const { return ID; }
 
-	void Texture2D::Bind(uint32_t slot) const
-	{
-		glActiveTexture(GL_TEXTURE0 + slot);
-		glBindTexture(GL_TEXTURE_2D, ID);
-	}
+		void Destroy() { glDeleteTextures(1, &ID); }
 
-	void Texture2D::Unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
+		void Bind(uint32_t slot = 0u)
+		{
+			glActiveTexture(GL_TEXTURE0 + slot);
+			glBindTexture(GL_TEXTURE_2D, ID);
+		}
 
-	void Texture2D::Unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
+		void Bind(uint32_t slot = 0u) const
+		{
+			glActiveTexture(GL_TEXTURE0 + slot);
+			glBindTexture(GL_TEXTURE_2D, ID);
+		}
 
-	Texture2D& Texture2D::WriteImage(const Image& img)
-	{
-		Bind();
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.Width(), img.Height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.Data());
-		Unbind();
-		return *this;
-	}
+		void Unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
 
-	Texture2D& Texture2D::WriteData(const void* data, int width, int height)
-	{
-		Bind();
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		Unbind();
-		return *this;
-	}
+		void Unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
 
-	Texture2D& Texture2D::GenerateBlank(int w, int h, uint32_t colorValue)
-	{
-		Bind();
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, &colorValue);
-		Unbind();
-		return *this;
-	}
+		Texture2D& WriteImage(const Image& img)
+		{
+			Bind();
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.Width(), img.Height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.Data());
+			Unbind();
+			return *this;
+		}
 
-	Texture2D::IDType Texture2D::Target() const { return GL_TEXTURE_2D; }
+		Texture2D& WriteData(const void* data, int width, int height)
+		{
+			Bind();
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			Unbind();
+			return *this;
+		}
 
+		Texture2D& GenerateBlank(int w, int h, uint32_t colorValue = 0xFFFFFFFF)
+		{
+			Bind();
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, &colorValue);
+			Unbind();
+			return *this;
+		}
 
-	Texture2D::~Texture2D() {  }
+		IDType Target() const { return GL_TEXTURE_2D; }
+
+	};
 }

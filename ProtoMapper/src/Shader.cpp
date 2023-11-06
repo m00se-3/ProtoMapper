@@ -15,136 +15,166 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+module;
 
-#include "Shader.hpp"
-#include "ResourceManager.hpp"
+#include "glad/glad.h"
 
-namespace proto
+#include <functional>
+
+export module Shader;
+
+import Concepts;
+export namespace proto
 {
-	std::pair<Shader::IDType, Shader::IDType> Shader::CreateBasic(const char* srcVert, const char* srcFrag)
+	export struct Shader
 	{
-		ID = glCreateProgram();
+		using IDType = uint32_t;
 
-		unsigned int vs = Attach(srcVert, GL_VERTEX_SHADER);
-		unsigned int fs = Attach(srcFrag, GL_FRAGMENT_SHADER);
+		IDType ID = 0u;
 
-		glDeleteShader(vs);
-		glDeleteShader(fs);
+		Shader() = default;
 
-
-		return std::make_pair(vs, fs);
-	}
-
-	unsigned int Shader::Attach(const char* src, Shader::IDType type)
-	{
-		unsigned int shader = glCreateShader(type);
-
-		glShaderSource(shader, 1, &src, nullptr);
-		glCompileShader(shader);
-
-#ifdef _DEBUG_
-
-		int test, length;
-
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &test);
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-
-
-		if (!test)
+		Shader(const Shader& other)
+			:ID(other.ID)
 		{
-			char buffer[100u];
-
-			glGetShaderInfoLog(shader, 100u, &length, buffer);
-
-			printf_s("Vertex shader failed to compile: %s\n", buffer);
-
-			return 0u;
 		}
 
-#endif // _DEBUG_
-
-		glAttachShader(ID, shader);
-
-		return shader;
-	}
-
-	Shader::IDType Shader::GetID() const { return ID; }
-
-	bool Shader::Valid() const { return ID != 0; }
-
-	void Shader::Reset() { ID = 0u; }
-
-	void Shader::Link()
-	{
-		glLinkProgram(ID);
-
-#ifdef _DEBUG_
-		glValidateProgram(ID);
-
-		int result;
-		glGetProgramiv(ID, GL_VALIDATE_STATUS, &result);
-
-		if (!result)
+		explicit Shader(IDType id)
+			:ID(id)
 		{
-			int length;
-			glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &length);
-
-			char buffer[100u];
-
-			glGetProgramInfoLog(ID, 100u, &length, buffer);
-
-			printf_s("Could not link shader program: %s\n", buffer);
 		}
-#endif
-	}
 
-	void Shader::Link(const std::pair<Shader::IDType, Shader::IDType>& shaders)
-	{
-		auto [vs, fs] = shaders;
+		~Shader() = default;
 
-		Link();
+		bool operator==(const Shader& rhs) const
+		{
+			return ID == rhs.ID;
+		}
 
-		glDetachShader(ID, vs);
-		glDetachShader(ID, fs);
-	}
+		Shader& operator=(const Shader& rhs)
+		{
+			ID = rhs.ID;
 
-	void Shader::Bind() { glUseProgram(ID); }
+			return *this;
+		}
 
-	void Shader::Bind() const { glUseProgram(ID); }
+		IDType GetID() const { return ID; }
 
-	void Shader::Unbind() { glUseProgram(0); }
+		bool Valid() const { return ID != 0; }
 
-	void Shader::Unbind() const { glUseProgram(0); }
+		/*
+			Create a simple shader program from the traditional vertex and fragment shader combo.
 
-	void Shader::Destroy() { glDeleteProgram(ID); }
+			Returns the ids to the shader objects, if any are 0 something went wrong.
+		*/
+		std::pair<IDType, IDType> CreateBasic(const char* srcVert, const char* srcFrag)
+		{
+			ID = glCreateProgram();
+
+			unsigned int vs = Attach(srcVert, GL_VERTEX_SHADER);
+			unsigned int fs = Attach(srcFrag, GL_FRAGMENT_SHADER);
+
+			glDeleteShader(vs);
+			glDeleteShader(fs);
 
 
-	void Shader::Uniforms(const std::function<void()>& func)
-	{
-		func();
-	}
+			return std::make_pair(vs, fs);
+		}
 
-	Shader::Shader(const Shader& other)
-		:ID(other.ID)
-	{
-	}
+		// Resets the current reference object to 0.
+		void Reset() { ID = 0u; }
 
-	Shader::Shader(IDType id)
-		:ID(id)
-	{
-	}
+		/*
+			Attach an individual shader object and return the id.
+		*/
+		unsigned int Attach(const char* src, IDType type)
+		{
+			unsigned int shader = glCreateShader(type);
 
-	Shader::~Shader() {  }
+			glShaderSource(shader, 1, &src, nullptr);
+			glCompileShader(shader);
 
-	bool Shader::operator==(const Shader& rhs) const
-	{
-		return ID == rhs.ID;
-	}
+		#ifdef _DEBUG_
 
-	Shader& Shader::operator=(const Shader& rhs)
-	{
-		ID = rhs.ID;
+			int test, length;
 
-		return *this;
-	}
+			glGetShaderiv(shader, GL_COMPILE_STATUS, &test);
+			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+
+
+			if (!test)
+			{
+				char buffer[100u];
+
+				glGetShaderInfoLog(shader, 100u, &length, buffer);
+
+				printf_s("Vertex shader failed to compile: %s\n", buffer);
+
+				return 0u;
+			}
+
+		#endif // _DEBUG_
+
+			glAttachShader(ID, shader);
+
+			return shader;
+		}
+
+		/*
+			Final linking stage of creating an OpenGL shader.
+		*/
+		void Link()
+		{
+			glLinkProgram(ID);
+
+	#ifdef _DEBUG_
+			glValidateProgram(ID);
+
+			int result;
+			glGetProgramiv(ID, GL_VALIDATE_STATUS, &result);
+
+			if (!result)
+			{
+				int length;
+				glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &length);
+
+				char buffer[100u];
+
+				glGetProgramInfoLog(ID, 100u, &length, buffer);
+
+				printf_s("Could not link shader program: %s\n", buffer);
+			}
+	#endif
+		}
+
+		/*
+			Same as Link(), but deletes and detaches the vertex and fragment shader pair after finished.
+		*/
+		void Link(const std::pair<IDType, IDType>& shaders)
+		{
+			auto [vs, fs] = shaders;
+
+			Link();
+
+			glDetachShader(ID, vs);
+			glDetachShader(ID, fs);
+		}
+
+		void Bind() { glUseProgram(ID); }
+
+		void Bind() const { glUseProgram(ID); }
+
+		void Unbind() { glUseProgram(0); }
+		
+		void Unbind() const { glUseProgram(0); }
+
+		void Destroy() { glDeleteProgram(ID); }
+
+		// Pass in a lambda that sets up the uniforms for the shader.
+		void Uniforms(const std::function<void()>& func)
+		{
+			func();
+		}
+
+	};	
 }
