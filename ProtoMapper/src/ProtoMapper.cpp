@@ -18,17 +18,15 @@
 
 #include "ProtoMapper.hpp"
 
+#include "Renderer.hpp"
+#include "ResourceManager.hpp"
 
 #undef STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#include <span>
 #include <chrono>
 #include <functional>
 #include <print>
-
-import ResourceManager;
-import Renderer;
 
 namespace proto
 {
@@ -376,8 +374,8 @@ namespace proto
 		return _ui.get();
 	}
 
-}
 
+}
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {
 	proto::Mapper mapper;

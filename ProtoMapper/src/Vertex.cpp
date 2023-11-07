@@ -15,150 +15,24 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
 
-#include "glm/glm.hpp"
-#include "glad/glad.h"
+#include "Vertex.hpp"
 
-#include <concepts>
-#include <vector>
-#include <functional>
-
-export module Vertex;
-
-
-export namespace proto
+namespace proto
 {
 
-	export template<typename T>
-	concept VertexType = requires()
+	void Vertex2D::Attributes()
 	{
-		{ T::Attributes() } -> std::same_as<void>;
-	};
+		// Vertex positions
+		glVertexAttribPointer(0u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), 0);
+		glEnableVertexAttribArray(0);
 
-	export struct Vertex2D
-	{
-		glm::vec2 pos;
-		glm::vec2 texCoords;
-		glm::vec4 color;
+		// Texture coordinates
+		glVertexAttribPointer(1u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), (const void*)(sizeof(glm::vec2)));
+		glEnableVertexAttribArray(1);
 
-		static void Attributes()
-		{
-			// Vertex positions
-			glVertexAttribPointer(0u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), 0);
-			glEnableVertexAttribArray(0);
-
-			// Texture coordinates
-			glVertexAttribPointer(1u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), (const void*)(sizeof(glm::vec2)));
-			glEnableVertexAttribArray(1);
-
-			// Color values
-			glVertexAttribPointer(2u, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), (const void*)(sizeof(glm::vec2) + sizeof(glm::vec2)));
-			glEnableVertexAttribArray(2);
-		}
-	};
-
-
-	export template <typename VertexType>
-	class Buffer
-	{
-	public:
-#ifdef USE_GLES
-		using IndType = uint16_t;
-#else
-		using IndType = uint32_t;
-#endif
-
-	private:
-		IndType _vID = 0u, _indID = 0u, _vao = 0u;
-		bool _initialized = false;
-		std::vector<VertexType> _vertices;
-		std::vector<IndType> _indices;
-
-	public:
-		Buffer() = default;
-		Buffer(size_t numVertices, size_t numIndices) { Generate(numVertices, numIndices); }
-
-		void* Data() const { return (void*)_vertices.data(); }
-		void* Indices() const { return (void*)_indices.data(); }
-
-		size_t GetBufferSize() const { return _vertices.size(); }
-
-		Buffer& Generate(size_t numVertices, size_t numIndices)
-		{
-			if (!_initialized)
-			{
-				glGenVertexArrays(1, &_vao);
-				glGenBuffers(1, &_vID);
-				glGenBuffers(1, &_indID);
-				_initialized = true;
-			}
-
-			_vertices.reserve(numVertices);
-			_indices.reserve(numIndices);
-
-			glBindVertexArray(_vao);
-			glBindBuffer(GL_ARRAY_BUFFER, _vID);
-			glBufferData(GL_ARRAY_BUFFER, _vertices.capacity() * sizeof(VertexType), nullptr, GL_DYNAMIC_DRAW);
-
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indID);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.capacity() * sizeof(IndType), nullptr, GL_DYNAMIC_DRAW);
-
-			VertexType::Attributes();
-
-			glBindVertexArray(0);
-
-			return *this;
-		}
-
-		/*
-			Don't forget to write the data to the GPU with a call to WriteData().
-		*/
-		Buffer& AddValues(const std::vector<VertexType>& verts, const std::vector<IndType>& inds)
-		{
-			for (auto& vert : verts)
-			{
-				_vertices.push_back(vert);
-			}
-
-			for (auto& ind : inds)
-			{
-				_indices.push_back(ind);
-			}
-
-			return *this;
-		}
-
-		Buffer& SetBufferSize(size_t size) { _vertices.reserve(size); return *this; }
-
-		Buffer& SetNumberOfIndices(size_t size) { _indices.reserve(size); return *this; }
-
-		Buffer& WriteData() {
-			glBindVertexArray(_vao);
-			glBindBuffer(GL_ARRAY_BUFFER, _vID);
-			glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(VertexType), _vertices.data(), GL_DYNAMIC_DRAW);
-
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indID);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(IndType), _indices.data(), GL_DYNAMIC_DRAW);
-			glBindVertexArray(0);
-
-			return *this;
-		}
-
-		size_t GetNumberOfIndices() const { return _indices.size(); }
-
-		bool Bind() const
-		{
-			if (_initialized)
-			{
-				glBindVertexArray(_vao);
-				return true;
-			}
-			return false;
-		}
-
-		void Unbind() const { glBindVertexArray(0); }
-
-		void Clear() { _vertices.clear(); _indices.clear(); }
-	};
+		// Color values
+		glVertexAttribPointer(2u, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), (const void*)(sizeof(glm::vec2) + sizeof(glm::vec2)));
+		glEnableVertexAttribArray(2);
+	}
 }

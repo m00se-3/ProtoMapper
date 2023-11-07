@@ -15,76 +15,16 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
 
+#include "Scene.hpp"
+
+#include "Vertex.hpp"
+#include "Renderer.hpp"
+#include "UIContainer.hpp"
 #include "components/All.hpp"
-#include "entt/entt.hpp"
 
-
-#include <vector>
-#include <list>
-
-export module Scene;
-
-import UIContainer;
-
-export namespace proto
+namespace proto
 {
-
-	class Scene;	// Forward declaration.
-	class Renderer;
-	class UIContainer;
-
-	/*
-		A tree of SceneNodes is constructed to organize the draw calls, and to allow for Scene customization in-app.
-	*/
-	export class SceneNode
-	{
-
-	protected:
-
-		SceneNode* parent = nullptr;
-		entt::entity id;
-		std::list<SceneNode*> children;
-
-	public:
-
-		friend class Scene;
-
-		SceneNode(SceneNode* par, entt::entity inID);
-
-		entt::entity ID() const;
-		void Update(Scene* container, float dt);
-		void Draw();
-		void Destroy();
-	};
-
-	/*
-		The main container class for the many maps and other components in the app.
-
-		When maps are open they are added to the tree.
-	*/
-	export class Scene
-	{
-
-		UIContainer* _uiInternal = nullptr;
-
-	protected:
-		SceneNode* root = nullptr;
-		//entt::registry manager;
-
-
-	public:
-		Scene(UIContainer* ptr);
-
-		bool Init();
-		void Update(float dt);
-		void DrawNodes();
-		void Cleanup();
-
-		//entt::registry& Manager();
-
-	};
 
 	Scene::Scene(UIContainer* ptr)
 		: _uiInternal(ptr)
@@ -99,9 +39,9 @@ export namespace proto
 			Create the root SceneNode, this will draw a background if there are no open files.
 		*/
 
-		// auto rID = manager.create();
+		auto rID = manager.create();
 
-		// root = new SceneNode(nullptr, rID);
+		root = new SceneNode(nullptr, rID);
 
 
 
@@ -126,7 +66,7 @@ export namespace proto
 		//delete root;
 	}
 
-	//entt::registry& Scene::Manager() { return manager; }
+	entt::registry& Scene::Manager() { return manager; }
 
 	SceneNode::SceneNode(SceneNode* par, entt::entity inID)
 		: parent(par), id(inID)
@@ -138,7 +78,7 @@ export namespace proto
 
 	void SceneNode::Update(Scene* container, float dt)
 	{
-		//auto& man = container->Manager();
+		auto& man = container->Manager();
 
 
 		for (auto& child : children)
