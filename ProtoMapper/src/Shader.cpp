@@ -15,12 +15,72 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+module;
 
-#include "Shader.hpp"
-#include "ResourceManager.hpp"
+#include <cstdint>
+#include <utility>
+#include <functional>
+#include <print>
+
+export module proto.Shader;
+
+import "glad/glad.h";
 
 namespace proto
 {
+	export struct Shader
+	{
+		using IDType = uint32_t;
+
+		IDType ID = 0u;
+
+		Shader() = default;
+		Shader(const Shader&);
+		explicit Shader(IDType id);
+		~Shader();
+
+		bool operator==(const Shader& rhs) const;
+		Shader& operator=(const Shader& rhs);
+
+		IDType GetID() const;
+		bool Valid() const;
+
+		/*
+			Create a simple shader program from the traditional vertex and fragment shader combo.
+
+			Returns the ids to the shader objects, if any are 0 something went wrong.
+		*/
+		std::pair<IDType, IDType> CreateBasic(const char* srcVert, const char* srcFrag);
+
+		// Resets the current reference object to 0.
+		void Reset();
+
+		/*
+			Attach an individual shader object and return the id.
+		*/
+		unsigned int Attach(const char* src, IDType type);
+
+		/*
+			Final linking stage of creating an OpenGL shader.
+		*/
+		void Link();
+
+		/*
+			Same as Link(), but deletes and detaches the vertex and fragment shader pair after finished.
+		*/
+		void Link(const std::pair<IDType, IDType>& shaders);
+		void Bind();
+		void Bind() const;
+		void Unbind();
+		void Unbind() const;
+		void Destroy();
+
+		// Pass in a lambda that sets up the uniforms for the shader.
+		void Uniforms(const std::function<void()>& func);
+
+	};
+	
+	
 	std::pair<Shader::IDType, Shader::IDType> Shader::CreateBasic(const char* srcVert, const char* srcFrag)
 	{
 		ID = glCreateProgram();
@@ -56,7 +116,7 @@ namespace proto
 
 			glGetShaderInfoLog(shader, 100u, &length, buffer);
 
-			printf_s("Vertex shader failed to compile: %s\n", buffer);
+			std::println("Vertex shader failed to compile: {}\n", buffer);
 
 			return 0u;
 		}
@@ -93,7 +153,7 @@ namespace proto
 
 			glGetProgramInfoLog(ID, 100u, &length, buffer);
 
-			printf_s("Could not link shader program: %s\n", buffer);
+			std::println("Could not link shader program: {}\n", buffer);
 		}
 #endif
 	}

@@ -15,21 +15,98 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-#include "ProtoMapper.hpp"
-
-#include "Renderer.hpp"
-#include "ResourceManager.hpp"
-
-#undef STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+module;
 
 #include <chrono>
-#include <functional>
+#include <filesystem>
+#include <memory>
 #include <print>
+#include <span>
+#include <unordered_map>
 
-namespace proto
+export module proto.Mapper;
+
+import "glad/glad.h";
+import "GLFW/glfw3.h";
+import "stb_image.h";
+import "SimpleIni.h";
+
+import proto.UI.Container;
+import proto.Scene;
+import proto.Renderer;
+import proto.ResourceManager;
+
+namespace proto 
 {
+	export class Mapper
+	{
+		const std::string _title = "ProtoMapper";
+		std::filesystem::path _rootDir;
+		bool _appRunning = true, _mapOpen = true, _panning = false, _fullscreen = true, _configUpdate = false;
+
+		int _wWidth = 1024, _wHeight = 768;
+
+		GLFWwindow* _window = nullptr;
+		GLFWmonitor* _monitor = nullptr;
+
+		std::unique_ptr<uint8_t[]> _stringMemoryBuffer;
+
+		std::unique_ptr<Scene> _scene;
+		std::unique_ptr<UIContainer> _ui;
+		std::unique_ptr<Renderer> _renderer;
+		std::unique_ptr<ResourceManager> _resources;
+
+		std::filesystem::path _configFile;
+		CSimpleIniA _configData;
+
+		// Text directories as defined in config.ini section [preload_directories].
+		std::unordered_map<std::string, std::string> _dataTextFields;
+
+		// Self pointer for use in the GLFW callbacks.
+		static Mapper* _self;
+
+
+	public:
+		Mapper() = default;
+		~Mapper();
+
+		static Mapper* GetInstance();
+
+		[[nodiscard]]bool Configure();
+		[[nodiscard]]int Run();
+		void SetWindow(int w, int h);
+
+		int GetWindowWidth() const;
+		int GetWindowHeight() const;
+
+		Renderer* GetRenderer();
+		UIContainer* UI();
+
+		static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+
+		/*
+			GLFW callback functions
+		*/
+
+		static void ContextErrorMessage(int code, const char* description);
+		static void MonitorCallback(GLFWmonitor* monitor, int event);
+		static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
+		static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
+		static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
+		static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
+		static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
+		static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
+		static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
+
+		// static protoui::ButtonState GetButtonStateFromGLFWState(int state);
+
+	};
+
+	/*
+		Implementation.
+	*/
+
+
 	constexpr const size_t InitialTextBufferSize = 8u * 1024u;	// Allocate 8 KB for the text memory buffer. Can change later if needed.
 
 	Mapper* Mapper::_self = nullptr;
@@ -373,20 +450,7 @@ namespace proto
 	{
 		return _ui.get();
 	}
-
-
 }
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-	proto::Mapper mapper;
 
-	if (!mapper.Configure())
-	{
-		std::println("Failed to load application configurations. Please reinstall the program.");
-		return EXIT_FAILURE;
-	}
 
-	auto result = mapper.Run(); // TODO: Expand this return type to print out error messages.
 
-	return result;
-}

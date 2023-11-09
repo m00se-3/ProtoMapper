@@ -4,13 +4,14 @@
       {
         "name": "base",
         "hidden": true,
-        "generator": "Ninja",
+        "generator": "Visual Studio 17 2022",
         "binaryDir": "${sourceDir}/build/${presetName}",
         "installDir": "${sourceDir}/install/${presetName}",
         "cacheVariables": {
           "CMAKE_C_COMPILER": "cl",
           "CMAKE_CXX_COMPILER": "cl",
           "CMAKE_CXX_STANDARD": "23",
+          "CMAKE_CXX_SCAN_FOR_MODULES": true,
           "USE_ADDR_SANITIZER": false,
           "WITH_SAMPLE": false,
           "WITH_TESTS": false

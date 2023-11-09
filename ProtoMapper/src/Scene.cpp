@@ -15,16 +15,69 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+module;
 
-#include "Scene.hpp"
+#include <list>
 
-#include "Vertex.hpp"
-#include "Renderer.hpp"
-#include "UIContainer.hpp"
-#include "components/All.hpp"
+export module proto.Scene;
+
+import "entt/entt.hpp";
+import proto.UI.Container;
 
 namespace proto
 {
+	/*
+		A tree of SceneNodes is constructed to organize the draw calls, and to allow for Scene customization in-app.
+	*/
+	export class SceneNode
+	{
+
+	protected:
+
+		SceneNode* parent = nullptr;
+		entt::entity id;
+		std::list<SceneNode*> children;
+
+	public:
+
+		friend class Scene;
+
+		SceneNode(SceneNode* par, entt::entity inID);
+
+		entt::entity ID() const;
+		void Update(Scene* container, float dt);
+		void Draw();
+		void Destroy();
+	};
+
+	/*
+		The main container class for the many maps and other components in the app.
+
+		When maps are open they are added to the tree.
+	*/
+	export class Scene
+	{
+
+		// Should be thread-safe.
+		UIContainer* _uiInternal = nullptr;
+
+	protected:
+		SceneNode* root = nullptr;
+		entt::registry manager;
+
+
+	public:
+		Scene(UIContainer* ptr);
+
+		bool Init();
+		void Update(float dt);
+		void DrawNodes();
+		void Cleanup();
+
+		entt::registry& Manager();
+
+	};
+
 
 	Scene::Scene(UIContainer* ptr)
 		: _uiInternal(ptr)

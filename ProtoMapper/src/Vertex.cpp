@@ -15,12 +15,135 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+module;
 
-#include "Vertex.hpp"
+#include <vector>
+
+export module proto.Vertex;
+
+import "glad/glad.h";
+import "glm/glm.hpp";
+import "glm/gtc/matrix_transform.hpp";
 
 namespace proto
 {
 
+	template<typename T>
+	concept VertexType = requires()
+	{
+		{ T::Attributes() } -> std::same_as<void>;
+	};
+
+	export struct Vertex2D
+	{
+		glm::vec2 pos;
+		glm::vec2 texCoords;
+		glm::vec4 color;
+
+		static void Attributes();
+	};
+
+
+	export template <VertexType VType>
+	class Buffer
+	{
+	public:
+		using IndType = uint32_t;
+
+	private:
+		IndType _vID = 0u, _indID = 0u, _vao = 0u;
+		bool _initialized = false;
+		std::vector<VType> _vertices;
+		std::vector<IndType> _indices;
+
+	public:
+		Buffer() = default;
+		Buffer(size_t numVertices, size_t numIndices) { Generate(numVertices, numIndices); }
+
+		void* Data() const { return (void*)_vertices.data(); }
+		void* Indices() const { return (void*)_indices.data(); }
+
+		size_t GetBufferSize() const { return _vertices.size(); }
+
+		Buffer& Generate(size_t numVertices, size_t numIndices)
+		{
+			if (!_initialized)
+			{
+				glGenVertexArrays(1, &_vao);
+				glGenBuffers(1, &_vID);
+				glGenBuffers(1, &_indID);
+				_initialized = true;
+			}
+
+			_vertices.reserve(numVertices);
+			_indices.reserve(numIndices);
+
+			glBindVertexArray(_vao);
+			glBindBuffer(GL_ARRAY_BUFFER, _vID);
+			glBufferData(GL_ARRAY_BUFFER, _vertices.capacity() * sizeof(VType), nullptr, GL_DYNAMIC_DRAW);
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indID);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.capacity() * sizeof(IndType), nullptr, GL_DYNAMIC_DRAW);
+
+			VType::Attributes();
+
+			glBindVertexArray(0);
+
+			return *this;
+		}
+
+		/*
+			Don't forget to write the data to the GPU with a call to WriteData().
+		*/
+		Buffer& AddValues(const std::vector<VType>& verts, const std::vector<IndType>& inds)
+		{
+			for (auto& vert : verts)
+			{
+				_vertices.push_back(vert);
+			}
+
+			for (auto& ind : inds)
+			{
+				_indices.push_back(ind);
+			}
+
+			return *this;
+		}
+
+		Buffer& SetBufferSize(size_t size) { _vertices.reserve(size); return *this; }
+
+		Buffer& SetNumberOfIndices(size_t size) { _indices.reserve(size); return *this; }
+
+		Buffer& WriteData() {
+			glBindVertexArray(_vao);
+			glBindBuffer(GL_ARRAY_BUFFER, _vID);
+			glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(VType), _vertices.data(), GL_DYNAMIC_DRAW);
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indID);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(IndType), _indices.data(), GL_DYNAMIC_DRAW);
+			glBindVertexArray(0);
+
+			return *this;
+		}
+
+		size_t GetNumberOfIndices() const { return _indices.size(); }
+
+		bool Bind() const
+		{
+			if (_initialized)
+			{
+				glBindVertexArray(_vao);
+				return true;
+			}
+			return false;
+		}
+
+		void Unbind() const { glBindVertexArray(0); }
+
+		void Clear() { _vertices.clear(); _indices.clear(); }
+	};
+
+	
 	void Vertex2D::Attributes()
 	{
 		// Vertex positions

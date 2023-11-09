@@ -15,77 +15,73 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+module;
 
-#include "UIContainer.hpp"
+#include <memory>
+#include <filesystem>
+
 #include "Gwork/Controls/Canvas.h"
+#include "Gwork/Gwork.h"
+#include "Gwork/Renderers/OpenGLCore.h"
+#include "Gwork/Platform.h"
+#include "Gwork/Input/GLFW3.h"
+#include "Gwork/Skins/Simple.h"
+#include "Gwork/Skins/TexturedBase.h"
+#include "SimpleIni.h"
+
+export module proto.UI.Container;
+
+import proto.ResourceManager;
+import UI.Root;
 
 namespace proto
 {
+	export class ProtoResourcePaths;
+	
+	/*
+		UIContainer definitions.
+	*/
+
+	export class UIContainer
+	{
+		std::filesystem::path _interfaceDir;
+		
+		/*
+			Gwork stuff.
+		*/
+		Gwk::Input::GLFW3 _inputHandle;
+		std::unique_ptr<Gwk::Renderer::OpenGLCore> _renderer;
+		std::unique_ptr<Gwk::Skin::TexturedBase> _skin;
+		std::unique_ptr<Gwk::Controls::Canvas> _canvas;
+		std::unique_ptr<RootFrame> _frame;
+
+
+	public:
+		UIContainer(Gwk::ResourcePaths& paths, int width, int height);
+		~UIContainer();
+
+		[[nodiscard]]bool SetDefaultTexture(const std::filesystem::path& dir);
+		[[nodiscard]]bool SetDefaultFont(const std::filesystem::path& dir);
+		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
+		[[nodiscard]]Gwk::Input::GLFW3* InputHandle();
+
+		void AddFont(const std::filesystem::path& filepath);
+		void Draw();
+
+
+		static void SetResourceManager(ResourceManager* ptr);
+
+
+	private:
+		static ResourceManager* _resources;
+
+
+	};
 
 	ResourceManager* UIContainer::_resources = nullptr;
 
 
 	void UIContainer::SetResourceManager(ResourceManager* ptr) { _resources = ptr; }
-
-	/*
-		RootFrame definitions.
-	*/
-
-	GWK_CONTROL_CONSTRUCTOR(RootFrame) // Member initialization is handled by the macro.
-	{
-		Dock(Gwk::Position::Fill);
-
-		_statusBar = std::make_unique<Gwk::Controls::StatusBar>(this);
-		_statusBar->Dock(Gwk::Position::Bottom);
-		_statusBar->SetTextColor(Gwk::Color{ 0u, 0u, 0u, 255u });
-		_statusBar->SetText("This is working.");
-
-		_button = std::make_unique<Gwk::Controls::Button>(this);
-		_button->SetBounds(Gwk::Rect{ 10, 10, 50, 20 });
-		_button->SetText("Hello!");
-	}
-
-	void RootFrame::Render(Gwk::Skin::Base* skin)
-	{
-		ParentClass::Render(skin);
-	}
-
-	bool RootFrame::Construct(const std::filesystem::path& root)
-	{
-
-
-		return true;
-	}
-
-	/*
-		ProtoResourcePaths definitions
-	*/
-
-	ProtoResourcePaths::ProtoResourcePaths(const std::string& resourcePath)
-		: _path(resourcePath)
-	{}
-
-	std::string ProtoResourcePaths::GetPath(Gwk::ResourcePaths::Type type, std::string const& relPath)
-	{
-		std::string result = _path;
-
-		if (type == Gwk::ResourcePaths::Type::Font)
-		{
-			result += "/fonts/";
-		}
-
-		if (type == Gwk::ResourcePaths::Type::Texture)
-		{
-			result += "/UIskins/";
-		}
-		
-		return (result + relPath);
-	}
-
-
-	/*
-		UIContainer definitions.
-	*/
 
 
 	UIContainer::UIContainer(Gwk::ResourcePaths& paths, int width, int height)
