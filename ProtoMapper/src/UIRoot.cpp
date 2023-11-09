@@ -18,13 +18,20 @@
 module;
 
 #include <memory>
+#include <unordered_map>
+#include <string_view>
 
 #include "Gwork/Gwork.h"
 #include "Gwork/Controls/DockBase.h"
 #include "Gwork/Controls/StatusBar.h"
 #include "Gwork/Controls/Canvas.h"
+#include "Gwork/Controls/TabControl.h"
+#include "Gwork/Controls/ListBox.h"
+#include "Gwork/Controls/WindowControl.h"
 #include "Gwork/Skins/Simple.h"
 #include "Gwork/Skins/TexturedBase.h"
+
+#include "SimpleIni.h"
 
 export module UI.Root;
 
@@ -41,10 +48,14 @@ namespace proto
 			void Render(Gwk::Skin::Base* skin) override;
 
 			[[nodiscard]]bool Construct(const std::filesystem::path& root);
+
+			void LogOutput(const std::string& logTab, const std::string_view& msg);
+
 		private:
 
 			std::unique_ptr<Gwk::Controls::StatusBar> _statusBar;
-			std::unique_ptr<Gwk::Controls::Button> _button;
+			std::unique_ptr<Gwk::Controls::TabControl> _logBox;
+			std::unordered_map<std::string, std::shared_ptr<Gwk::Controls::ListBox>> _logTabs;
 	};
 
 	export class ProtoResourcePaths : public Gwk::ResourcePaths
@@ -68,13 +79,7 @@ namespace proto
 		Dock(Gwk::Position::Fill);
 
 		_statusBar = std::make_unique<Gwk::Controls::StatusBar>(this);
-		_statusBar->Dock(Gwk::Position::Bottom);
-		_statusBar->SetTextColor(Gwk::Color{ 0u, 0u, 0u, 255u });
-		_statusBar->SetText("This is working.");
-
-		_button = std::make_unique<Gwk::Controls::Button>(this);
-		_button->SetBounds(Gwk::Rect{ 10, 10, 50, 20 });
-		_button->SetText("Hello!");
+		_logBox = std::make_unique<Gwk::Controls::TabControl>(this);
 	}
 
 	void RootFrame::Render(Gwk::Skin::Base* skin)
@@ -84,9 +89,31 @@ namespace proto
 
 	bool RootFrame::Construct(const std::filesystem::path& root)
 	{
+		_statusBar->Dock(Gwk::Position::Bottom);
+		_statusBar->SetTextColor(Gwk::Color{ 0u, 0u, 0u, 255u });
+		_statusBar->SetText("What's a good dad joke? You!");
 
+		_logBox->Dock(Gwk::Position::Bottom);
+		_logBox->SetSize(Width(), 100 );
+
+		_logTabs["Output"] = std::make_shared<Gwk::Controls::ListBox>(_logBox.get());
+
+		_logBox->AddPage("Output", _logTabs.at("Output").get());
+
+		LogOutput("Output", "Application loaded successfully!");
 
 		return true;
+	}
+
+	void RootFrame::LogOutput(const std::string& logTab, const std::string_view& msg)
+	{
+		if(_logTabs.contains(logTab))
+		{
+			auto tab = _logTabs.at(logTab);
+
+			tab->AddItem(msg.data());
+			tab->ScrollToBottom();
+		}
 	}
 
 	/*
