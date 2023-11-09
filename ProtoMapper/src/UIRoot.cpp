@@ -28,44 +28,6 @@ module;
 
 export module UI.Root;
 
-/*
-	Define these macros from Gwk/Controls/Base.h for simplicity.
-*/
-
-#define GWK_DYNAMIC(THISNAME, BASENAME) \
-    static const char* GetIdentifier()                                  \
-    {                                                                   \
-        static const char* ident = #BASENAME ":" #THISNAME;             \
-        return ident;                                                   \
-    }                                                                   \
-    Gwk::Controls::Base* DynamicCast(const char* Variable) override \
-    {                                                                   \
-        if (GetIdentifier() == Variable)                                \
-            return this;                                                \
-                                                                        \
-        return ParentClass::DynamicCast(Variable);                        \
-    }
-
-#define GWK_CLASS(THISNAME, BASENAME) \
-    typedef BASENAME ParentClass; \
-    typedef THISNAME ThisClass;
-
-// To be placed in the controls .h definition.
-#define GWK_CONTROL(THISNAME, BASENAME) \
-public: \
-    GWK_CLASS(THISNAME, BASENAME)  \
-    GWK_DYNAMIC(THISNAME, BASENAME) \
-    static  const char* GetTypeNameStatic() { return #THISNAME; } \
-    const char* GetTypeName() const override { return GetTypeNameStatic(); } \
-    const char* GetParentTypeName() const override { return ParentClass::GetTypeNameStatic(); } \
-    THISNAME(Gwk::Controls::Base* parent, const Gwk::String& name = "")
-
-#define GWK_CONTROL_INLINE(THISNAME, BASENAME) \
-    GWK_CONTROL(THISNAME, BASENAME) : ParentClass(parent, name)
-
-#define GWK_CONTROL_CONSTRUCTOR(THISNAME) \
-    THISNAME::THISNAME(Gwk::Controls::Base* parent, const Gwk::String& name) \
-        : ParentClass(parent, name)
 
 namespace proto
 {
