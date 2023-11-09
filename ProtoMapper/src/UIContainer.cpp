@@ -63,6 +63,7 @@ namespace proto
 		[[nodiscard]]bool SetDefaultTexture(const std::filesystem::path& dir);
 		[[nodiscard]]bool SetDefaultFont(const std::filesystem::path& dir);
 		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
+		[[nodiscard]]bool ConstructWithProfile(const std::filesystem::path& filepath);
 		[[nodiscard]]Gwk::Input::GLFW3* InputHandle();
 
 		void AddFont(const std::filesystem::path& filepath);
@@ -91,7 +92,7 @@ namespace proto
 		_renderer->Init();
 		_skin = std::make_unique<Gwk::Skin::TexturedBase>(_renderer.get());
 		_skin->Init("DefaultSkin.png");
-		_skin->SetDefaultFont("OpenSans.ttf");
+		_skin->SetDefaultFont("OpenSans.ttf", 12.f);
 		
 		_canvas = std::make_unique<Gwk::Controls::Canvas>(_skin.get());
 		_canvas->SetSize(Gwk::Point(width, height));
@@ -117,6 +118,11 @@ namespace proto
 		}
 		
 		return false;
+	}
+
+	bool UIContainer::ConstructWithProfile(const std::filesystem::path& filepath)
+	{
+		return _frame->Construct(filepath);
 	}
 
     void UIContainer::AddFont(const std::filesystem::path& filepath)
