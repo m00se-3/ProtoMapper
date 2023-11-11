@@ -47,8 +47,6 @@ namespace proto
 
 			[[nodiscard]]bool Construct(const std::filesystem::path& root);
 
-			void LogOutput(const std::string& logTab, const std::string_view& msg);
-
 		private:
 
 			std::unique_ptr<Gwk::Controls::StatusBar> _statusBar;
