@@ -52,7 +52,7 @@ namespace proto
 		private:
 
 			std::unique_ptr<Gwk::Controls::StatusBar> _statusBar;
-			std::unique_ptr<LogFrame> _logBox;
+			std::shared_ptr<LogFrame> _logBox;
 			
 	};
 
@@ -77,7 +77,7 @@ namespace proto
 		Dock(Gwk::Position::Fill);
 
 		_statusBar = std::make_unique<Gwk::Controls::StatusBar>(this);
-		_logBox = std::make_unique<LogFrame>(this);
+		_logBox = std::make_shared<LogFrame>(this);
 	}
 
 	void RootFrame::Render(Gwk::Skin::Base* skin)
