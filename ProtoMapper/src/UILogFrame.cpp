@@ -36,7 +36,7 @@ namespace proto
 
         TODO: Setup types for messages, possibly having different colors or prefixes.
     */
-    export class LogFrame : public Gwk::Controls::TabControl
+    export class LogFrame : public Gwk::Controls::TabControl, std::enable_shared_from_this<LogFrame>
     {
         public:
             GWK_CONTROL(LogFrame, Gwk::Controls::TabControl);
