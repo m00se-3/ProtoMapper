@@ -18,15 +18,12 @@
 module;
 
 #include <memory>
-#include <unordered_map>
 #include <string_view>
 
 #include "Gwork/Gwork.h"
 #include "Gwork/Controls/DockBase.h"
 #include "Gwork/Controls/StatusBar.h"
 #include "Gwork/Controls/Canvas.h"
-#include "Gwork/Controls/TabControl.h"
-#include "Gwork/Controls/ListBox.h"
 #include "Gwork/Controls/WindowControl.h"
 #include "Gwork/Skins/Simple.h"
 #include "Gwork/Skins/TexturedBase.h"
@@ -35,6 +32,7 @@ module;
 
 export module UI.Root;
 
+import UI.LogFrame;
 
 namespace proto
 {
@@ -54,8 +52,8 @@ namespace proto
 		private:
 
 			std::unique_ptr<Gwk::Controls::StatusBar> _statusBar;
-			std::unique_ptr<Gwk::Controls::TabControl> _logBox;
-			std::unordered_map<std::string, std::shared_ptr<Gwk::Controls::ListBox>> _logTabs;
+			std::unique_ptr<LogFrame> _logBox;
+			
 	};
 
 	export class ProtoResourcePaths : public Gwk::ResourcePaths
@@ -79,7 +77,7 @@ namespace proto
 		Dock(Gwk::Position::Fill);
 
 		_statusBar = std::make_unique<Gwk::Controls::StatusBar>(this);
-		_logBox = std::make_unique<Gwk::Controls::TabControl>(this);
+		_logBox = std::make_unique<LogFrame>(this);
 	}
 
 	void RootFrame::Render(Gwk::Skin::Base* skin)
@@ -93,28 +91,10 @@ namespace proto
 		_statusBar->SetTextColor(Gwk::Color{ 0u, 0u, 0u, 255u });
 		_statusBar->SetText("What's a good dad joke? You!");
 
-		_logBox->Dock(Gwk::Position::Bottom);
-		_logBox->SetSize(Width(), 100 );
-
-		_logTabs["Output"] = std::make_shared<Gwk::Controls::ListBox>(_logBox.get());
-
-		_logBox->AddPage("Output", _logTabs.at("Output").get());
-
-		LogOutput("Output", "Application loaded successfully!");
-
 		return true;
 	}
 
-	void RootFrame::LogOutput(const std::string& logTab, const std::string_view& msg)
-	{
-		if(_logTabs.contains(logTab))
-		{
-			auto tab = _logTabs.at(logTab);
-
-			tab->AddItem(msg.data());
-			tab->ScrollToBottom();
-		}
-	}
+	
 
 	/*
 		ProtoResourcePaths definitions
