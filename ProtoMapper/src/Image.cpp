@@ -15,10 +15,14 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-export module proto.Image;
+module;
 
-import "stb_image.h";
-import std.compat;
+#include <cstdint>
+#include <filesystem>
+
+#include "stb_image.h"
+
+export module proto.Image;
 
 namespace proto
 {
