@@ -21,6 +21,7 @@ module;
 #include <string>
 #include <filesystem>
 #include <array>
+#include <functional>
 
 export module proto.Renderer;
 
