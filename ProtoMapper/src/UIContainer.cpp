@@ -31,8 +31,8 @@ module;
 
 export module proto.UI.Container;
 
-import proto.ResourceManager;
 import UI.Root;
+import UI.LogFrame;
 
 namespace proto
 {
@@ -44,6 +44,20 @@ namespace proto
 
 	export class UIContainer
 	{
+	public:
+		UIContainer(Gwk::ResourcePaths& paths, int width, int height);
+		~UIContainer();
+
+		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
+		[[nodiscard]]bool ConstructWithProfile(const std::filesystem::path& filepath);
+		[[nodiscard]]Gwk::Input::GLFW3* InputHandle();
+		[[nodiscard]]std::shared_ptr<LogFrame> GetLogUI();
+
+		void AddFont(const std::filesystem::path& filepath);
+		void Draw();
+		void SetSize(int width, int height);
+
+	private:
 		std::filesystem::path _interfaceDir;
 		
 		/*
@@ -55,34 +69,7 @@ namespace proto
 		std::unique_ptr<Gwk::Controls::Canvas> _canvas;
 		std::unique_ptr<RootFrame> _frame;
 
-
-	public:
-		UIContainer(Gwk::ResourcePaths& paths, int width, int height);
-		~UIContainer();
-
-		[[nodiscard]]bool SetDefaultTexture(const std::filesystem::path& dir);
-		[[nodiscard]]bool SetDefaultFont(const std::filesystem::path& dir);
-		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
-		[[nodiscard]]bool ConstructWithProfile(const std::filesystem::path& filepath);
-		[[nodiscard]]Gwk::Input::GLFW3* InputHandle();
-
-		void AddFont(const std::filesystem::path& filepath);
-		void Draw();
-
-
-		static void SetResourceManager(ResourceManager* ptr);
-
-
-	private:
-		static ResourceManager* _resources;
-
-
 	};
-
-	ResourceManager* UIContainer::_resources = nullptr;
-
-
-	void UIContainer::SetResourceManager(ResourceManager* ptr) { _resources = ptr; }
 
 
 	UIContainer::UIContainer(Gwk::ResourcePaths& paths, int width, int height)
@@ -131,8 +118,15 @@ namespace proto
 
 	Gwk::Input::GLFW3* UIContainer::InputHandle() { return &_inputHandle; }
 
+	std::shared_ptr<LogFrame> UIContainer::GetLogUI() { return _frame->GetLogUI(); }
+
 	void UIContainer::Draw()
 	{
 		_canvas->RenderCanvas();
+	}
+
+	void UIContainer::SetSize(int width, int height)
+	{
+		_canvas->SetSize(width, height);
 	}
 }

@@ -46,6 +46,7 @@ namespace proto
 			void Render(Gwk::Skin::Base* skin) override;
 
 			[[nodiscard]]bool Construct(const std::filesystem::path& root);
+			[[nodiscard]]std::shared_ptr<LogFrame> GetLogUI();
 
 		private:
 
@@ -56,13 +57,14 @@ namespace proto
 
 	export class ProtoResourcePaths : public Gwk::ResourcePaths
 	{
-		std::string _path;
-
 	public:
 		ProtoResourcePaths(const std::string& resourcePath);
 		virtual ~ProtoResourcePaths() = default;
 
 		std::string GetPath(Gwk::ResourcePaths::Type type, std::string const& relPath) final;
+
+	private:
+		std::string _path;
 
 	};
 
@@ -92,6 +94,7 @@ namespace proto
 		return true;
 	}
 
+	std::shared_ptr<LogFrame> RootFrame::GetLogUI() { return _logBox; }
 	
 
 	/*
