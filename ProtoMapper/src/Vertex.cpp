@@ -50,13 +50,6 @@ namespace proto
 	public:
 		using IndType = uint32_t;
 
-	private:
-		IndType _vID = 0u, _indID = 0u, _vao = 0u;
-		bool _initialized = false;
-		std::vector<VType> _vertices;
-		std::vector<IndType> _indices;
-
-	public:
 		Buffer() = default;
 		Buffer(size_t numVertices, size_t numIndices) { Generate(numVertices, numIndices); }
 
@@ -141,6 +134,14 @@ namespace proto
 		void Unbind() const { glBindVertexArray(0); }
 
 		void Clear() { _vertices.clear(); _indices.clear(); }
+
+	private:
+		IndType _vID = 0u, _indID = 0u, _vao = 0u;
+		bool _initialized = false;
+		std::vector<VType> _vertices;
+		std::vector<IndType> _indices;
+
+	
 	};
 
 	

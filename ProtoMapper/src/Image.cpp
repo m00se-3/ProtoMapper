@@ -27,9 +27,6 @@ namespace proto
 	*/
 	export class Image
 	{
-		int _width = 0, _height = 0, _channels = 4;
-		uint8_t* _data = nullptr;
-
 	public:
 		Image() = default;
 		Image(const std::filesystem::path& filename);
@@ -50,6 +47,10 @@ namespace proto
 		[[nodiscard("The boolean returned from Image::Empty() has been ignored.")]] bool Empty() const;
 
 		void Destroy();
+
+	private:
+		int _width = 0, _height = 0, _channels = 4;
+		uint8_t* _data = nullptr;
 
 	};
 	

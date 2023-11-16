@@ -31,13 +31,6 @@ namespace proto
 	*/
 	export class SceneNode
 	{
-
-	protected:
-
-		SceneNode* parent = nullptr;
-		entt::entity id;
-		std::list<SceneNode*> children;
-
 	public:
 
 		friend class Scene;
@@ -48,6 +41,12 @@ namespace proto
 		void Update(Scene* container, float dt);
 		void Draw();
 		void Destroy();
+
+	protected:
+
+		SceneNode* parent = nullptr;
+		entt::entity id;
+		std::list<SceneNode*> children;
 	};
 
 	/*
@@ -57,15 +56,6 @@ namespace proto
 	*/
 	export class Scene
 	{
-
-		// Should be thread-safe.
-		UIContainer* _uiInternal = nullptr;
-
-	protected:
-		SceneNode* root = nullptr;
-		entt::registry manager;
-
-
 	public:
 		Scene(UIContainer* ptr);
 
@@ -75,6 +65,14 @@ namespace proto
 		void Cleanup();
 
 		entt::registry& Manager();
+
+	protected:
+		SceneNode* root = nullptr;
+		entt::registry manager;
+
+	private:
+		// Should be thread-safe.
+		UIContainer* _uiInternal = nullptr;
 
 	};
 

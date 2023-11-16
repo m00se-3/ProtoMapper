@@ -45,20 +45,6 @@ namespace proto
 			Three
 		};
 
-	private:
-		glm::mat4 _model, _view, _projection;
-		mode _currentMode = mode::Two;
-		int _vX = 0, _vY = 0, _vWidth = 0, _vHeight = 0;
-
-		std::optional<Texture2D> _currentTexture;
-		std::optional<Shader> _currentShader;
-		Shader _defaultShader;
-		Texture2D _defaultTexture;
-
-		std::function<void()> _uniforms = []() {};
-
-	public:
-
 		Renderer(const std::string& dir);
 		~Renderer();
 
@@ -154,6 +140,18 @@ namespace proto
 
 			return offset + numInds;
 		}
+
+	private:
+		glm::mat4 _model, _view, _projection;
+		mode _currentMode = mode::Two;
+		int _vX = 0, _vY = 0, _vWidth = 0, _vHeight = 0;
+
+		std::optional<Texture2D> _currentTexture;
+		std::optional<Shader> _currentShader;
+		Shader _defaultShader;
+		Texture2D _defaultTexture;
+
+		std::function<void()> _uniforms = []() {};
 	};
 	
 	Renderer::Renderer(const std::string& dir)

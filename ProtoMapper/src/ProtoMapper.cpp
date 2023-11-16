@@ -24,48 +24,23 @@ module;
 #include <span>
 #include <unordered_map>
 
-export module proto.Mapper;
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
+#include "stb_image.h"
+#include "SimpleIni.h"
 
-import "glad/glad.h";
-import "GLFW/glfw3.h";
-import "stb_image.h";
-import "SimpleIni.h";
+export module proto.Mapper;
 
 import proto.UI.Container;
 import proto.Scene;
 import proto.Renderer;
 import proto.ResourceManager;
+import proto.Logger;
 
 namespace proto 
 {
 	export class Mapper
 	{
-		const std::string _title = "ProtoMapper";
-		std::filesystem::path _rootDir;
-		bool _appRunning = true, _mapOpen = true, _panning = false, _fullscreen = true, _configUpdate = false;
-
-		int _wWidth = 1024, _wHeight = 768;
-
-		GLFWwindow* _window = nullptr;
-		GLFWmonitor* _monitor = nullptr;
-
-		std::unique_ptr<uint8_t[]> _stringMemoryBuffer;
-
-		std::unique_ptr<Scene> _scene;
-		std::unique_ptr<UIContainer> _ui;
-		std::unique_ptr<Renderer> _renderer;
-		std::unique_ptr<ResourceManager> _resources;
-
-		std::filesystem::path _configFile;
-		CSimpleIniA _configData;
-
-		// Text directories as defined in config.ini section [preload_directories].
-		std::unordered_map<std::string, std::string> _dataTextFields;
-
-		// Self pointer for use in the GLFW callbacks.
-		static Mapper* _self;
-
-
 	public:
 		Mapper() = default;
 		~Mapper();
@@ -99,6 +74,32 @@ namespace proto
 		static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
 
 		// static protoui::ButtonState GetButtonStateFromGLFWState(int state);
+
+	private:
+		const std::string _title = "ProtoMapper";
+		std::filesystem::path _rootDir;
+		bool _appRunning = true, _fullscreen = true, _configUpdate = false;
+
+		int _wWidth = 1024, _wHeight = 768;
+
+		GLFWwindow* _window = nullptr;
+		GLFWmonitor* _monitor = nullptr;
+
+		std::unique_ptr<uint8_t[]> _stringMemoryBuffer;
+
+		std::unique_ptr<Scene> _scene;
+		std::unique_ptr<UIContainer> _ui;
+		std::unique_ptr<Renderer> _renderer;
+		std::unique_ptr<ResourceManager> _resources;
+
+		std::filesystem::path _configFile;
+		CSimpleIniA _configData;
+
+		// Text directories as defined in config.ini section [preload_directories].
+		std::unordered_map<std::string, std::string> _dataTextFields;
+
+		// Self pointer for use in the GLFW callbacks.
+		static Mapper* _self;
 
 	};
 
@@ -195,6 +196,7 @@ namespace proto
 	{
 		_wWidth = w; _wHeight = h;
 		_renderer->SetRenderSize(w, h);
+		_ui->SetSize(w, h);
 	}
 
 	int Mapper::GetWindowWidth() const { return _wWidth; }
@@ -211,6 +213,9 @@ namespace proto
 		_configData.Reset();
 		_scene->Cleanup();
 		_scene.reset(nullptr);
+		
+		Logger::Reset();
+
 		_ui.reset(nullptr);
 		_renderer.reset(nullptr);
 		_resources.reset(nullptr);
@@ -306,8 +311,6 @@ namespace proto
 
 		_resources = std::make_unique<ResourceManager>(std::span<uint8_t>{_stringMemoryBuffer.get(), InitialTextBufferSize});
 
-		UIContainer::SetResourceManager(_resources.get());
-
 		return true;
 	}
 
@@ -371,6 +374,8 @@ namespace proto
 
 		auto paths = ProtoResourcePaths(_dataTextFields.at("assets_dir"));
 		_ui = std::make_unique<UIContainer>(paths, _wWidth, _wHeight);
+
+		Logger::Init(_ui->GetLogUI());
 
 		/*
 			Images are loaded the right way up from this point forward.
