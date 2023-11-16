@@ -27,6 +27,7 @@ list(
 	"/W4"
 	"/Wall"
 	"/permissive-"
+	"/analyze"
 	${ADDSanitize}
 )
 
