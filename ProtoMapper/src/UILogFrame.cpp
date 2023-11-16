@@ -20,55 +20,55 @@ module;
 #include <memory>
 #include <unordered_map>
 #include <string>
+#include <format>
 
 
 #include "Gwork/Gwork.h"
 #include "Gwork/Controls/TabControl.h"
-#include "Gwork/Controls/RichLabel.h"
+#include "Gwork/Controls/ListBox.h"
 
 export module UI.LogFrame;
 
 
 namespace proto
 {
-    /*
+	/*
         An isolated control that can recieve log messages throughout the application.
 
         TODO: Setup types for messages, possibly having different colors or prefixes.
     */
-    export class LogFrame : public Gwk::Controls::TabControl, std::enable_shared_from_this<LogFrame>
+    export class LogFrame : public Gwk::Controls::TabControl
     {
-        public:
-            GWK_CONTROL(LogFrame, Gwk::Controls::TabControl);
+	public:
+		GWK_CONTROL(LogFrame, Gwk::Controls::TabControl);
 
-            void OutputToTab(const std::string& logTab, const std::string& msg);
+		void OutputToTab(const std::string& logTab, const std::string& msg);
 
-        private:
+	private:
 
-            std::unordered_map<std::string, std::shared_ptr<Gwk::Controls::RichLabel>> _logTabs;
+		std::unordered_map<std::string, std::shared_ptr<Gwk::Controls::ListBox>> _logTabs;
     };
 
     GWK_CONTROL_CONSTRUCTOR(LogFrame)
     {
         Dock(Gwk::Position::Bottom);
 		SetSize(GetParent()->Width(), 100 );
+		SetKeyboardInputEnabled(true);
 
-		_logTabs["Output"] = std::make_shared<Gwk::Controls::RichLabel>(this);
+		_logTabs["Output"] = std::make_shared<Gwk::Controls::ListBox>(this);
 
-		AddPage("Output", _logTabs.at("Output").get());
+		auto* button = AddPage("Output", _logTabs.at("Output").get());
 
-        // For testing only.
-		OutputToTab("Output", "Application loaded successfully!");
-		OutputToTab("Output", "Ready for Input...");
-    }
-
+	}
+	
     void LogFrame::OutputToTab(const std::string& logTab, const std::string& msg)
 	{
 		if(_logTabs.contains(logTab))
 		{
 			auto tab = _logTabs.at(logTab);
 
-			tab->AddText(msg + "\n", Gwk::Color{ 0u, 0u, 0u, 255u });
+			tab->AddItem(msg);
+			tab->ScrollToBottom();
 		}
 	}
 
