@@ -47,21 +47,10 @@ namespace proto
 
 	/*
 		The ResouceManager is in charge of storing shaders, textures, and other external data resources.
-		It also keeps a reference count of each resource.
+		It also keeps a reference count of shaders and textures.
 	*/
 	export class ResourceManager
 	{
-		
-		std::pmr::monotonic_buffer_resource _upstream;
-		std::pmr::synchronized_pool_resource _textAllocator;
-
-		// String storage map.
-		std::pmr::map<std::pmr::string, std::pmr::string> _stringMap;
-
-		std::unique_ptr<ReferenceCounter<Texture2D>> _textures;
-		std::unique_ptr<ReferenceCounter<Shader>> _shaders;
-
-
 	public:
 		ResourceManager(const std::span<uint8_t>& resource);
 		~ResourceManager() = default;
@@ -73,15 +62,21 @@ namespace proto
 		std::string_view GetString(const std::string_view& name);
 		void UnloadString(const std::string_view& name);
 
+	private:
+		std::pmr::monotonic_buffer_resource _upstream;
+		std::pmr::synchronized_pool_resource _textAllocator;
+
+		// String storage map.
+		std::pmr::map<std::pmr::string, std::pmr::string> _stringMap;
+
+		std::unique_ptr<ReferenceCounter<Texture2D>> _textures;
+		std::unique_ptr<ReferenceCounter<Shader>> _shaders;
+
 	};
 
 	export template<IdentifiedExternal Resource>
 	class GPUResource
 	{
-		Resource _object;
-
-		static ReferenceCounter<Resource>* _manager;
-
 	public:
 		GPUResource()
 			: _object()
@@ -124,17 +119,19 @@ namespace proto
 		const Resource& Get() const { return _object; }
 
 		static void SetManager(ReferenceCounter<Resource>* ptr) { _manager = ptr; }
+
+	private:
+		Resource _object;
+
+		static ReferenceCounter<Resource>* _manager;
 	};
 
 	export template<IdentifiedExternal Resource>
 	class ReferenceCounter
 	{
+	public:
 		using IDType = unsigned int;
 
-		std::unordered_map<std::string, GPUResource<Resource>> _storage;
-		std::unordered_map<IDType, std::pair<bool, uint16_t>> _references;
-
-	public:
 		ReferenceCounter() = default;
 		ReferenceCounter(const ReferenceCounter&) = delete;
 		ReferenceCounter(ReferenceCounter&&) = delete;
@@ -226,6 +223,10 @@ namespace proto
 
 			return result;
 		}
+
+	private:
+		std::unordered_map<std::string, GPUResource<Resource>> _storage;
+		std::unordered_map<IDType, std::pair<bool, uint16_t>> _references;
 	};
     
     export template<> ReferenceCounter<Shader>* GPUResource<Shader>::_manager = nullptr;
