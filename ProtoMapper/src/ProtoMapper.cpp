@@ -377,11 +377,6 @@ namespace proto
 
 		Logger::Init(_ui->GetLogUI());
 
-		/*
-			Images are loaded the right way up from this point forward.
-		*/
-		stbi_set_flip_vertically_on_load(1);
-
 		_scene = std::make_unique<Scene>(_ui.get());
 		_scene->Init();
 
