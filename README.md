@@ -45,3 +45,7 @@ For inquiries about the project, you can contact me via the email address on my 
 ## Features
 
 **Key features of this program will appear here as dvelopment progresses.**
+
+## Icons
+
+Uicons by <a href="https://www.flaticon.com/uicons">Flaticon</a>
