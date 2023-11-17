@@ -68,7 +68,7 @@ CPMAddPackage(
 	"Gwork"
 
 	GIT_TAG
-	"glad"
+	"proto"
 
 	GITHUB_REPOSITORY
 	"m00se-3/GWork"
