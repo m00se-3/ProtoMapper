@@ -56,10 +56,12 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Scene.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ResourceManager.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/UIContainer.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/UIRoot.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/UILogFrame.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Logger.cpp
+
+
+	${CMAKE_CURRENT_LIST_DIR}/src/ui/UIContainer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ui/UIRoot.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ui/UILogFrame.cpp
 
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Texture.cpp
