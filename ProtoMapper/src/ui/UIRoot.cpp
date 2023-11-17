@@ -25,6 +25,8 @@ module;
 #include "Gwork/Controls/StatusBar.h"
 #include "Gwork/Controls/Canvas.h"
 #include "Gwork/Controls/WindowControl.h"
+
+
 #include "Gwork/Skins/Simple.h"
 #include "Gwork/Skins/TexturedBase.h"
 
@@ -33,6 +35,7 @@ module;
 export module UI.Root;
 
 import UI.LogFrame;
+import UI.TopMenu;
 
 namespace proto
 {
@@ -50,6 +53,7 @@ namespace proto
 
 		private:
 
+			std::unique_ptr<TopMenu> _topMenu;
 			std::unique_ptr<Gwk::Controls::StatusBar> _statusBar;
 			std::shared_ptr<LogFrame> _logBox;
 			
@@ -75,9 +79,6 @@ namespace proto
 	GWK_CONTROL_CONSTRUCTOR(RootFrame)
 	{
 		Dock(Gwk::Position::Fill);
-
-		_statusBar = std::make_unique<Gwk::Controls::StatusBar>(this);
-		_logBox = std::make_shared<LogFrame>(this);
 	}
 
 	void RootFrame::Render(Gwk::Skin::Base* skin)
@@ -87,9 +88,15 @@ namespace proto
 
 	bool RootFrame::Construct(const std::filesystem::path& root)
 	{
+		_topMenu = std::make_unique<TopMenu>(this);
+		_statusBar = std::make_unique<Gwk::Controls::StatusBar>(this);
+		_logBox = std::make_shared<LogFrame>(this);
+
 		_statusBar->Dock(Gwk::Position::Bottom);
 		_statusBar->SetTextColor(Gwk::Color{ 0u, 0u, 0u, 255u });
 		_statusBar->SetText("What's a good dad joke? You!");
+
+		_logBox->SetHidden(true);
 
 		return true;
 	}
@@ -116,7 +123,14 @@ namespace proto
 
 		if (type == Gwk::ResourcePaths::Type::Texture)
 		{
-			result += "/UIskins/";
+			if(relPath.starts_with("icon"))
+			{
+				result += "/icons/";
+			}
+			else
+			{
+				result += "/UIskins/";
+			}
 		}
 		
 		return (result + relPath);
