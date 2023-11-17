@@ -54,17 +54,19 @@ target_sources(
 	FILES
 
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Texture.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Shader.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Vertex.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Renderer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Scene.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ResourceManager.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/UIContainer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/UIRoot.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/UILogFrame.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Logger.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Image.cpp
+
+	
+	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Texture.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Renderer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Shader.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Vertex.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Image.cpp
 
 	PRIVATE 
 
