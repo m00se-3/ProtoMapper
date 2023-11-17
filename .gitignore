@@ -11,7 +11,7 @@
 *.sln.docstates
 build/**
 vcpkg_installed/**
-CMakeUserPresets.json
+./CMakeUserPresets.json
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -367,4 +367,3 @@ FodyWeavers.xsd
 xmake.lua
 .vscode/compile_commands.json
 /.vscode
-CMakeUserPresets.json
