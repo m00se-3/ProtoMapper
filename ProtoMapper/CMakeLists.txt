@@ -11,8 +11,10 @@ target_compile_definitions(ProtoMapper PUBLIC ROOT_DIR="$ENV{ROOT_FOLDER}" NOMIN
 
 if(${CMAKE_BUILD_TYPE} MATCHES Debug)
 	target_compile_definitions(ProtoMapper PUBLIC _DEBUG_)
-elseif(${CMAKE_BUILD_TYPE} MATCHES Release AND NOT $ENV{POST_BUILD_TYPE} MATCHES Distro)
+elseif(${CMAKE_BUILD_TYPE} MATCHES Release)
 	target_compile_definitions(ProtoMapper PUBLIC _RELEASE_)
+elseif(${CMAKE_BUILD_TYPE} MATCHES RelWithDebInfo)
+target_compile_definitions(ProtoMapper PUBLIC _RELWDEBUGSYM_)
 endif()
 
 target_include_directories(

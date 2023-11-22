@@ -38,6 +38,15 @@
         }
       },
       {
+        "name": "x64-optimized",
+        "displayName": "x64 Release w/ Debug Symbols",
+        "inherits": "x64-debug",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+          "GWK_TARGET_ARCH": "x64"
+        }
+      },
+      {
         "name": "x64-release",
         "displayName": "x64 Release",
         "inherits": "x64-debug",
