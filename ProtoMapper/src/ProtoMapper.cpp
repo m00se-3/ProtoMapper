@@ -237,13 +237,13 @@ namespace proto
 		}
 
 
-#if defined(_DEBUG_) || defined(_RELEASE_)
+#if defined(_DEBUG_) || defined(_RELWDEBUGSYM_)
 
 		_rootDir = ROOT_DIR;
 		_configFile = _rootDir.string() + "/config/config.ini";
 
 #else
-		_rootDir = ".";
+		_rootDir = std::filesystem::current_path();
 		_configFile = _rootDir.string() + "/config/config.ini";
 
 #endif // _DEBUG_
