@@ -31,11 +31,13 @@ module;
 #include "Gwork/Skins/TexturedBase.h"
 
 #include "SimpleIni.h"
+#include "GLFW/glfw3.h"
 
 export module UI.Root;
 
 import UI.LogFrame;
 import UI.TopMenu;
+import UI.TitleBar;
 
 namespace proto
 {
@@ -45,14 +47,15 @@ namespace proto
 	export class RootFrame : public Gwk::Controls::DockBase
 	{
 		GWK_CONTROL(RootFrame, Gwk::Controls::DockBase);
-		
-			void Render(Gwk::Skin::Base* skin) override;
 
 			[[nodiscard]]bool Construct(const std::filesystem::path& root);
 			[[nodiscard]]std::shared_ptr<LogFrame> GetLogUI();
 
+			void SetWindowPtr(GLFWwindow* win);
+
 		private:
 
+			std::unique_ptr<TitleBar> _titleBar;
 			std::unique_ptr<TopMenu> _topMenu;
 			std::unique_ptr<Gwk::Controls::StatusBar> _statusBar;
 			std::shared_ptr<LogFrame> _logBox;
@@ -81,13 +84,9 @@ namespace proto
 		Dock(Gwk::Position::Fill);
 	}
 
-	void RootFrame::Render(Gwk::Skin::Base* skin)
-	{
-		ParentClass::Render(skin);
-	}
-
 	bool RootFrame::Construct(const std::filesystem::path& root)
 	{
+		_titleBar = std::make_unique<TitleBar>(this);
 		_topMenu = std::make_unique<TopMenu>(this);
 		_statusBar = std::make_unique<Gwk::Controls::StatusBar>(this);
 		_logBox = std::make_shared<LogFrame>(this);
@@ -134,5 +133,10 @@ namespace proto
 		}
 		
 		return (result + relPath);
+	}
+
+	void RootFrame::SetWindowPtr(GLFWwindow* win)
+	{
+		_titleBar->SetWindowPtr(win);
 	}
 }
