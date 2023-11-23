@@ -56,6 +56,7 @@ namespace proto
 		void End();
 
 		void SetRenderSize(int w, int h);
+		void RefreshProjection();
 		int GetRenderWidth() const;
 		int GetRenderHeight() const;
 		int GetRenderX() const;
@@ -256,6 +257,24 @@ namespace proto
 	void Renderer::SetRenderSize(int w, int h)
 	{
 		_vWidth = w; _vHeight = h;
+	}
+
+	void Renderer::RefreshProjection()
+	{
+		switch (_currentMode)
+		{
+		case mode::Two:
+		{
+			_projection = glm::ortho(0.f, (float)_vWidth, (float)_vHeight, 0.f);
+			break;
+		}
+		case mode::Three:
+		{
+			// Make sure this is correct before testing.
+			_projection = glm::perspective(glm::quarter_pi<float>(), (float)_vWidth / (float)_vHeight, 1.f, 10.f);
+			break;
+		}
+		}
 	}
 
 	void Renderer::SetViewport(int x, int y, int w, int h)

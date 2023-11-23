@@ -72,8 +72,10 @@ namespace proto
 		static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
 		static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
 		static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
+		static void WindowCloseCallback(GLFWwindow* window);
+		static void WindowMaximizeCallback(GLFWwindow* window, int maximized);
+		static void WindowMinimizedCallback(GLFWwindow* window, int iconified);
 
-		// static protoui::ButtonState GetButtonStateFromGLFWState(int state);
 
 	private:
 		const std::string _title = "ProtoMapper";
@@ -171,6 +173,12 @@ namespace proto
 
 	void Mapper::FrameBufferSizeCallback([[maybe_unused]] GLFWwindow* window, int width, int height)
 	{
+		// If the window was minimized, do nothing.
+		if(width == 0 || height == 0)
+		{
+			return;
+		}
+		
 		auto* self = Mapper::GetInstance();
 
 		int oW = self->GetWindowWidth(), oH = self->GetWindowHeight();
@@ -179,17 +187,35 @@ namespace proto
 			rW = self->GetRenderer()->GetRenderWidth(),
 			rH = self->GetRenderer()->GetRenderHeight();
 
+		float sW = ((float)width / (float)oW);
+		float sH = ((float)height / (float)oH);
+
 		self->SetWindow(width, height);
+		self->GetRenderer()->RefreshProjection();
 
-		float sW = (float)(width / oW);
-		float sH = (float)(height / oH);
+		const int nx = std::lround((float)rX * sW);
+		const int ny = std::lround((float)rY * sH);
+		const int nw = std::lround((float)rW * sW);
+		const int nh = std::lround((float)rH * sH);
 
-		self->GetRenderer()->SetViewport(
-			(int)((float)rX * sW),
-			(int)((float)rY * sH),
-			(int)((float)rW * sW),
-			(int)((float)rH * sH)
-		);
+		self->GetRenderer()->SetViewport(nx, ny, nw, nh);
+		self->UI()->RenderViewport(nx, ny, nw, nh);
+
+	}
+
+	void Mapper::WindowCloseCallback(GLFWwindow* window)
+	{
+		
+	}
+
+	void Mapper::WindowMaximizeCallback(GLFWwindow* window, int maximized)
+	{
+		
+	}
+
+	void Mapper::WindowMinimizedCallback(GLFWwindow* window, int iconified)
+	{
+
 	}
 
 	void Mapper::SetWindow(int w, int h)
@@ -326,6 +352,8 @@ namespace proto
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+		glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 		
 
 		_monitor = glfwGetPrimaryMonitor();
@@ -337,6 +365,7 @@ namespace proto
 		else
 		{
 			_window = glfwCreateWindow(_wWidth, _wHeight, _title.c_str(), nullptr, nullptr);
+			glfwSetWindowPos(_window, 100, 100);
 		}
 
 		if (_window)
@@ -348,6 +377,8 @@ namespace proto
 
 			glDebugMessageCallback((GLDEBUGPROC)Mapper::DebugOpenGL, nullptr);
 
+			// Set GLFW event callbacks.
+
 			glfwSetMonitorCallback(Mapper::MonitorCallback);
 			glfwSetKeyCallback(_window, Mapper::KeyboardEventCallback);
 			glfwSetCharCallback(_window, Mapper::TextEventCallback);
@@ -356,6 +387,9 @@ namespace proto
 			glfwSetScrollCallback(_window, Mapper::MouseScrollEventCallback);
 			glfwSetDropCallback(_window, Mapper::DropEventCallback);
 			glfwSetFramebufferSizeCallback(_window, Mapper::FrameBufferSizeCallback);
+			glfwSetWindowCloseCallback(_window, Mapper::WindowCloseCallback);
+			glfwSetWindowMaximizeCallback(_window, Mapper::WindowMaximizeCallback);
+			glfwSetWindowIconifyCallback(_window, Mapper::WindowMinimizedCallback);
 
 		}
 		else
@@ -388,7 +422,7 @@ namespace proto
 			Load all preload assets and data files. 
 		*/
 		if(!_ui->SetDefinitionsPath(_dataTextFields.at("user_interface_dir"))) return 3;
-		if(!_ui->ConstructWithProfile(_dataTextFields.at("profiles_dir") + _configData.GetValue("preferences", "profile"))) return 4;
+		if(!_ui->ConstructWithProfile(_dataTextFields.at("profiles_dir") + _configData.GetValue("preferences", "profile"), _window)) return 4;
 
 		// Text files
 		std::filesystem::path textDir = _dataTextFields.at("text_dir");

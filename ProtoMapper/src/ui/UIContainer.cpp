@@ -29,6 +29,7 @@ module;
 #include "Gwork/Skins/TexturedBase.h"
 
 #include "SimpleIni.h"
+#include "GLFW/glfw3.h"
 
 export module proto.UI.Container;
 
@@ -50,13 +51,14 @@ namespace proto
 		~UIContainer();
 
 		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
-		[[nodiscard]]bool ConstructWithProfile(const std::filesystem::path& filepath);
+		[[nodiscard]]bool ConstructWithProfile(const std::filesystem::path& filepath, GLFWwindow* win);
 		[[nodiscard]]Gwk::Input::GLFW3* InputHandle();
 		[[nodiscard]]std::shared_ptr<LogFrame> GetLogUI();
 
 		void AddFont(const std::filesystem::path& filepath);
 		void Draw();
 		void SetSize(int width, int height);
+		void RenderViewport(int x, int y, int w, int h);
 
 	private:
 		std::filesystem::path _interfaceDir;
@@ -108,9 +110,17 @@ namespace proto
 		return false;
 	}
 
-	bool UIContainer::ConstructWithProfile(const std::filesystem::path& filepath)
+	bool UIContainer::ConstructWithProfile(const std::filesystem::path& filepath, GLFWwindow* win)
 	{
-		return _frame->Construct(filepath);
+		if(_frame->Construct(filepath))
+		{
+			_frame->SetWindowPtr(win);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
     void UIContainer::AddFont(const std::filesystem::path& filepath)
@@ -128,6 +138,13 @@ namespace proto
 
 	void UIContainer::SetSize(int width, int height)
 	{
-		_canvas->SetSize(width, height);
+		_canvas->SetBounds(Gwk::Rect{0, 0, width, height});
+		_frame->SetBounds(Gwk::Rect{0, 0, width, height});
+	}
+
+	void UIContainer::RenderViewport(int x, int y, int w, int h)
+	{
+		_renderer->SetClipRegion(Gwk::Rect{x, y, w, h});
+		_renderer->SetView(Gwk::Rect{x, y, w, h});
 	}
 }
