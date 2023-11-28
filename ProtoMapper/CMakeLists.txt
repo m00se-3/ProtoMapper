@@ -74,6 +74,8 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Vertex.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Image.cpp
 
+	${CMAKE_CURRENT_LIST_DIR}/src/resources/Window.cpp
+
 	PRIVATE 
 
 	${CMAKE_CURRENT_LIST_DIR}/src/main.cpp

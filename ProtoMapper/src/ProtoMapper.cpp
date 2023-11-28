@@ -20,13 +20,10 @@ module;
 #include <chrono>
 #include <filesystem>
 #include <memory>
-#include <print>
 #include <span>
 #include <unordered_map>
 
-#include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "stb_image.h"
 #include "SimpleIni.h"
 
 export module proto.Mapper;
@@ -36,6 +33,7 @@ import proto.Scene;
 import proto.Renderer;
 import proto.ResourceManager;
 import proto.Logger;
+import proto.Window;
 
 namespace proto 
 {
@@ -45,47 +43,22 @@ namespace proto
 		Mapper() = default;
 		~Mapper();
 
-		static Mapper* GetInstance();
-
+		[[nodiscard]]static Mapper* GetInstance();
 		[[nodiscard]]bool Configure();
 		[[nodiscard]]int Run();
-		void SetWindow(int w, int h);
+		void SetContextSize(int w, int h);
 
-		int GetWindowWidth() const;
-		int GetWindowHeight() const;
+		[[nodiscard]]Window& GetWin();
+		[[nodiscard]]Renderer* GetRenderer();
+		[[nodiscard]]UIContainer* UI();
 
-		Renderer* GetRenderer();
-		UIContainer* UI();
-
-		static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
-
-		/*
-			GLFW callback functions
-		*/
-
-		static void ContextErrorMessage(int code, const char* description);
-		static void MonitorCallback(GLFWmonitor* monitor, int event);
-		static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
-		static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
-		static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
-		static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
-		static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
-		static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
+		// This is the only GLFW callback we need in this class, the rest are under the Window class.
 		static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
-		static void WindowCloseCallback(GLFWwindow* window);
-		static void WindowMaximizeCallback(GLFWwindow* window, int maximized);
-		static void WindowMinimizedCallback(GLFWwindow* window, int iconified);
-
 
 	private:
 		const std::string _title = "ProtoMapper";
 		std::filesystem::path _rootDir;
 		bool _appRunning = true, _fullscreen = true, _configUpdate = false;
-
-		int _wWidth = 1024, _wHeight = 768;
-
-		GLFWwindow* _window = nullptr;
-		GLFWmonitor* _monitor = nullptr;
 
 		std::unique_ptr<uint8_t[]> _stringMemoryBuffer;
 
@@ -96,11 +69,11 @@ namespace proto
 
 		std::filesystem::path _configFile;
 		CSimpleIniA _configData;
+		Window _window;
 
 		// Text directories as defined in config.ini section [preload_directories].
 		std::unordered_map<std::string, std::string> _dataTextFields;
 
-		// Self pointer for use in the GLFW callbacks.
 		static Mapper* _self;
 
 	};
@@ -109,67 +82,11 @@ namespace proto
 		Implementation.
 	*/
 
-
 	constexpr const size_t InitialTextBufferSize = 8u * 1024u;	// Allocate 8 KB for the text memory buffer. Can change later if needed.
 
 	Mapper* Mapper::_self = nullptr;
 
 	Mapper* Mapper::GetInstance() { return _self; }
-
-
-	void Mapper::DebugOpenGL(GLenum src, GLenum type, [[maybe_unused]] GLuint id, GLenum severity, [[maybe_unused]] GLsizei length, const GLchar* message, [[maybe_unused]] const void* userParam)
-	{
-		std::println("Error {} {} {} - {}", src, type, severity, message);
-	}
-
-	void Mapper::ContextErrorMessage(int code, const char* description)
-	{
-		std::println("Error code {} - {}", code, description);
-	}
-
-	void Mapper::MonitorCallback([[maybe_unused]] GLFWmonitor* monitor, [[maybe_unused]] int event)
-	{
-		if (event == GLFW_CONNECTED)
-		{
-
-		}
-		else if (event == GLFW_DISCONNECTED)
-		{
-
-		}
-	}
-
-	void Mapper::KeyboardEventCallback([[maybe_unused]] GLFWwindow* window, int keyn, int scancode, int action, int mods)
-	{
-		auto* self = Mapper::GetInstance()->UI()->InputHandle();
-
-		auto key = Gwk::Input::GLFW3::KeyEvent{ keyn, scancode, action, mods };
-
-		self->ProcessKeyEvent(key);
-	}
-
-	void Mapper::TextEventCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]] unsigned int codepoint)
-	{
-	}
-
-	void Mapper::MouseButtonEventCallback([[maybe_unused]] GLFWwindow* window, int button, int action, int mods)
-	{
-		Mapper::GetInstance()->UI()->InputHandle()->ProcessMouseButtons(button, action, mods);
-	}
-
-	void Mapper::MouseMotionEventCallback([[maybe_unused]]GLFWwindow*, double x, double y)
-	{
-		Mapper::GetInstance()->UI()->InputHandle()->ProcessMouseMove(x, y);
-	}
-
-	void Mapper::MouseScrollEventCallback([[maybe_unused]] GLFWwindow* window, double offX, double offY)
-	{
-		Mapper::GetInstance()->UI()->InputHandle()->ProcessScroll(offX, offY);
-	}
-
-	void Mapper::DropEventCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]]int count, [[maybe_unused]] const char** paths)
-	{
-	}
 
 	void Mapper::FrameBufferSizeCallback([[maybe_unused]] GLFWwindow* window, int width, int height)
 	{
@@ -181,8 +98,9 @@ namespace proto
 		
 		auto* self = Mapper::GetInstance();
 
-		int oW = self->GetWindowWidth(), oH = self->GetWindowHeight();
-		int rX = self->GetRenderer()->GetRenderX(),
+		int oW = self->GetWin().GetWidth(),
+			oH = self->GetWin().GetHeight(),
+			rX = self->GetRenderer()->GetRenderX(),
 			rY = self->GetRenderer()->GetRenderY(),
 			rW = self->GetRenderer()->GetRenderWidth(),
 			rH = self->GetRenderer()->GetRenderHeight();
@@ -190,7 +108,7 @@ namespace proto
 		float sW = ((float)width / (float)oW);
 		float sH = ((float)height / (float)oH);
 
-		self->SetWindow(width, height);
+		self->SetContextSize(width, height);
 		self->GetRenderer()->RefreshProjection();
 
 		const int nx = std::lround((float)rX * sW);
@@ -202,32 +120,6 @@ namespace proto
 		self->UI()->RenderViewport(nx, ny, nw, nh);
 
 	}
-
-	void Mapper::WindowCloseCallback(GLFWwindow* window)
-	{
-		
-	}
-
-	void Mapper::WindowMaximizeCallback(GLFWwindow* window, int maximized)
-	{
-		
-	}
-
-	void Mapper::WindowMinimizedCallback(GLFWwindow* window, int iconified)
-	{
-
-	}
-
-	void Mapper::SetWindow(int w, int h)
-	{
-		_wWidth = w; _wHeight = h;
-		_renderer->SetRenderSize(w, h);
-		_ui->SetSize(w, h);
-	}
-
-	int Mapper::GetWindowWidth() const { return _wWidth; }
-	
-	int Mapper::GetWindowHeight() const { return _wHeight; }
 
 	Mapper::~Mapper()
 	{
@@ -245,17 +137,11 @@ namespace proto
 		_ui.reset(nullptr);
 		_renderer.reset(nullptr);
 		_resources.reset(nullptr);
-
-		glfwDestroyWindow(_window);
-
-		glfwTerminate();
 	}
 
 	bool Mapper::Configure()
 	{
 		_self = this;
-
-		glfwSetErrorCallback(Mapper::ContextErrorMessage);
 
 		if (!glfwInit())
 		{
@@ -324,8 +210,7 @@ namespace proto
 		*/
 		if (width != 0 && height != 0)
 		{
-			_wWidth = width;
-			_wHeight = height;
+			_window.SetSize(width, height);
 			_fullscreen = false;
 		}
 
@@ -345,71 +230,24 @@ namespace proto
 	{
 		using time = std::chrono::high_resolution_clock;
 
-		/*
-			Create the window and the opengl context.
-		*/
-
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-		glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-		
-
-		_monitor = glfwGetPrimaryMonitor();
-
-		if (_fullscreen)
-		{
-			_window = glfwCreateWindow(_wWidth, _wHeight, _title.c_str(), _monitor, nullptr);
-		}
-		else
-		{
-			_window = glfwCreateWindow(_wWidth, _wHeight, _title.c_str(), nullptr, nullptr);
-			glfwSetWindowPos(_window, 100, 100);
-		}
-
-		if (_window)
-		{
-			glfwMakeContextCurrent(_window);
-			glfwSwapInterval(1);
-
-			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return 1;
-
-			glDebugMessageCallback((GLDEBUGPROC)Mapper::DebugOpenGL, nullptr);
-
-			// Set GLFW event callbacks.
-
-			glfwSetMonitorCallback(Mapper::MonitorCallback);
-			glfwSetKeyCallback(_window, Mapper::KeyboardEventCallback);
-			glfwSetCharCallback(_window, Mapper::TextEventCallback);
-			glfwSetMouseButtonCallback(_window, Mapper::MouseButtonEventCallback);
-			glfwSetCursorPosCallback(_window, Mapper::MouseMotionEventCallback);
-			glfwSetScrollCallback(_window, Mapper::MouseScrollEventCallback);
-			glfwSetDropCallback(_window, Mapper::DropEventCallback);
-			glfwSetFramebufferSizeCallback(_window, Mapper::FrameBufferSizeCallback);
-			glfwSetWindowCloseCallback(_window, Mapper::WindowCloseCallback);
-			glfwSetWindowMaximizeCallback(_window, Mapper::WindowMaximizeCallback);
-			glfwSetWindowIconifyCallback(_window, Mapper::WindowMinimizedCallback);
-
-		}
-		else
-		{
-			return 2;
-		}
+		if(!_window.Construct(_title, _fullscreen)) return 2;
 
 		/*
 			Create internal Renderer, UIContainer, and Scene objects.
 		*/
 
 		_renderer = std::make_unique<Renderer>(_rootDir.string().c_str());
-		_renderer->SetRenderSize(_wWidth, _wHeight);
-		_renderer->SetViewport(0, 0, _wWidth, _wHeight);
+		_renderer->SetRenderSize(_window.GetWidth(), _window.GetHeight());
+		_renderer->SetViewport(0, 0, _window.GetWidth(), _window.GetHeight());
 		_renderer->Init(Renderer::mode::Two);
 
 		auto paths = ProtoResourcePaths(_dataTextFields.at("assets_dir"));
-		_ui = std::make_unique<UIContainer>(paths, _wWidth, _wHeight);
+		_ui = std::make_unique<UIContainer>(paths, _window.GetWidth(), _window.GetHeight());
 
+		Window::SetUIHandle(_ui.get());
 		Logger::Init(_ui->GetLogUI());
+
+		glfwSetFramebufferSizeCallback(_window.GetPtr(), Mapper::FrameBufferSizeCallback);
 
 		_scene = std::make_unique<Scene>(_ui.get());
 		_scene->Init();
@@ -422,7 +260,7 @@ namespace proto
 			Load all preload assets and data files. 
 		*/
 		if(!_ui->SetDefinitionsPath(_dataTextFields.at("user_interface_dir"))) return 3;
-		if(!_ui->ConstructWithProfile(_dataTextFields.at("profiles_dir") + _configData.GetValue("preferences", "profile"), _window)) return 4;
+		if(!_ui->ConstructWithProfile(_dataTextFields.at("profiles_dir") + _configData.GetValue("preferences", "profile"), _window.GetPtr())) return 4;
 
 		// Text files
 		std::filesystem::path textDir = _dataTextFields.at("text_dir");
@@ -442,12 +280,12 @@ namespace proto
 			Show main window and start main loop.
 		*/
 
-		glfwShowWindow(_window);
+		glfwShowWindow(_window.GetPtr());
 		glClearColor(0.3f, 0.3f, 0.3f, 1.f);
 
 		time::time_point last = time::now();
 
-		while (!glfwWindowShouldClose(_window) && _appRunning)
+		while (!glfwWindowShouldClose(_window.GetPtr()) && _appRunning)
 		{
 			time::time_point current = time::now();
 			float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
@@ -463,7 +301,7 @@ namespace proto
 
 			_ui->Draw();
 
-			glfwSwapBuffers(_window);
+			glfwSwapBuffers(_window.GetPtr());
 
 			/*
 				Capture input events for the GUI and the simulation.
@@ -475,6 +313,15 @@ namespace proto
 		return EXIT_SUCCESS;
 
 	}
+
+	void Mapper::SetContextSize(int w, int h)
+	{
+		_window.SetSize(w, h);
+		_renderer->SetRenderSize(w, h);
+		_ui->SetSize(w, h);
+	}
+
+	Window& Mapper::GetWin() { return _window; }
 
 	Renderer* Mapper::GetRenderer()
 	{

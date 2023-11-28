@@ -22,6 +22,8 @@ module;
 #include <filesystem>
 #include <array>
 #include <functional>
+#include <memory>
+#include <cstdio>
 
 export module proto.Renderer;
 
@@ -155,10 +157,18 @@ namespace proto
 
 		std::function<void()> _uniforms = []() {};
 	};
+
+
+	/*
+		Implementation.
+	*/
 	
 	Renderer::Renderer(const std::string& dir)
 		: _model(glm::mat4(1.f)), _view(glm::mat4(1.f)), _projection(glm::mat4(1.f)), _currentTexture(std::nullopt), _currentShader(std::nullopt)
 	{
+		using FileDeleter = std::function<void(std::FILE*)>;
+
+		auto destructor = [](std::FILE* handle){ std::fclose(handle); };
 
 		_defaultTexture.Create().GenerateBlank(1, 1);
 
@@ -170,10 +180,10 @@ namespace proto
 			fs = dir + "/assets/shaders/DefaultFS.glsl";
 
 		// File handles for the shader sources.
+		// Use of unique_ptr to guarantee safe release of file handles.
 
-
-		std::FILE* vsHandle = std::fopen(vs.string().c_str(), "r");
-		std::FILE* fsHandle = std::fopen(fs.string().c_str(), "r");
+		auto vsHandle = std::unique_ptr<std::FILE, FileDeleter>(fopen(vs.string().c_str(), "r"), destructor);
+		auto fsHandle = std::unique_ptr<std::FILE, FileDeleter>(fopen(fs.string().c_str(), "r"), destructor);
 
 		if (vsHandle && fsHandle)
 		{
@@ -189,16 +199,13 @@ namespace proto
 
 			std::array<char, 50u> buffer = { 0 };
 
-			while (std::feof(vsHandle) == 0)
-				vsSrc += std::fgets(buffer.data(), 50u, vsHandle);
+			while (std::feof(vsHandle.get()) == 0)
+				vsSrc += std::fgets(buffer.data(), 50u, vsHandle.get());
 
 			std::memset(buffer.data(), 0, 50u);	// Reset the buffer memory to ensure no garbage data is present.
 
-			while (std::feof(fsHandle) == 0)
-				fsSrc += std::fgets(buffer.data(), 50u, fsHandle);
-
-			std::fclose(vsHandle);
-			std::fclose(fsHandle);
+			while (std::feof(fsHandle.get()) == 0)
+				fsSrc += std::fgets(buffer.data(), 50u, fsHandle.get());
 
 			auto objs = _defaultShader.CreateBasic(vsSrc.c_str(), fsSrc.c_str());
 			_defaultShader.Link(objs);
