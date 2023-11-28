@@ -1,6 +1,6 @@
 ﻿add_executable (ProtoMapper)
 
-target_compile_options(ProtoMapper PRIVATE ${flags})
+target_compile_options(ProtoMapper PRIVATE ${ProtoCompilerFlags})
 
 ####	Meaning of the macros defined below.
 #		

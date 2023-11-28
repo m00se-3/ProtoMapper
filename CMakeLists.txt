@@ -11,7 +11,7 @@ LANGUAGES CXX C)
 
 include("CPM.cmake")
 
-# A few quick checks to ensure the compiler flags match the compiler being used.
+# A few quick checks to ensure the compiler ProtoCompilerFlags match the compiler being used.
 
 if(${CMAKE_CXX_COMPILIER_ID} MATCHES MSVC)
 
@@ -22,11 +22,10 @@ set(ADDSanitize "/fsanitize=address")
 endif()
 
 list(
-	APPEND flags 
+	APPEND ProtoCompilerFlags 
 
-	"/W4"
 	"/Wall"
-	"/permissive"
+	"/permissive-"
 	"/analyze"
 	${ADDSanitize}
 )
@@ -40,7 +39,7 @@ set(ADDSanitize "-fsanitize=address")
 endif()
 
 list(
-	APPEND flags 
+	APPEND ProtoCompilerFlags 
 
 	"-Wall" 
 	"-Wextra" 
