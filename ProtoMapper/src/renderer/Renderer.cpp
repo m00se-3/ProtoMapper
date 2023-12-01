@@ -51,6 +51,8 @@ namespace proto
 		Renderer(const std::string& dir);
 		~Renderer();
 
+		static void SetResourceManager(ResourceManager* ptr);
+
 		mode GetRenderMode() const;
 
 		bool Init(mode newMode);
@@ -156,15 +158,22 @@ namespace proto
 		Texture2D _defaultTexture;
 
 		std::function<void()> _uniforms = []() {};
+
+		static ResourceManager* _resources;
 	};
 
 
 	/*
 		Implementation.
 	*/
+
+	ResourceManager* Renderer::_resources = nullptr;
+
+	void Renderer::SetResourceManager(ResourceManager* ptr) { _resources = ptr; }
 	
 	Renderer::Renderer(const std::string& dir)
-		: _model(glm::mat4(1.f)), _view(glm::mat4(1.f)), _projection(glm::mat4(1.f)), _currentTexture(std::nullopt), _currentShader(std::nullopt)
+		: _model(glm::mat4(1.f)), _view(glm::mat4(1.f)), _projection(glm::mat4(1.f)),
+		_currentTexture(std::nullopt), _currentShader(std::nullopt)
 	{
 		using FileDeleter = std::function<void(std::FILE*)>;
 
@@ -209,6 +218,9 @@ namespace proto
 
 			auto objs = _defaultShader.CreateBasic(vsSrc.c_str(), fsSrc.c_str());
 			_defaultShader.Link(objs);
+
+			_resources->Textures()->LoadCopy("default", _defaultTexture);
+			_resources->Shaders()->LoadCopy("default", _defaultShader);
 		}
 	}
 

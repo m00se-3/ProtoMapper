@@ -21,6 +21,7 @@ module;
 #include <map>
 #include <unordered_map>
 #include <span>
+#include <functional>
 
 export module proto.ResourceManager;
 
@@ -142,7 +143,7 @@ namespace proto
 			_storage.clear();
 		}
 
-		GPUResource<Resource> Load(const std::string_view& name)
+		GPUResource<Resource> Load(const std::string_view& name, const std::function<void(Resource&)>& onLoad = [](Resource&){})
 		{
 			if (_storage.contains(name.data()))
 			{
@@ -151,21 +152,32 @@ namespace proto
 				return res;
 			}
 
-			auto result = _storage.emplace(std::string{ name.data(), name.size() }, Resource{});
+			_storage.emplace(std::string{ name.data(), name.size() }, Resource{});
+			auto& result = _storage.at(std::string{ name.data(), name.size() });
 
-			return result.first->second;
+			onLoad(result.Get());
+
+			return result;
+		}
+
+		void LoadCopy(const std::string_view& name, Resource& cpy)
+		{
+			if (!_storage.contains(name.data()))
+			{
+				auto result = _storage.emplace(std::string{ name.data(), name.size() }, cpy);
+
+				AddReference(result.first->second.Get().GetID());		// Make sure our reference count is correct, since we are copying.
+			}
 		}
 
 		GPUResource<Resource> Get(const std::string_view& name)
 		{
-			GPUResource<Resource> res;
-
 			if (_storage.contains(name.data()))
 			{
-				res = _storage.at(std::string{ name.data(), name.size() });
+				return _storage.at(std::string{ name.data(), name.size() });
 			}
 
-			return res;
+			return GPUResource<Resource>{};
 		}
 
 		void Unload(const std::string_view& name)

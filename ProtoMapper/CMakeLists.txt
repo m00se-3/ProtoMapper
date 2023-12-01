@@ -24,8 +24,6 @@ target_include_directories(
 	${CMAKE_CURRENT_LIST_DIR}/inc
 	${SIMPLEINI_INCLUDE_DIRS}
 	${stb_INCLUDE_DIR}
-	${CPM_PACKAGE_GWork_SOURCE_DIR}/source/gwork/include
-	${CPM_PACKAGE_GWork_SOURCE_DIR}/source/platform/include
 )
 
 target_link_libraries(
@@ -38,7 +36,7 @@ target_link_libraries(
 	glfw
 	EnTT::EnTT	
 	tinyxml2::tinyxml2
-	Gwork
+	nuklear
 	sol2
 )
 
@@ -61,10 +59,6 @@ target_sources(
 	
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/ui/UIContainer.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ui/UIRoot.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ui/UILogFrame.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ui/UITopMenu.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ui/UITitleBar.cpp
 	
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Texture.cpp
@@ -79,5 +73,6 @@ target_sources(
 	PRIVATE 
 
 	${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/external/nuklear.cpp
 
 )

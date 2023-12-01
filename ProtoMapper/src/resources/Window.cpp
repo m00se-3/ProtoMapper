@@ -24,7 +24,6 @@ module;
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "Gwork/Input/GLFW3.h"
 
 export module proto.Window;
 
@@ -41,7 +40,7 @@ namespace proto
         ~Window();
 
         [[nodiscard]]GLFWwindow* GetPtr() const;
-        [[nodiscard]]bool Construct(const std::string& title,bool fullscreen);
+        [[nodiscard]]bool Construct(const std::string& title, bool fullscreen);
         [[nodiscard]]int GetWidth() const;
 		[[nodiscard]]int GetHeight() const;
 
@@ -60,12 +59,6 @@ namespace proto
 
 		static void ContextErrorMessage(int code, const char* description);
 		static void MonitorCallback(GLFWmonitor* monitor, int event);
-		static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
-		static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
-		static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
-		static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
-		static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
-		static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
 		static void WindowCloseCallback(GLFWwindow* window);
 		static void WindowMaximizeCallback(GLFWwindow* window, int maximized);
 		static void WindowMinimizedCallback(GLFWwindow* window, int iconified);
@@ -109,7 +102,7 @@ namespace proto
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-		glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+		//glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 		
 
 		_monitor = glfwGetPrimaryMonitor();
@@ -121,7 +114,7 @@ namespace proto
 		else
 		{
 			_window = glfwCreateWindow(_wWidth, _wHeight, title.c_str(), nullptr, nullptr);
-			glfwSetWindowPos(_window, 100, 100);
+			//glfwSetWindowPos(_window, 100, 100);
 		}
 
 		if (_window)
@@ -136,12 +129,6 @@ namespace proto
 			// Set GLFW event callbacks.
 
 			glfwSetMonitorCallback(Window::MonitorCallback);
-			glfwSetKeyCallback(_window, Window::KeyboardEventCallback);
-			glfwSetCharCallback(_window, Window::TextEventCallback);
-			glfwSetMouseButtonCallback(_window, Window::MouseButtonEventCallback);
-			glfwSetCursorPosCallback(_window, Window::MouseMotionEventCallback);
-			glfwSetScrollCallback(_window, Window::MouseScrollEventCallback);
-			glfwSetDropCallback(_window, Window::DropEventCallback);
 			glfwSetWindowCloseCallback(_window, Window::WindowCloseCallback);
 			glfwSetWindowMaximizeCallback(_window, Window::WindowMaximizeCallback);
 			glfwSetWindowIconifyCallback(_window, Window::WindowMinimizedCallback);
@@ -187,38 +174,6 @@ namespace proto
 		{
 
 		}
-	}
-
-	void Window::KeyboardEventCallback([[maybe_unused]] GLFWwindow* window, int keyn, int scancode, int action, int mods)
-	{
-		auto* self = Window::UI()->InputHandle();
-
-		auto key = Gwk::Input::GLFW3::KeyEvent{ keyn, scancode, action, mods };
-
-		self->ProcessKeyEvent(key);
-	}
-
-	void Window::TextEventCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]] unsigned int codepoint)
-	{
-	}
-
-	void Window::MouseButtonEventCallback([[maybe_unused]] GLFWwindow* window, int button, int action, int mods)
-	{
-		Window::UI()->InputHandle()->ProcessMouseButtons(button, action, mods);
-	}
-
-	void Window::MouseMotionEventCallback([[maybe_unused]]GLFWwindow*, double x, double y)
-	{
-		Window::UI()->InputHandle()->ProcessMouseMove(x, y);
-	}
-
-	void Window::MouseScrollEventCallback([[maybe_unused]] GLFWwindow* window, double offX, double offY)
-	{
-		Window::UI()->InputHandle()->ProcessScroll(offX, offY);
-	}
-
-	void Window::DropEventCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]]int count, [[maybe_unused]] const char** paths)
-	{
 	}
 
 	void Window::WindowCloseCallback(GLFWwindow* window)

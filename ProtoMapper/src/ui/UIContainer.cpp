@@ -19,22 +19,28 @@ module;
 
 #include <memory>
 #include <filesystem>
+#include <functional>
 
-#include "Gwork/Controls/Canvas.h"
-#include "Gwork/Gwork.h"
-#include "Gwork/Renderers/OpenGLCore.h"
-#include "Gwork/Platform.h"
-#include "Gwork/Input/GLFW3.h"
-#include "Gwork/Skins/Simple.h"
-#include "Gwork/Skins/TexturedBase.h"
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_STANDARD_IO
 
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_UINT_DRAW_INDEX
+#define NK_INCLUDE_FONT_BAKING
+#define NK_INCLUDE_FIXED_TYPES
+
+// We have to explicitly undefine NK_IMPLEMENTATION here to avoid linking errors.
+#undef NK_IMPLEMENTATION
+#include "nuklear/nuklear.h"
+
+#include "glad/glad.h"
 #include "SimpleIni.h"
-#include "GLFW/glfw3.h"
 
 export module proto.UI.Container;
 
-import UI.Root;
-import UI.LogFrame;
+import proto.Texture;
+import proto.Renderer;
+import proto.ResourceManager;
 
 namespace proto
 {
@@ -47,55 +53,144 @@ namespace proto
 	export class UIContainer
 	{
 	public:
-		UIContainer(Gwk::ResourcePaths& paths, int width, int height);
+		UIContainer();
 		~UIContainer();
 
 		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
-		[[nodiscard]]bool ConstructWithProfile(const std::filesystem::path& filepath, GLFWwindow* win);
-		[[nodiscard]]Gwk::Input::GLFW3* InputHandle();
-		[[nodiscard]]std::shared_ptr<LogFrame> GetLogUI();
+		[[nodiscard]]nk_context* Context();
 
 		void AddFont(const std::filesystem::path& filepath);
-		void Draw();
-		void SetSize(int width, int height);
-		void RenderViewport(int x, int y, int w, int h);
+		void Update(float wWidth, float wHeight); // This is the big function.
+		void Compile();
+		void Draw(Renderer* ren);
+
+		static void SetResourceManager(ReferenceCounter<Texture2D>* ptr);
 
 	private:
 		std::filesystem::path _interfaceDir;
 		
 		/*
-			Gwork stuff.
+			All things below are necessary for nuklear to work and are, mostly, taken from the documentation.
 		*/
-		Gwk::Input::GLFW3 _inputHandle;
-		std::unique_ptr<Gwk::Renderer::OpenGLCore> _renderer;
-		std::unique_ptr<Gwk::Skin::TexturedBase> _skin;
-		std::unique_ptr<Gwk::Controls::Canvas> _canvas;
-		std::unique_ptr<RootFrame> _frame;
+
+		struct nk_context _ctx;
+		struct nk_font_atlas _atlas;
+		struct nk_font* _font;
+		struct nk_convert_config _configurator;
+		struct nk_buffer _cmds, _verts, _inds;
+		struct nk_draw_null_texture _nullTexture;
+		GPUResource<Texture2D> _fontTexture;
+
+		unsigned int _vertexArray = 0u, _vb = 0u, _ib = 0u;
+		void* _vertices = nullptr, * _indices = nullptr;
+
+		/*
+			End nuklear buffer variables.
+		*/
+
+		static ReferenceCounter<Texture2D>* _texMan;
 
 	};
 
+	ReferenceCounter<Texture2D>* UIContainer::_texMan = nullptr;
 
-	UIContainer::UIContainer(Gwk::ResourcePaths& paths, int width, int height)
-		: _renderer(std::make_unique<Gwk::Renderer::OpenGLCore>(paths, Gwk::Rect(Gwk::Point(0,0), Gwk::Point(width,height))))
+	constexpr long long MaxVertexBuffer = 8 * 1024;
+
+	struct NKVertex
 	{
-		// Finish setup.
-		_renderer->Init();
-		_skin = std::make_unique<Gwk::Skin::TexturedBase>(_renderer.get());
-		_skin->Init("DefaultSkin.png");
-		_skin->SetDefaultFont("OpenSans.ttf", 12.f);
-		
-		_canvas = std::make_unique<Gwk::Controls::Canvas>(_skin.get());
-		_canvas->SetSize(Gwk::Point(width, height));
+		float pos[2];
+		float tex[2];
+		nk_byte color[4];
+	};
 
-		_inputHandle.Initialize(_canvas.get());
-		_frame = std::make_unique<RootFrame>(_canvas.get());
+	static const struct nk_draw_vertex_layout_element vertex_layout[] = {
+		{NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct NKVertex, pos)},
+		{NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(struct NKVertex, tex)},
+		{NK_VERTEX_COLOR, NK_FORMAT_B8G8R8A8, NK_OFFSETOF(struct NKVertex, color)},
+		{NK_VERTEX_LAYOUT_END}
+	};
+
+	void UIContainer::SetResourceManager(ReferenceCounter<Texture2D>* ptr) { _texMan = ptr; }
+
+
+	UIContainer::UIContainer()
+	{
+		std::string fontFile = ROOT_DIR;
+		fontFile += "/assets/fonts/roboto/Roboto-Medium.ttf";
+		
+		int imgWidth = 0, imgHeight = 0;
+		_fontTexture = _texMan->Load("Roboto-Medium", [](Texture2D& tex){ tex.Create(); });
+		auto nTexture = _texMan->Get("default");
+		_nullTexture.texture = nk_handle_id(static_cast<int>(nTexture.Get().ID));
+		_nullTexture.uv = nk_vec2(0.0f, 0.0f);
+
+		/*
+			Initialize the UI library and the fonts.
+		*/
+		nk_font_atlas_init_default(&_atlas);
+		nk_font_atlas_begin(&_atlas);
+
+		_font = nk_font_atlas_add_from_file(&_atlas, fontFile.c_str(), 16.f, nullptr);
+
+		const void* img = nk_font_atlas_bake(&_atlas, &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
+		_fontTexture.Get().WriteData(img, imgWidth, imgHeight);
+		nk_font_atlas_end(&_atlas, nk_handle_id((int)_fontTexture.Get().ID), nullptr);
+
+		if (!nk_init_default(&_ctx, &_font->handle)) return;
+		nk_style_set_font(&_ctx, &_font->handle);
+
+		memset(&_configurator, 0, sizeof(_configurator));
+		_configurator.shape_AA = NK_ANTI_ALIASING_ON;
+		_configurator.line_AA = NK_ANTI_ALIASING_ON;
+		_configurator.vertex_layout = vertex_layout;
+		_configurator.vertex_alignment = NK_ALIGNOF(struct NKVertex);
+		_configurator.vertex_size = sizeof(struct NKVertex);
+		_configurator.circle_segment_count = 20;
+		_configurator.curve_segment_count = 20;
+		_configurator.arc_segment_count = 20;
+		_configurator.global_alpha = 1.0f;
+		_configurator.null = _nullTexture;
+
+		nk_buffer_init_default(&_cmds);
+
+		/*
+			Because I don't (yet) have the facilities to incorporate nuklear's buffer types into my own Buffer type,
+			I have to set up the buffers manually.
+		*/
+
+		glGenVertexArrays(1, &_vertexArray);
+		glGenBuffers(1, &_vb);
+		glGenBuffers(1, &_ib);
+
+		glBindVertexArray(_vertexArray);
+		glBindBuffer(GL_ARRAY_BUFFER, _vb);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ib);
+
+		glBufferData(GL_ARRAY_BUFFER, MaxVertexBuffer, nullptr, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, MaxVertexBuffer, nullptr, GL_DYNAMIC_DRAW);
+
+		// Vertex positions
+		glVertexAttribPointer(0u, 2, GL_FLOAT, GL_FALSE, sizeof(NKVertex), 0);
+		glEnableVertexAttribArray(0u);
+
+		// Texture coordinates
+		glVertexAttribPointer(1u, 2, GL_FLOAT, GL_FALSE, sizeof(NKVertex), (const void*)(sizeof(float) * 2u));
+		glEnableVertexAttribArray(1u);
+
+		// Color values
+		glVertexAttribPointer(2u, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(NKVertex), (const void*)(sizeof(float) * 4u));
+		glEnableVertexAttribArray(2u);
+
+		glBindVertexArray(0);
 	}
 
 	UIContainer::~UIContainer()
 	{
-		_frame.reset(nullptr);
-		_canvas.reset(nullptr);
-		_skin.reset(nullptr);
+		nk_font_atlas_cleanup(&_atlas);
+		nk_font_atlas_clear(&_atlas);
+		nk_free(&_ctx);
+
+		_texMan->Unload("Roboto-Medium");
 	}
 
 	bool UIContainer::SetDefinitionsPath(const std::filesystem::path& filepath)
@@ -110,41 +205,79 @@ namespace proto
 		return false;
 	}
 
-	bool UIContainer::ConstructWithProfile(const std::filesystem::path& filepath, GLFWwindow* win)
-	{
-		if(_frame->Construct(filepath))
-		{
-			_frame->SetWindowPtr(win);
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
+	nk_context* UIContainer::Context() { return &_ctx; }
 
     void UIContainer::AddFont(const std::filesystem::path& filepath)
     {
 	}
 
-	Gwk::Input::GLFW3* UIContainer::InputHandle() { return &_inputHandle; }
-
-	std::shared_ptr<LogFrame> UIContainer::GetLogUI() { return _frame->GetLogUI(); }
-
-	void UIContainer::Draw()
+	void UIContainer::Compile()
 	{
-		_canvas->RenderCanvas();
+		glBindVertexArray(_vertexArray);
+
+		_vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+		_indices = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+		nk_buffer_init_fixed(&_verts, _vertices, MaxVertexBuffer);
+		nk_buffer_init_fixed(&_inds, _indices, MaxVertexBuffer);
+
+		nk_convert(&_ctx, &_cmds, &_verts, &_inds, &_configurator);
+
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+		glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
+		glBindVertexArray(0u);
+
+		nk_buffer_free(&_verts);
+		nk_buffer_free(&_inds);
 	}
 
-	void UIContainer::SetSize(int width, int height)
+	void UIContainer::Update(float wWidth, float wHeight)
 	{
-		_canvas->SetBounds(Gwk::Rect{0, 0, width, height});
-		_frame->SetBounds(Gwk::Rect{0, 0, width, height});
+		if (nk_begin(&_ctx, "ProtoMapper", nk_rect(0.0f, 0.0f, wWidth * 0.5f, wHeight * 0.05f), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
+		{
+			nk_layout_row_dynamic(&_ctx, wHeight * 0.04f, 5);
+			if (nk_menu_begin_label(&_ctx, "File", NK_TEXT_LEFT, nk_vec2(50.0f, wHeight * 0.1f)))
+			{
+				nk_layout_row_dynamic(&_ctx, wHeight * 0.04f, 1);
+				nk_menu_item_label(&_ctx, "New", NK_TEXT_LEFT);
+
+				nk_menu_end(&_ctx);
+			}
+		}
+
+		nk_end(&_ctx);
 	}
 
-	void UIContainer::RenderViewport(int x, int y, int w, int h)
+	void UIContainer::Draw(Renderer* ren)
 	{
-		_renderer->SetClipRegion(Gwk::Rect{x, y, w, h});
-		_renderer->SetView(Gwk::Rect{x, y, w, h});
+		/*
+			Made using the examples in the nuklear repository. Made a rough API for nuklear to use with
+			my Renderer class.
+		*/
+
+		const nk_draw_command* cmd = nullptr;
+		const nk_draw_index* offset = nullptr;
+
+		nk_draw_foreach(cmd, &_ctx, &_cmds)
+		{
+			if (!cmd->elem_count) continue;
+
+			if(cmd->texture.id && glIsTexture((unsigned int)cmd->texture.id) == GL_TRUE)
+			{			
+				const auto textID = static_cast<Texture2D::IDType>(cmd->texture.id);
+				ren->UseTexture(Texture2D{ textID });
+			}
+			else
+			{
+				ren->UseTexture();
+			}
+
+			ren->DrawFromExternal<unsigned int>(_vertexArray, (int)cmd->elem_count, GL_TRIANGLES, offset);
+			offset += cmd->elem_count;
+		}
+
+		nk_clear(&_ctx);
+		nk_buffer_clear(&_cmds);
 	}
 }

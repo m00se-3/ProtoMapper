@@ -24,7 +24,6 @@ module;
 
 export module proto.Logger;
 
-import UI.LogFrame;
 
 namespace proto
 {
@@ -40,7 +39,7 @@ namespace proto
         Logger& operator=(const Logger&) = delete;
         Logger& operator=(Logger&&) = delete;
 
-        static void Init(std::shared_ptr<LogFrame> ptr);
+        static void Init();
         static void Reset();
 
         static void Acquire();
@@ -58,21 +57,20 @@ namespace proto
 
         void ClockSemaphore();
 
-        std::shared_ptr<LogFrame> _guiOut;
         std::counting_semaphore<1> _sync{0};
 
     };
 
     Logger Logger::_internal{};
 
-    void Logger::Init(std::shared_ptr<LogFrame> ptr)
+    void Logger::Init()
     {
-        _internal._guiOut = ptr;
+        
     }
 
     void Logger::Reset()
     {
-        _internal._guiOut.reset();
+        
     }
 
     void Logger::Acquire() { _internal._sync.acquire(); }
@@ -82,7 +80,7 @@ namespace proto
     void Logger::LogMessage(const std::string &src, const std::string &msg)
     {
         //Acquire();
-        _internal._guiOut->OutputToTab(src, msg);
+        
         //Release();
     }
 

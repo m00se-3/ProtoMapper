@@ -60,24 +60,8 @@ find_package(stb REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(sol2 CONFIG REQUIRED)
 find_package(tinyxml2 CONFIG REQUIRED)
+find_package(unofficial-nuklear CONFIG REQUIRED)
 find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
-
-CPMAddPackage(
-	NAME
-	"Gwork"
-
-	GIT_TAG
-	"proto"
-
-	GITHUB_REPOSITORY
-	"m00se-3/GWork"
-
-	OPTIONS 
-	"RENDER_OPENGL_CORE"
-	"USE_GLFW"
-	"USE_GLAD"
-	"USE_VCPKG"
-)
 
 
 # Include sub-projects.

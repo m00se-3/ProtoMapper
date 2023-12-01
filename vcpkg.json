@@ -10,6 +10,7 @@
     "entt",
     "simpleini",
     "sol2",
-    "tinyxml2"
+    "tinyxml2",
+    "nuklear"
   ]
 }

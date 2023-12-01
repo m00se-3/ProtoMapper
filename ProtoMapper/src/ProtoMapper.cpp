@@ -23,8 +23,21 @@ module;
 #include <span>
 #include <unordered_map>
 
+#include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "SimpleIni.h"
+
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_STANDARD_IO
+
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_UINT_DRAW_INDEX
+#define NK_INCLUDE_FONT_BAKING
+#define NK_INCLUDE_FIXED_TYPES
+
+// We have to explicitly undefine NK_IMPLEMENTATION here to avoid linking errors.
+#undef NK_IMPLEMENTATION
+#include "nuklear/nuklear.h"
 
 export module proto.Mapper;
 
@@ -52,8 +65,18 @@ namespace proto
 		[[nodiscard]]Renderer* GetRenderer();
 		[[nodiscard]]UIContainer* UI();
 
-		// This is the only GLFW callback we need in this class, the rest are under the Window class.
+		// GLFW callbacks.
+
 		static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
+		static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
+		static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
+		static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
+		static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
+		static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
+		static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
+
+		static int GLFWKeytoNKKey(int key, int mods);
+		static int GLFWButtontoNKButton(int button);
 
 	private:
 		const std::string _title = "ProtoMapper";
@@ -88,6 +111,56 @@ namespace proto
 
 	Mapper* Mapper::GetInstance() { return _self; }
 
+	void Mapper::KeyboardEventCallback([[maybe_unused]] GLFWwindow* window, int keyn, int scancode, int action, int mods)
+	{
+		auto* self = Mapper::GetInstance();
+		int key = Mapper::GLFWKeytoNKKey(keyn, mods);
+
+		if (key > -1)
+		{
+			nk_input_key(self->UI()->Context(), (nk_keys)key, (action == GLFW_PRESS || action == GLFW_REPEAT));
+		}
+	}
+
+	void Mapper::TextEventCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]] unsigned int codepoint)
+	{
+		auto* self = Mapper::GetInstance();
+
+		nk_input_unicode(self->UI()->Context(), codepoint);
+	}
+
+	void Mapper::MouseButtonEventCallback([[maybe_unused]] GLFWwindow* window, int button, int action, int mods)
+	{
+		auto* self = Mapper::GetInstance();
+		int result = Mapper::GLFWButtontoNKButton(button);
+
+		double mx = 0.0, my = 0.0;
+		glfwGetCursorPos(window, &mx, &my);
+
+		if (result > -1)
+		{
+			nk_input_button(self->UI()->Context(), (nk_buttons)result, (int)std::floor(mx), (int)std::floor(my), (action == GLFW_PRESS));
+		}
+	}
+
+	void Mapper::MouseMotionEventCallback([[maybe_unused]]GLFWwindow*, double x, double y)
+	{
+		auto* self = Mapper::GetInstance();
+
+		nk_input_motion(self->UI()->Context(), (int)std::floor(x), (int)std::floor(y));
+	}
+
+	void Mapper::MouseScrollEventCallback([[maybe_unused]] GLFWwindow* window, double offX, double offY)
+	{
+		auto* self = Mapper::GetInstance();
+
+		nk_input_scroll(self->UI()->Context(), nk_vec2((float)offX, (float)offY));
+	}
+
+	void Mapper::DropEventCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]]int count, [[maybe_unused]] const char** paths)
+	{
+	}
+
 	void Mapper::FrameBufferSizeCallback([[maybe_unused]] GLFWwindow* window, int width, int height)
 	{
 		// If the window was minimized, do nothing.
@@ -117,7 +190,6 @@ namespace proto
 		const int nh = std::lround((float)rH * sH);
 
 		self->GetRenderer()->SetViewport(nx, ny, nw, nh);
-		self->UI()->RenderViewport(nx, ny, nw, nh);
 
 	}
 
@@ -221,6 +293,8 @@ namespace proto
 		_stringMemoryBuffer = std::make_unique<uint8_t[]>(InitialTextBufferSize);
 
 		_resources = std::make_unique<ResourceManager>(std::span<uint8_t>{_stringMemoryBuffer.get(), InitialTextBufferSize});
+		Renderer::SetResourceManager(_resources.get());
+		UIContainer::SetResourceManager(_resources->Textures());
 
 		return true;
 	}
@@ -241,12 +315,17 @@ namespace proto
 		_renderer->SetViewport(0, 0, _window.GetWidth(), _window.GetHeight());
 		_renderer->Init(Renderer::mode::Two);
 
-		auto paths = ProtoResourcePaths(_dataTextFields.at("assets_dir"));
-		_ui = std::make_unique<UIContainer>(paths, _window.GetWidth(), _window.GetHeight());
+		_ui = std::make_unique<UIContainer>();
 
 		Window::SetUIHandle(_ui.get());
-		Logger::Init(_ui->GetLogUI());
+		Logger::Init();
 
+		glfwSetKeyCallback(_window.GetPtr(), Mapper::KeyboardEventCallback);
+		glfwSetCharCallback(_window.GetPtr(), Mapper::TextEventCallback);
+		glfwSetMouseButtonCallback(_window.GetPtr(), Mapper::MouseButtonEventCallback);
+		glfwSetCursorPosCallback(_window.GetPtr(), Mapper::MouseMotionEventCallback);
+		glfwSetScrollCallback(_window.GetPtr(), Mapper::MouseScrollEventCallback);
+		glfwSetDropCallback(_window.GetPtr(), Mapper::DropEventCallback);
 		glfwSetFramebufferSizeCallback(_window.GetPtr(), Mapper::FrameBufferSizeCallback);
 
 		_scene = std::make_unique<Scene>(_ui.get());
@@ -260,7 +339,6 @@ namespace proto
 			Load all preload assets and data files. 
 		*/
 		if(!_ui->SetDefinitionsPath(_dataTextFields.at("user_interface_dir"))) return 3;
-		if(!_ui->ConstructWithProfile(_dataTextFields.at("profiles_dir") + _configData.GetValue("preferences", "profile"), _window.GetPtr())) return 4;
 
 		// Text files
 		std::filesystem::path textDir = _dataTextFields.at("text_dir");
@@ -291,23 +369,27 @@ namespace proto
 			float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
 
 			_scene->Update(microseconds * 1000000.f);
+			
+			_ui->Update((float)_window.GetWidth(), (float)_window.GetHeight());
+			_ui->Compile();
 
 			_renderer->Begin();
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			_scene->DrawNodes();
-			_renderer->End();
 
-			_ui->Draw();
+			_ui->Draw(_renderer.get());
 
 			glfwSwapBuffers(_window.GetPtr());
+			_renderer->End();
 
 			/*
 				Capture input events for the GUI and the simulation.
 			*/
-
+			nk_input_begin(_ui->Context());
 			glfwPollEvents();
+			nk_input_end(_ui->Context());
 		}
 
 		return EXIT_SUCCESS;
@@ -318,7 +400,6 @@ namespace proto
 	{
 		_window.SetSize(w, h);
 		_renderer->SetRenderSize(w, h);
-		_ui->SetSize(w, h);
 	}
 
 	Window& Mapper::GetWin() { return _window; }
@@ -331,6 +412,60 @@ namespace proto
 	UIContainer* Mapper::UI()
 	{
 		return _ui.get();
+	}
+
+	int Mapper::GLFWKeytoNKKey(int key, int mods)
+	{
+		switch (key)
+		{
+		case GLFW_KEY_LEFT_SHIFT:			return NK_KEY_SHIFT;
+		case GLFW_KEY_RIGHT_SHIFT:			return NK_KEY_SHIFT;
+		case GLFW_KEY_LEFT_CONTROL:			return NK_KEY_CTRL;
+		case GLFW_KEY_RIGHT_CONTROL:		return NK_KEY_CTRL;
+		case GLFW_KEY_DELETE:				return NK_KEY_DEL;
+		case GLFW_KEY_ENTER:				return NK_KEY_ENTER;
+		case GLFW_KEY_TAB:					return NK_KEY_TAB;
+		case GLFW_KEY_BACKSPACE:			return NK_KEY_BACKSPACE;
+		case GLFW_KEY_UP:					return NK_KEY_UP;
+		case GLFW_KEY_DOWN:					return NK_KEY_DOWN;
+		case GLFW_KEY_LEFT:					return NK_KEY_LEFT;
+		case GLFW_KEY_RIGHT:				return NK_KEY_RIGHT;
+		case GLFW_KEY_C:
+		{
+			if (mods & GLFW_MOD_CONTROL)
+				return NK_KEY_COPY;
+			
+			break;
+		}
+		case GLFW_KEY_V:
+		{
+			if (mods & GLFW_MOD_CONTROL)
+				return NK_KEY_PASTE;
+
+			break;
+		}
+		case GLFW_KEY_X:
+		{
+			if (mods & GLFW_MOD_CONTROL)
+				return NK_KEY_CUT;
+
+			break;
+		}
+		default:							return -1;			// Not a nk_key.
+		}
+
+		return -1;			// Not a nk_key.
+	}
+
+	int Mapper::GLFWButtontoNKButton(int button)
+	{
+		switch (button)
+		{
+		case GLFW_MOUSE_BUTTON_LEFT:			return NK_BUTTON_LEFT;
+		case GLFW_MOUSE_BUTTON_RIGHT:			return NK_BUTTON_RIGHT;
+		case GLFW_MOUSE_BUTTON_MIDDLE:			return NK_BUTTON_MIDDLE;
+		default:								return -1;					// Not an nk_button.
+		}
 	}
 }
 
