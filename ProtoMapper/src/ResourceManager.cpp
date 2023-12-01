@@ -94,6 +94,7 @@ Texture2D Texture2DManager::Load(const std::string_view& name)
     }
 
     auto result = _storage.emplace(std::string{name.data(), name.size()}, Texture2D{});
+    result.first->second.Create();
 
     m_Storage.unlock();
 

@@ -25,6 +25,7 @@
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 #include <string>
 #include <functional>
@@ -48,7 +49,7 @@ public:
 private:
 	glm::mat4 _model, _view, _projection;
 	mode _currentMode = mode::Two;
-	float _vWidth = 0.f, _vHeight = 0.f;
+	int _vX = 0, _vY = 0, _vWidth = 0, _vHeight = 0;
 
 	std::optional<Texture2D> _currentTexture;
 	std::optional<Shader> _currentShader;
@@ -79,7 +80,7 @@ public:
 	bool Init(mode newMode);
 	void Begin();
 	void End();
-	void SetRenderWindow(float w, float h);
+	void SetRenderWindow(int w, int h);
 	float GetRenderWidth() const;
 	float GetRenderHeight() const;
 	void SetUniforms(const std::function<void()>& uniforms);
@@ -110,9 +111,9 @@ public:
 		shader.Bind();
 		shader.Uniforms(_uniforms);
 
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, &_model[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, &_view[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, &_projection[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(_model));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(_view));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
 		glUniform1i(glGetUniformLocation(shader.ID, "textureData"), 0);
 
 		glDrawElements(drawMode, buffer.GetNumberOfIndices(), GLIndexType, buffer.Indices());
@@ -144,12 +145,12 @@ public:
 		shader.Bind();
 		shader.Uniforms(_uniforms);
 
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, &_model[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, &_view[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, &_projection[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(_model));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(_view));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
 		glUniform1i(glGetUniformLocation(shader.ID, "textureData"), 0);
 
-		glDrawElements(drawMode, numInds, GLIndexType, offset);
+		glDrawElements(drawMode, numInds, GLIndexType, (const void*)offset);
 
 		glBindVertexArray(0u);
 

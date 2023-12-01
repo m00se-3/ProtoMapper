@@ -264,7 +264,7 @@ void ProtoMapper::Run()
 
 	_renderer = std::make_unique<Renderer>(_rootDir.string().c_str());
 
-	_renderer->SetRenderWindow(_fWidth, _fHeight);
+	_renderer->SetRenderWindow((int)_fWidth, (int)_fHeight);
 	_renderer->Init(Renderer::mode::Two);
 
 
@@ -290,6 +290,8 @@ void ProtoMapper::Run()
 		time::time_point current = time::now();
 		float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
 
+		_renderer->Begin();
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		/*
@@ -306,6 +308,8 @@ void ProtoMapper::Run()
 		_ui->UpdateUI(_fWidth, _fHeight);
 		_ui->CompileUI();
 		_ui->DrawUI(_renderer.get());
+
+		_renderer->End();
 		
 		glfwSwapBuffers(_window);
 	}

@@ -108,7 +108,7 @@ Texture2D& Texture2D::WriteImage(const Image& img)
 Texture2D& Texture2D::WriteData(const void* data, int width, int height)
 {
 	Bind();
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	Unbind();
 	return *this;
 }

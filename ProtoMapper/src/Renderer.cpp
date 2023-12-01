@@ -32,7 +32,7 @@ Renderer::Renderer(const std::string& dir)
 	_defaultShader(_shadMan->Load("default")), _defaultTexture(_texMan->Load("default"))
 {
 
-	_defaultTexture.Create().GenerateBlank(1, 1);
+	_defaultTexture.GenerateBlank(1, 1);
 
 	/*
 		Open the default shader sources and extract the text.
@@ -80,6 +80,7 @@ bool Renderer::Init(mode newMode)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendEquation(GL_FUNC_ADD);
+	glEnable(GL_SCISSOR_TEST);
 
 	return true;
 }
@@ -122,9 +123,10 @@ void Renderer::End()
 
 Renderer::mode Renderer::GetRenderMode() const { return _currentMode; }
 
-void Renderer::SetRenderWindow(float w, float h)
+void Renderer::SetRenderWindow(int w, int h)
 {
 	_vWidth = w; _vHeight = h;
+	SetViewport(_vX, _vY, _vWidth, _vHeight);
 }
 
 void Renderer::SetViewport(int x, int y, int w, int h)
@@ -134,7 +136,7 @@ void Renderer::SetViewport(int x, int y, int w, int h)
 
 		We quickly transpose the 'y' value to match up with what the user wants.
 	*/
-	glViewport(x, (int)_vHeight - (h + y), w, h);
+	glViewport(x, _vHeight - (h + y), w, h);
 }
 
 void Renderer::SetRenderMode(Renderer::mode m)
@@ -145,7 +147,7 @@ void Renderer::SetRenderMode(Renderer::mode m)
 	{
 	case mode::Two:
 	{
-		_projection = glm::ortho(0.f, _vWidth, _vHeight, 0.f);
+		_projection = glm::ortho(0.f, static_cast<float>(_vWidth), static_cast<float>(_vHeight), 0.f);
 		_view = glm::lookAt(glm::vec3{ 0.0f, 0.0f, 1.f }, glm::vec3{ 0.f, 0.f, -1.f }, glm::vec3{ 0.f, 1.f, 0.f });
 		_model = glm::mat4(1.0f);
 		break;
@@ -153,7 +155,7 @@ void Renderer::SetRenderMode(Renderer::mode m)
 	case mode::Three:
 	{
 		// Make sure this is correct before testing.
-		_projection = glm::perspective(glm::quarter_pi<float>(), _vWidth / _vHeight, 1.f, 10.f);
+		_projection = glm::perspective(glm::quarter_pi<float>(), static_cast<float>(_vWidth) / static_cast<float>(_vHeight), 1.f, 10.f);
 		break;
 	}
 	}
