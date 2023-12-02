@@ -17,28 +17,42 @@
 */
 module;
 
-#include <vector>
+#include <string>
+#include <string_view>
+#include <semaphore>
+#include <memory>
 
-#include "glad/glad.h"
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-
-module proto.Vertex;
+export module proto.Logger;
 
 namespace proto
-{	
-	void Vertex2D::Attributes()
-	{
-		// Vertex positions
-		glVertexAttribPointer(0u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), 0);
-		glEnableVertexAttribArray(0);
+{
+    export class Logger
+    {
+    public:
+        Logger(const Logger&) = delete;
+        Logger(Logger&&) noexcept = delete;
+        Logger& operator=(const Logger&) = delete;
+        Logger& operator=(Logger&&) = delete;
 
-		// Texture coordinates
-		glVertexAttribPointer(1u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), (const void*)(sizeof(glm::vec2)));
-		glEnableVertexAttribArray(1);
+        static void Init();
+        static void Reset();
 
-		// Color values
-		glVertexAttribPointer(2u, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), (const void*)(sizeof(glm::vec2) + sizeof(glm::vec2)));
-		glEnableVertexAttribArray(2);
-	}
+        static void Acquire();
+        static void Release();
+
+        // TODO: Use the multithreaded stuff when the time comes.
+        static void LogMessage(const std::string& src, const std::string& msg);
+
+        static void Update();
+
+    private:
+        Logger() = default;
+
+        static Logger _internal;
+
+        void ClockSemaphore();
+
+        std::counting_semaphore<1> _sync{0};
+
+    };
 }

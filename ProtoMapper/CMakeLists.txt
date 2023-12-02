@@ -50,16 +50,34 @@ target_sources(
 	BASE_DIRS
 
 	${CMAKE_CURRENT_LIST_DIR}/src/
+	${CMAKE_CURRENT_LIST_DIR}/imports/
 
 	FILES
 
+	# Interfaces
+
+	${CMAKE_CURRENT_LIST_DIR}/imports/ProtoMapper.ixx
+	${CMAKE_CURRENT_LIST_DIR}/imports/Scene.ixx
+	
+	${CMAKE_CURRENT_LIST_DIR}/imports/ui/UIContainer.ixx
+
+	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Image.ixx
+	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Renderer.ixx
+	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Shader.ixx
+	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Texture.ixx
+	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Vertex.ixx
+
+	${CMAKE_CURRENT_LIST_DIR}/imports/system/Logger.ixx
+
+	${CMAKE_CURRENT_LIST_DIR}/imports/system/ResourceManager.ixx
+	${CMAKE_CURRENT_LIST_DIR}/imports/system/Window.ixx
+	
+	# Implementations
+	
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Scene.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/Logger.cpp
-	
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/ui/UIContainer.cpp
-	
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Texture.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Renderer.cpp
@@ -67,8 +85,9 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Vertex.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Image.cpp
 	
-	${CMAKE_CURRENT_LIST_DIR}/src/resources/ResourceManager.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/resources/Window.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/system/Logger.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/system/ResourceManager.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/system/Window.cpp
 
 	PRIVATE 
 

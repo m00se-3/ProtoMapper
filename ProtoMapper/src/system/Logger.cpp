@@ -22,45 +22,11 @@ module;
 #include <semaphore>
 #include <memory>
 
-export module proto.Logger;
+module proto.Logger;
 
 
 namespace proto
 {
-    /*
-        The logging framework for ProtoMapper.
-    */
-
-    export class Logger
-    {
-    public:
-        Logger(const Logger&) = delete;
-        Logger(Logger&&) noexcept = delete;
-        Logger& operator=(const Logger&) = delete;
-        Logger& operator=(Logger&&) = delete;
-
-        static void Init();
-        static void Reset();
-
-        static void Acquire();
-        static void Release();
-
-        // TODO: Use the multithreaded stuff when the time comes.
-        static void LogMessage(const std::string& src, const std::string& msg);
-
-        static void Update();
-
-    private:
-        Logger() = default;
-
-        static Logger _internal;
-
-        void ClockSemaphore();
-
-        std::counting_semaphore<1> _sync{0};
-
-    };
-
     Logger Logger::_internal{};
 
     void Logger::Init()

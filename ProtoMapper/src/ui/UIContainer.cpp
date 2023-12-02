@@ -36,62 +36,14 @@ module;
 #include "glad/glad.h"
 #include "SimpleIni.h"
 
-export module proto.UI.Container;
+module proto.UI.Container;
 
 import proto.Texture;
 import proto.Renderer;
 import proto.ResourceManager;
 
 namespace proto
-{
-	export class ProtoResourcePaths;
-	
-	/*
-		UIContainer definitions.
-	*/
-
-	export class UIContainer
-	{
-	public:
-		UIContainer();
-		~UIContainer();
-
-		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
-		[[nodiscard]]nk_context* Context();
-
-		void AddFont(const std::filesystem::path& filepath);
-		void Update(float wWidth, float wHeight); // This is the big function.
-		void Compile();
-		void Draw(Renderer* ren);
-
-		static void SetResourceManager(ReferenceCounter<Texture2D>* ptr);
-
-	private:
-		std::filesystem::path _interfaceDir;
-		
-		/*
-			All things below are necessary for nuklear to work and are, mostly, taken from the documentation.
-		*/
-
-		struct nk_context _ctx;
-		struct nk_font_atlas _atlas;
-		struct nk_font* _font;
-		struct nk_convert_config _configurator;
-		struct nk_buffer _cmds, _verts, _inds;
-		struct nk_draw_null_texture _nullTexture;
-		GPUResource<Texture2D> _fontTexture;
-
-		unsigned int _vertexArray = 0u, _vb = 0u, _ib = 0u;
-		void* _vertices = nullptr, * _indices = nullptr;
-
-		/*
-			End nuklear buffer variables.
-		*/
-
-		static ReferenceCounter<Texture2D>* _texMan;
-
-	};
-
+{	
 	ReferenceCounter<Texture2D>* UIContainer::_texMan = nullptr;
 
 	constexpr long long MaxVertexBuffer = 8 * 1024;

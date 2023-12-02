@@ -25,57 +25,13 @@ module;
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
-export module proto.Window;
+module proto.Window;
 
 import proto.UI.Container;
 
 namespace proto
 {
-
-    export class Window
-    {
-    public:
-
-        Window();
-        ~Window();
-
-        [[nodiscard]]GLFWwindow* GetPtr() const;
-        [[nodiscard]]bool Construct(const std::string& title, bool fullscreen);
-        [[nodiscard]]int GetWidth() const;
-		[[nodiscard]]int GetHeight() const;
-
-        void SetSize(int w, int h);
-
-        [[nodiscard]]static UIContainer* UI();
-
-        static void SetUIHandle(UIContainer* ptr);
-
-        
-        static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
-
-        /*
-			GLFW callback functions
-		*/
-
-		static void ContextErrorMessage(int code, const char* description);
-		static void MonitorCallback(GLFWmonitor* monitor, int event);
-		static void WindowCloseCallback(GLFWwindow* window);
-		static void WindowMaximizeCallback(GLFWwindow* window, int maximized);
-		static void WindowMinimizedCallback(GLFWwindow* window, int iconified);
-
-
-    private:
-
-        GLFWwindow* _window = nullptr;
-		GLFWmonitor* _monitor = nullptr;    // There is no terminate function for GLFWmonitors.
-
-        int _wWidth = 1024, _wHeight = 768;
-
-        static UIContainer* _ui;
-
-    };
-
-    UIContainer* Window::_ui = nullptr;
+	UIContainer* Window::_ui = nullptr;
 
     UIContainer* Window::UI() { return _ui; }
 

@@ -22,65 +22,12 @@ module;
 #include <functional>
 #include <print>
 
-export module proto.Shader;
+#include "glad/glad.h"
 
-import "glad/glad.h";
+module proto.Shader;
 
 namespace proto
-{
-	export struct Shader
-	{
-		using IDType = uint32_t;
-
-		IDType ID = 0u;
-
-		Shader() = default;
-		Shader(const Shader&);
-		explicit Shader(IDType id);
-		~Shader();
-
-		bool operator==(const Shader& rhs) const;
-		Shader& operator=(const Shader& rhs);
-
-		IDType GetID() const;
-		bool Valid() const;
-
-		/*
-			Create a simple shader program from the traditional vertex and fragment shader combo.
-
-			Returns the ids to the shader objects, if any are 0 something went wrong.
-		*/
-		std::pair<IDType, IDType> CreateBasic(const char* srcVert, const char* srcFrag);
-
-		// Resets the current reference object to 0.
-		void Reset();
-
-		/*
-			Attach an individual shader object and return the id.
-		*/
-		unsigned int Attach(const char* src, IDType type);
-
-		/*
-			Final linking stage of creating an OpenGL shader.
-		*/
-		void Link();
-
-		/*
-			Same as Link(), but deletes and detaches the vertex and fragment shader pair after finished.
-		*/
-		void Link(const std::pair<IDType, IDType>& shaders);
-		void Bind();
-		void Bind() const;
-		void Unbind();
-		void Unbind() const;
-		void Destroy();
-
-		// Pass in a lambda that sets up the uniforms for the shader.
-		void Uniforms(const std::function<void()>& func);
-
-	};
-	
-	
+{	
 	std::pair<Shader::IDType, Shader::IDType> Shader::CreateBasic(const char* srcVert, const char* srcFrag)
 	{
 		ID = glCreateProgram();

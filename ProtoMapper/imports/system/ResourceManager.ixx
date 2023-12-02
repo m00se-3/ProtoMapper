@@ -30,7 +30,7 @@ import proto.Shader;
 
 namespace proto
 {
-    template<typename T>
+    export template<typename T>
 	concept IdentifiedExternal = requires(T t, T o)
 	{
 		std::default_initializable<T>;
@@ -240,49 +240,5 @@ namespace proto
 		std::unordered_map<std::string, GPUResource<Resource>> _storage;
 		std::unordered_map<IDType, std::pair<bool, uint16_t>> _references;
 	};
-    
-    export template<> ReferenceCounter<Shader>* GPUResource<Shader>::_manager = nullptr;
-
-    export template<> ReferenceCounter<Texture2D>* GPUResource<Texture2D>::_manager = nullptr;
-
-    ResourceManager::ResourceManager(const std::span<uint8_t>& resource)
-        : _upstream(resource.data(), resource.size()), _textAllocator(&_upstream), 
-        _textures(std::make_unique<ReferenceCounter<Texture2D>>()), _shaders(std::make_unique<ReferenceCounter<Shader>>())
-    {
-        GPUResource<Texture2D>::SetManager(_textures.get());
-        GPUResource<Shader>::SetManager(_shaders.get());
-    }
-
-    ReferenceCounter<Texture2D>* ResourceManager::Textures() { return _textures.get(); }
-
-    ReferenceCounter<Shader>* ResourceManager::Shaders() { return _shaders.get(); }
-
-    void ResourceManager::LoadStringRes(const std::string& name, const std::string& content)
-    {
-        auto str = _stringMap.emplace(
-            std::pmr::string{ name, &_textAllocator },
-            std::pmr::string{ content, &_textAllocator }
-        );
-    }
-
-    std::string_view ResourceManager::GetString(const std::string_view& name)
-    {
-        if (_stringMap.contains(name.data()))
-        {
-            auto& result = _stringMap.at(std::pmr::string{ name.data(), name.size(), &_textAllocator });
-
-            std::string_view view{ result.c_str(), result.size() };
-
-            return view;
-        }
-
-        return std::string_view{};
-    }
-
-    void ResourceManager::UnloadString(const std::string_view& name)
-    {
-        _stringMap.erase(std::pmr::string{ name.data(), name.size(), &_textAllocator });
-    }
-
     
 }

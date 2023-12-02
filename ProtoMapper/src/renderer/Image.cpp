@@ -24,42 +24,10 @@ module;
 #include "stb_image.h"
 #undef STB_IMAGE_IMPLEMENTATION
 
-export module proto.Image;
+module proto.Image;
 
 namespace proto
 {
-	/*
-		Image container class.
-	*/
-	export class Image
-	{
-	public:
-		Image() = default;
-		Image(const std::filesystem::path& filename);
-		Image(int w, int h, uint8_t* ptr = nullptr);
-		~Image();
-
-		// Load a fresh image from a file.
-		void Load(const std::filesystem::path& filename);
-
-		// Copy image data from an existing memory buffer.
-		// This will erase any data already contained in the Image buffer.
-		// Passing null pointer will zero-initialize the image buffer to requested size.
-		void LoadCopy(int w, int h, uint8_t* ptr = nullptr);
-
-		uint8_t* Data() const;
-		int Width() const;
-		int Height() const;
-		[[nodiscard("The boolean returned from Image::Empty() has been ignored.")]] bool Empty() const;
-
-		void Destroy();
-
-	private:
-		int _width = 0, _height = 0, _channels = 4;
-		uint8_t* _data = nullptr;
-
-	};
-	
 	
 	Image::Image(const std::filesystem::path& filename)
 	{
