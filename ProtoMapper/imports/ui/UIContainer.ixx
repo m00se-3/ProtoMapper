@@ -20,6 +20,7 @@ module;
 #include <memory>
 #include <filesystem>
 #include <functional>
+#include <unordered_map>
 
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_STANDARD_IO
@@ -41,6 +42,7 @@ export module proto.UI.Container;
 import proto.Texture;
 import proto.Renderer;
 import proto.ResourceManager;
+import UI.Font;
 
 namespace proto
 {
@@ -53,7 +55,6 @@ namespace proto
 		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
 		[[nodiscard]]nk_context* Context();
 
-		void AddFont(const std::filesystem::path& filepath);
 		void Update(float wWidth, float wHeight); // This is the big function.
 		void Compile();
 		void Draw(Renderer* ren);
@@ -69,11 +70,13 @@ namespace proto
 
 		struct nk_context _ctx;
 		struct nk_font_atlas _atlas;
-		struct nk_font* _font;
 		struct nk_convert_config _configurator;
 		struct nk_buffer _cmds, _verts, _inds;
 		struct nk_draw_null_texture _nullTexture;
 		GPUResource<Texture2D> _fontTexture;
+
+		std::unordered_map<std::string, FontGroup> _fonts;
+		
 
 		unsigned int _vertexArray = 0u, _vb = 0u, _ib = 0u;
 		void* _vertices = nullptr, * _indices = nullptr;

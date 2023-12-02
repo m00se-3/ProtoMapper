@@ -82,14 +82,16 @@ namespace proto
 		nk_font_atlas_init_default(&_atlas);
 		nk_font_atlas_begin(&_atlas);
 
-		_font = nk_font_atlas_add_from_file(&_atlas, fontFile.c_str(), 16.f, nullptr);
+		_fonts.insert_or_assign("Roboto", FontGroup{});
+		auto& roboto = _fonts.at("Roboto");
+
+		roboto.AddFont(&_atlas, FontStyle::Normal, 16.0f, fontFile);
 
 		const void* img = nk_font_atlas_bake(&_atlas, &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 		_fontTexture.Get().WriteData(img, imgWidth, imgHeight);
 		nk_font_atlas_end(&_atlas, nk_handle_id((int)_fontTexture.Get().ID), nullptr);
 
-		if (!nk_init_default(&_ctx, &_font->handle)) return;
-		nk_style_set_font(&_ctx, &_font->handle);
+		if (!nk_init_default(&_ctx, &roboto.GetFont(FontStyle::Normal)->handle)) return;
 
 		memset(&_configurator, 0, sizeof(_configurator));
 		_configurator.shape_AA = NK_ANTI_ALIASING_ON;
@@ -158,10 +160,6 @@ namespace proto
 	}
 
 	nk_context* UIContainer::Context() { return &_ctx; }
-
-    void UIContainer::AddFont(const std::filesystem::path& filepath)
-    {
-	}
 
 	void UIContainer::Compile()
 	{
