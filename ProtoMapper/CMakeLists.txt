@@ -24,6 +24,7 @@ target_include_directories(
 	${CMAKE_CURRENT_LIST_DIR}/inc
 	${SIMPLEINI_INCLUDE_DIRS}
 	${stb_INCLUDE_DIR}
+	${LUA_INCLUDE_DIR}
 )
 
 target_link_libraries(
@@ -38,6 +39,7 @@ target_link_libraries(
 	tinyxml2::tinyxml2
 	nuklear
 	sol2
+	${LUA_LIBRARIES}
 )
 
 target_sources(
@@ -60,6 +62,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/imports/Scene.ixx
 	
 	${CMAKE_CURRENT_LIST_DIR}/imports/ui/UIContainer.ixx
+	${CMAKE_CURRENT_LIST_DIR}/imports/ui/Font.ixx
 
 	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Image.ixx
 	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Renderer.ixx
@@ -78,6 +81,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/Scene.cpp
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/ui/UIContainer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ui/Font.cpp
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Texture.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Renderer.cpp

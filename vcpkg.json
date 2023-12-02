@@ -9,6 +9,7 @@
     "glad",
     "entt",
     "simpleini",
+    "lua",
     "sol2",
     "tinyxml2",
     "nuklear"
