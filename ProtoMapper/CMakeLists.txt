@@ -68,7 +68,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Vertex.ixx
 
 	${CMAKE_CURRENT_LIST_DIR}/imports/system/Logger.ixx
-
+	${CMAKE_CURRENT_LIST_DIR}/imports/system/LuaEngine.ixx
 	${CMAKE_CURRENT_LIST_DIR}/imports/system/ResourceManager.ixx
 	${CMAKE_CURRENT_LIST_DIR}/imports/system/Window.ixx
 	
@@ -86,6 +86,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Image.cpp
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/system/Logger.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/system/LuaEngine.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/ResourceManager.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/Window.cpp
 
