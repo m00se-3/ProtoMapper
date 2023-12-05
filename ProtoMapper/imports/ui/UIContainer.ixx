@@ -21,6 +21,7 @@ module;
 #include <filesystem>
 #include <functional>
 #include <unordered_map>
+#include <array>
 
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_STANDARD_IO
@@ -40,13 +41,16 @@ module;
 export module proto.UI.Container;
 
 import proto.Texture;
+import proto.Image;
 import proto.Renderer;
 import proto.ResourceManager;
 import UI.Font;
 
 namespace proto
 {
-    export class UIContainer
+    class Mapper;
+	
+	export class UIContainer
 	{
 	public:
 		UIContainer();
@@ -62,6 +66,9 @@ namespace proto
 		static void SetResourceManager(ReferenceCounter<Texture2D>* ptr);
 
 	private:
+
+		void DrawCustomTitleBar(float width, float height);
+
 		std::filesystem::path _interfaceDir;
 		
 		/*
@@ -74,6 +81,8 @@ namespace proto
 		struct nk_buffer _cmds, _verts, _inds;
 		struct nk_draw_null_texture _nullTexture;
 		GPUResource<Texture2D> _fontTexture;
+		GPUResource<Texture2D> _closeImg;
+
 
 		std::unordered_map<std::string, FontGroup> _fonts;
 		

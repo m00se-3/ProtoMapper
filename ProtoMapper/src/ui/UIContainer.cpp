@@ -34,6 +34,7 @@ module;
 #include "nuklear/nuklear.h"
 
 #include "glad/glad.h"
+#include "GLFW/glfw3.h"
 #include "SimpleIni.h"
 
 module proto.UI.Container;
@@ -41,6 +42,7 @@ module proto.UI.Container;
 import proto.Texture;
 import proto.Renderer;
 import proto.ResourceManager;
+import proto.Mapper;
 
 namespace proto
 {	
@@ -67,14 +69,22 @@ namespace proto
 
 	UIContainer::UIContainer()
 	{
-		std::string fontFile = ROOT_DIR;
+		std::string fontFile = ROOT_DIR, imgFile = ROOT_DIR;
 		fontFile += "/assets/fonts/roboto/Roboto-Medium.ttf";
+
+		imgFile += "/assets/icons/iconClose.png";
+
+		Image close{imgFile};
 		
 		int imgWidth = 0, imgHeight = 0;
 		_fontTexture = _texMan->Load("Roboto-Medium", [](Texture2D& tex){ tex.Create(); });
+
 		auto nTexture = _texMan->Get("default");
+
 		_nullTexture.texture = nk_handle_id(static_cast<int>(nTexture.Get().ID));
 		_nullTexture.uv = nk_vec2(0.0f, 0.0f);
+
+		_closeImg = _texMan->Load("Close Btn", [](Texture2D& tex){ tex.Create(); });
 
 		/*
 			Initialize the UI library and the fonts.
@@ -89,6 +99,9 @@ namespace proto
 
 		const void* img = nk_font_atlas_bake(&_atlas, &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 		_fontTexture.Get().WriteData(img, imgWidth, imgHeight);
+
+		_closeImg.Get().WriteImage(close);
+
 		nk_font_atlas_end(&_atlas, nk_handle_id((int)_fontTexture.Get().ID), nullptr);
 
 		if (!nk_init_default(&_ctx, &roboto.GetFont(FontStyle::Normal)->handle)) return;
@@ -184,19 +197,7 @@ namespace proto
 
 	void UIContainer::Update(float wWidth, float wHeight)
 	{
-		if (nk_begin(&_ctx, "ProtoMapper", nk_rect(0.0f, 0.0f, wWidth * 0.5f, wHeight * 0.05f), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
-		{
-			nk_layout_row_dynamic(&_ctx, wHeight * 0.04f, 5);
-			if (nk_menu_begin_label(&_ctx, "File", NK_TEXT_LEFT, nk_vec2(50.0f, wHeight * 0.1f)))
-			{
-				nk_layout_row_dynamic(&_ctx, wHeight * 0.04f, 1);
-				nk_menu_item_label(&_ctx, "New", NK_TEXT_LEFT);
-
-				nk_menu_end(&_ctx);
-			}
-		}
-
-		nk_end(&_ctx);
+		DrawCustomTitleBar(wWidth, wHeight);
 	}
 
 	void UIContainer::Draw(Renderer* ren)
@@ -215,8 +216,7 @@ namespace proto
 
 			if(cmd->texture.id && glIsTexture((unsigned int)cmd->texture.id) == GL_TRUE)
 			{			
-				const auto textID = static_cast<Texture2D::IDType>(cmd->texture.id);
-				ren->UseTexture(Texture2D{ textID });
+				ren->UseTexture(Texture2D{ static_cast<Texture2D::IDType>(cmd->texture.id) });
 			}
 			else
 			{
@@ -230,4 +230,42 @@ namespace proto
 		nk_clear(&_ctx);
 		nk_buffer_clear(&_cmds);
 	}
+
+	void UIContainer::DrawCustomTitleBar(float width, float height)
+	{
+		if(nk_begin(&_ctx, "ProtoMapper", nk_rect(0.0f, 0.0f, width, 50.0f), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
+		{
+			nk_layout_space_begin(&_ctx, NK_STATIC, 20.0f, 2);
+
+			nk_layout_space_push(&_ctx, nk_rect(0.0f, 0.0f, 100.0f, 25.0f));
+			nk_label(&_ctx, "ProtoMapper", NK_TEXT_LEFT);
+			
+			nk_layout_space_push(&_ctx, nk_rect(width - 35.f, 0.0f, 25.f, 20.0f));
+			//if(nk_button_image(&_ctx, nk_subimage_id(_closeImg.Get().GetID(), 24, 24, nk_rect(0, 0, 24, 24 ))))
+			if(nk_button_label(&_ctx, "X"))
+			{
+				glfwSetWindowShouldClose(Mapper::GetInstance()->GetWin().GetPtr(), 1);
+			}
+
+			nk_layout_space_end(&_ctx);			
+		
+			nk_layout_space_begin(&_ctx, NK_STATIC, 20.0f, 1);
+
+			nk_layout_space_push(&_ctx, nk_rect(0.0f, 0.0f, 50.0f, 20.0f));
+			if (nk_menu_begin_label(&_ctx, "File", NK_TEXT_LEFT, nk_vec2(100.0f, 60.0f)))
+			{
+				nk_layout_row_static(&_ctx, 20.0f, 90, 1);
+				nk_menu_item_label(&_ctx, "New", NK_TEXT_LEFT);
+
+				nk_menu_end(&_ctx);
+			}
+
+			nk_layout_space_end(&_ctx);
+
+		}
+
+		nk_end(&_ctx);
+	}
+
+	
 }

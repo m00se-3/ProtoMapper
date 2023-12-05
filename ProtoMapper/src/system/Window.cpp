@@ -58,7 +58,7 @@ namespace proto
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-		//glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+		glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 		
 
 		_monitor = glfwGetPrimaryMonitor();
@@ -70,7 +70,7 @@ namespace proto
 		else
 		{
 			_window = glfwCreateWindow(_wWidth, _wHeight, title.c_str(), nullptr, nullptr);
-			//glfwSetWindowPos(_window, 100, 100);
+			glfwSetWindowPos(_window, 100, 100);
 		}
 
 		if (_window)
