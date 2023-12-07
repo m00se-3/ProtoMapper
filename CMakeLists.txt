@@ -9,8 +9,6 @@ DESCRIPTION "$ENV{PROGRAM_DESCRIPTION}"
 HOMEPAGE_URL "$ENV{PROGRAM_URL}"
 LANGUAGES CXX C)
 
-include("CPM.cmake")
-
 # A few quick checks to ensure the compiler ProtoCompilerFlags match the compiler being used.
 
 if(${CMAKE_CXX_COMPILIER_ID} MATCHES MSVC)
