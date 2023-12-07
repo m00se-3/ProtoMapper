@@ -43,6 +43,8 @@ import proto.Texture;
 import proto.Renderer;
 import proto.ResourceManager;
 import proto.Mapper;
+import proto.Image;
+import UI.Font;
 
 namespace proto
 {	
@@ -50,6 +52,9 @@ namespace proto
 
 	constexpr long long MaxVertexBuffer = 8 * 1024;
 
+	/*
+		Special Vertex struct that has a nuklear friendly layout and alignment.
+	*/
 	struct NKVertex
 	{
 		float pos[2];
@@ -67,24 +72,27 @@ namespace proto
 	void UIContainer::SetResourceManager(ReferenceCounter<Texture2D>* ptr) { _texMan = ptr; }
 
 
-	UIContainer::UIContainer()
+	UIContainer::UIContainer(const std::string& assetsDir)
 	{
-		std::string fontFile = ROOT_DIR, imgFile = ROOT_DIR;
-		fontFile += "/assets/fonts/roboto/Roboto-Medium.ttf";
+		std::string fontDir =  assetsDir + "/fonts/roboto/";
+		std::filesystem::path imgDir = assetsDir + "/icons/";
 
-		imgFile += "/assets/icons/iconClose.png";
+		if(std::filesystem::exists(imgDir))
+		{
+			for(auto& icon : std::filesystem::directory_iterator(imgDir))
+			{
+				auto& file = icon.path();
 
-		Image close{imgFile};
+				Image img{file};
+				auto iconImg = _texMan->Load(file.stem().string(), [](Texture2D& tex){ tex.Create(); });
+				iconImg.Get().WriteImage(img);
+			}
+		}
 		
-		int imgWidth = 0, imgHeight = 0;
-		_fontTexture = _texMan->Load("Roboto-Medium", [](Texture2D& tex){ tex.Create(); });
 
 		auto nTexture = _texMan->Get("default");
-
 		_nullTexture.texture = nk_handle_id(static_cast<int>(nTexture.Get().ID));
 		_nullTexture.uv = nk_vec2(0.0f, 0.0f);
-
-		_closeImg = _texMan->Load("Close Btn", [](Texture2D& tex){ tex.Create(); });
 
 		/*
 			Initialize the UI library and the fonts.
@@ -92,19 +100,29 @@ namespace proto
 		nk_font_atlas_init_default(&_atlas);
 		nk_font_atlas_begin(&_atlas);
 
-		_fonts.insert_or_assign("Roboto", FontGroup{});
-		auto& roboto = _fonts.at("Roboto");
+		// Add Fonts to the FontGroup.
 
-		roboto.AddFont(&_atlas, FontStyle::Normal, 16.0f, fontFile);
+		_fonts.AddFont(&_atlas, FontStyle::Normal, 16.0f, fontDir + "Roboto-Medium.ttf");
+		_fonts.AddFont(&_atlas, FontStyle::Bold, 16.0f, fontDir + "Roboto-Bold.ttf");
+		_fonts.AddFont(&_atlas, FontStyle::BoldItalic, 16.0f, fontDir + "Roboto-BoldItalic.ttf");
+		_fonts.AddFont(&_atlas, FontStyle::Italic, 16.0f, fontDir + "Roboto-Italic.ttf");
+
+		// Create Texture object.
+
+		int imgWidth = 0, imgHeight = 0;
+		_fontTexture = _texMan->Load("Roboto-Medium", [](Texture2D& tex){ tex.Create(); });
+
+		// Load Font image data into Texture object.
 
 		const void* img = nk_font_atlas_bake(&_atlas, &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 		_fontTexture.Get().WriteData(img, imgWidth, imgHeight);
 
-		_closeImg.Get().WriteImage(close);
+		// Complete font atlas using Texture object.
 
-		nk_font_atlas_end(&_atlas, nk_handle_id((int)_fontTexture.Get().ID), nullptr);
+		nk_font_atlas_end(&_atlas, nk_handle_id((int)_fontTexture.Get().ID), /*This should always be nullptr*/nullptr);
 
-		if (!nk_init_default(&_ctx, &roboto.GetFont(FontStyle::Normal)->handle)) return;
+
+		if (!nk_init_default(&_ctx, &_fonts.GetFont(FontStyle::Normal)->handle)) return;
 
 		memset(&_configurator, 0, sizeof(_configurator));
 		_configurator.shape_AA = NK_ANTI_ALIASING_ON;
@@ -197,7 +215,7 @@ namespace proto
 
 	void UIContainer::Update(float wWidth, float wHeight)
 	{
-		DrawCustomTitleBar(wWidth, wHeight);
+		DrawCustomTitleBar(wWidth);
 	}
 
 	void UIContainer::Draw(Renderer* ren)
@@ -231,17 +249,19 @@ namespace proto
 		nk_buffer_clear(&_cmds);
 	}
 
-	void UIContainer::DrawCustomTitleBar(float width, float height)
+	void UIContainer::DrawCustomTitleBar(float width)
 	{
+		//auto& closeImg = _texMan->Get("iconClose").Get();
+		
 		if(nk_begin(&_ctx, "ProtoMapper", nk_rect(0.0f, 0.0f, width, 50.0f), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
 		{
 			nk_layout_space_begin(&_ctx, NK_STATIC, 20.0f, 2);
 
-			nk_layout_space_push(&_ctx, nk_rect(0.0f, 0.0f, 100.0f, 25.0f));
+			nk_layout_space_push(&_ctx, nk_rect(0.0f, 0.0f, width - 100.0f, 25.0f));
 			nk_label(&_ctx, "ProtoMapper", NK_TEXT_LEFT);
 			
 			nk_layout_space_push(&_ctx, nk_rect(width - 35.f, 0.0f, 25.f, 20.0f));
-			//if(nk_button_image(&_ctx, nk_subimage_id(_closeImg.Get().GetID(), 24, 24, nk_rect(0, 0, 24, 24 ))))
+			//if(nk_button_image(&_ctx, nk_subimage_id(closeImg.GetID(), 24, 24, nk_rect(0, 0, 24, 24 ))))
 			if(nk_button_label(&_ctx, "X"))
 			{
 				glfwSetWindowShouldClose(Mapper::GetInstance()->GetWin().GetPtr(), 1);
