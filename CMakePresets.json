@@ -8,8 +8,8 @@
         "binaryDir": "${sourceDir}/build/${presetName}",
         "installDir": "${sourceDir}/install/${presetName}",
         "cacheVariables": {
-          "CMAKE_C_COMPILER": "cl",
-          "CMAKE_CXX_COMPILER": "cl",
+          "CMAKE_C_COMPILER": "clang",
+          "CMAKE_CXX_COMPILER": "clang",
           "CMAKE_CXX_STANDARD": "23",
           "USE_ADDR_SANITIZER": false
         },
@@ -30,8 +30,7 @@
           "strategy": "external"
         },
         "cacheVariables": {
-          "CMAKE_BUILD_TYPE": "Debug",
-          "GWK_TARGET_ARCH": "x64"
+          "CMAKE_BUILD_TYPE": "Debug"
         }
       },
       {
@@ -39,8 +38,7 @@
         "displayName": "x64 Release w/ Debug Symbols",
         "inherits": "x64-debug",
         "cacheVariables": {
-          "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-          "GWK_TARGET_ARCH": "x64"
+          "CMAKE_BUILD_TYPE": "RelWithDebInfo"
         }
       },
       {
@@ -48,8 +46,7 @@
         "displayName": "x64 Release",
         "inherits": "x64-debug",
         "cacheVariables": {
-          "CMAKE_BUILD_TYPE": "Release",
-          "GWK_TARGET_ARCH": "x64"
+          "CMAKE_BUILD_TYPE": "Release"
         }
       }
     ]
