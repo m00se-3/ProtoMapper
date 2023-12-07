@@ -20,7 +20,7 @@ module;
 #include <filesystem>
 #include <memory>
 #include <string>
-#include <print>
+#include <format>
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
@@ -112,12 +112,12 @@ namespace proto
 
     void Window::DebugOpenGL(GLenum src, GLenum type, [[maybe_unused]] GLuint id, GLenum severity, [[maybe_unused]] GLsizei length, const GLchar* message, [[maybe_unused]] const void* userParam)
 	{
-		std::println("Error {} {} {} - {}", src, type, severity, message);
+		std::puts(std::format("Error {} {} {} - {}", src, type, severity, message).c_str());
 	}
 
 	void Window::ContextErrorMessage(int code, const char* description)
 	{
-		std::println("Error code {} - {}", code, description);
+		std::puts(std::format("Error code {} - {}", code, description).c_str());
 	}
 
 	void Window::MonitorCallback([[maybe_unused]] GLFWmonitor* monitor, [[maybe_unused]] int event)

@@ -1,5 +1,5 @@
-#include <print>
-#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 
 import proto.Mapper;
 
@@ -9,7 +9,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 
 	if (!mapper.Configure())
 	{
-		std::println("Failed to load application configurations. Please reinstall the program.");
+		std::puts("Failed to load application configurations. Please reinstall the program.");
 		return EXIT_FAILURE;
 	}
 

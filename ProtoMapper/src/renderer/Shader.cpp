@@ -20,7 +20,7 @@ module;
 #include <cstdint>
 #include <utility>
 #include <functional>
-#include <print>
+#include <format>
 
 #include "glad/glad.h"
 
@@ -63,7 +63,7 @@ namespace proto
 
 			glGetShaderInfoLog(shader, 100u, &length, buffer);
 
-			std::println("Vertex shader failed to compile: {}\n", buffer);
+			std::puts(std::format("Vertex shader failed to compile: {}\n", buffer).c_str());
 
 			return 0u;
 		}
@@ -100,7 +100,7 @@ namespace proto
 
 			glGetProgramInfoLog(ID, 100u, &length, buffer);
 
-			std::println("Could not link shader program: {}\n", buffer);
+			std::puts(std::format("Could not link shader program: {}\n", buffer).c_str());
 		}
 #endif
 	}
