@@ -17,11 +17,7 @@
 */
 module;
 
-#include <memory>
 #include <filesystem>
-#include <functional>
-#include <unordered_map>
-#include <array>
 
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_STANDARD_IO
@@ -35,25 +31,19 @@ module;
 #undef NK_IMPLEMENTATION
 #include "nuklear/nuklear.h"
 
-#include "glad/glad.h"
-#include "SimpleIni.h"
-
 export module proto.UI.Container;
 
 import proto.Texture;
-import proto.Image;
 import proto.Renderer;
 import proto.ResourceManager;
 import UI.Font;
 
 namespace proto
 {
-    class Mapper;
-	
 	export class UIContainer
 	{
 	public:
-		UIContainer();
+		UIContainer(const std::string& assetsDir);
 		~UIContainer();
 
 		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
@@ -67,7 +57,7 @@ namespace proto
 
 	private:
 
-		void DrawCustomTitleBar(float width, float height);
+		void DrawCustomTitleBar(float width);
 
 		std::filesystem::path _interfaceDir;
 		
@@ -81,10 +71,7 @@ namespace proto
 		struct nk_buffer _cmds, _verts, _inds;
 		struct nk_draw_null_texture _nullTexture;
 		GPUResource<Texture2D> _fontTexture;
-		GPUResource<Texture2D> _closeImg;
-
-
-		std::unordered_map<std::string, FontGroup> _fonts;
+		FontGroup _fonts;
 		
 
 		unsigned int _vertexArray = 0u, _vb = 0u, _ib = 0u;
