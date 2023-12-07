@@ -260,7 +260,7 @@ namespace proto
 		_renderer->SetViewport(0, 0, _window.GetWidth(), _window.GetHeight());
 		_renderer->Init(Renderer::mode::Two);
 
-		_ui = std::make_unique<UIContainer>();
+		_ui = std::make_unique<UIContainer>(_dataTextFields.at("assets_dir"));
 
 		Window::SetUIHandle(_ui.get());
 		Logger::Init();
