@@ -239,6 +239,9 @@ namespace proto
 		std::unordered_map<std::string, GPUResource<Resource>> _storage;
 		std::unordered_map<IDType, std::pair<bool, uint16_t>> _references;
 	};
+
+	template<> ReferenceCounter<Texture2D>* GPUResource<Texture2D>::_manager;
+	template<> ReferenceCounter<Shader>* GPUResource<Shader>::_manager;
     
 }
 
