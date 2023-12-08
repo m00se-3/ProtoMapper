@@ -31,6 +31,7 @@
 // We have to explicitly undefine NK_IMPLEMENTATION here to avoid linking errors.
 #undef NK_IMPLEMENTATION
 #include "nuklear/nuklear.h"
+#include "sol/sol.hpp"
 
 #include "Texture.hpp"
 #include "Renderer.hpp"
@@ -57,8 +58,10 @@ namespace proto
 	private:
 
 		void DrawCustomTitleBar(float width);
+		void InitLua();
 
 		std::filesystem::path _interfaceDir;
+		sol::state _lua;
 		
 		/*
 			All things below are necessary for nuklear to work and are, mostly, taken from the documentation.
