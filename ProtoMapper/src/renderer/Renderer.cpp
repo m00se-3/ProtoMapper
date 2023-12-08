@@ -30,7 +30,7 @@ namespace proto
 	{
 		using FileDeleter = std::function<void(std::FILE*)>;
 
-		auto destructor = [](std::FILE* handle){ std::fclose(handle); };
+		auto destructor = [](std::FILE* handle){ if(handle) { std::fclose(handle); } };
 
 		_defaultTexture.Create().GenerateBlank(1, 1);
 
@@ -44,11 +44,19 @@ namespace proto
 		// File handles for the shader sources.
 		// Use of unique_ptr to guarantee safe release of file handles.
 
-		auto vsHandle = std::unique_ptr<std::FILE, FileDeleter>(fopen(vs.string().c_str(), "r"), destructor);
-		auto fsHandle = std::unique_ptr<std::FILE, FileDeleter>(fopen(fs.string().c_str(), "r"), destructor);
+		auto vsHandle = std::unique_ptr<std::FILE, FileDeleter>(nullptr, destructor);
+		auto fsHandle = std::unique_ptr<std::FILE, FileDeleter>(nullptr, destructor);
 
-		if (vsHandle && fsHandle)
+		std::FILE* tempVS = nullptr;
+		std::FILE* tempFS = nullptr;
+
+		fopen_s(&tempVS, vs.string().c_str(), "r");
+		fopen_s(&tempFS, fs.string().c_str(), "r");
+
+		if (tempVS && tempFS)
 		{
+			vsHandle.reset(tempVS);
+			fsHandle.reset(tempFS);
 
 			std::string vsSrc, fsSrc;						// Strings that will hold the source text.
 
@@ -62,12 +70,12 @@ namespace proto
 			std::array<char, 50u> buffer = { 0 };
 
 			while (std::feof(vsHandle.get()) == 0)
-				vsSrc += std::fgets(buffer.data(), 50u, vsHandle.get());
+				vsSrc += std::fgets(buffer.data(), 50, vsHandle.get());
 
 			std::memset(buffer.data(), 0, 50u);	// Reset the buffer memory to ensure no garbage data is present.
 
 			while (std::feof(fsHandle.get()) == 0)
-				fsSrc += std::fgets(buffer.data(), 50u, fsHandle.get());
+				fsSrc += std::fgets(buffer.data(), 50, fsHandle.get());
 
 			auto objs = _defaultShader.CreateBasic(vsSrc.c_str(), fsSrc.c_str());
 			_defaultShader.Link(objs);
