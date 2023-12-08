@@ -61,6 +61,8 @@ namespace proto
 		static void WindowCloseCallback(GLFWwindow* window);
 		static void WindowMaximizeCallback(GLFWwindow* window, int maximized);
 		static void WindowMinimizedCallback(GLFWwindow* window, int iconified);
+		static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
+		static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
 
 
     private:

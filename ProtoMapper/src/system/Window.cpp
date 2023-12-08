@@ -88,6 +88,8 @@ namespace proto
 			glfwSetWindowCloseCallback(_window, Window::WindowCloseCallback);
 			glfwSetWindowMaximizeCallback(_window, Window::WindowMaximizeCallback);
 			glfwSetWindowIconifyCallback(_window, Window::WindowMinimizedCallback);
+			glfwSetDropCallback(_window, Window::DropEventCallback);
+			glfwSetFramebufferSizeCallback(_window, Window::FrameBufferSizeCallback);
 
 		}
 		else
@@ -118,6 +120,42 @@ namespace proto
 	void Window::ContextErrorMessage(int code, const char* description)
 	{
 		std::puts(std::format("Error code {} - {}", code, description).c_str());
+	}
+
+	void Window::DropEventCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]]int count, [[maybe_unused]] const char** paths)
+	{
+	}
+
+	void Window::FrameBufferSizeCallback([[maybe_unused]] GLFWwindow* window, int width, int height)
+	{
+		// If the window was minimized, do nothing.
+		if(width == 0 || height == 0)
+		{
+			return;
+		}
+		
+		auto* self = Mapper::GetInstance();
+
+		int oW = self->GetWin().GetWidth(),
+			oH = self->GetWin().GetHeight(),
+			rX = self->GetRenderer()->GetRenderX(),
+			rY = self->GetRenderer()->GetRenderY(),
+			rW = self->GetRenderer()->GetRenderWidth(),
+			rH = self->GetRenderer()->GetRenderHeight();
+
+		float sW = ((float)width / (float)oW);
+		float sH = ((float)height / (float)oH);
+
+		self->SetContextSize(width, height);
+		self->GetRenderer()->RefreshProjection();
+
+		const int nx = std::lround((float)rX * sW);
+		const int ny = std::lround((float)rY * sH);
+		const int nw = std::lround((float)rW * sW);
+		const int nh = std::lround((float)rH * sH);
+
+		self->GetRenderer()->SetViewport(nx, ny, nw, nh);
+
 	}
 
 	void Window::MonitorCallback([[maybe_unused]] GLFWmonitor* monitor, [[maybe_unused]] int event)

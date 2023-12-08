@@ -50,15 +50,13 @@ namespace proto
 		[[nodiscard]]Renderer* GetRenderer();
 		[[nodiscard]]UIContainer* UI();
 
-		// GLFW callbacks.
-
-		static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
+		// GLFW input event callbacks.
+		
 		static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
 		static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
 		static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
 		static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
 		static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
-		static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
 
 		static int GLFWKeytoNKKey(int key, int mods);
 		static int GLFWButtontoNKButton(int button);

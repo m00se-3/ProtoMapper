@@ -102,42 +102,6 @@ namespace proto
 		nk_input_scroll(self->UI()->Context(), nk_vec2((float)offX, (float)offY));
 	}
 
-	void Mapper::DropEventCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]]int count, [[maybe_unused]] const char** paths)
-	{
-	}
-
-	void Mapper::FrameBufferSizeCallback([[maybe_unused]] GLFWwindow* window, int width, int height)
-	{
-		// If the window was minimized, do nothing.
-		if(width == 0 || height == 0)
-		{
-			return;
-		}
-		
-		auto* self = Mapper::GetInstance();
-
-		int oW = self->GetWin().GetWidth(),
-			oH = self->GetWin().GetHeight(),
-			rX = self->GetRenderer()->GetRenderX(),
-			rY = self->GetRenderer()->GetRenderY(),
-			rW = self->GetRenderer()->GetRenderWidth(),
-			rH = self->GetRenderer()->GetRenderHeight();
-
-		float sW = ((float)width / (float)oW);
-		float sH = ((float)height / (float)oH);
-
-		self->SetContextSize(width, height);
-		self->GetRenderer()->RefreshProjection();
-
-		const int nx = std::lround((float)rX * sW);
-		const int ny = std::lround((float)rY * sH);
-		const int nw = std::lround((float)rW * sW);
-		const int nh = std::lround((float)rH * sH);
-
-		self->GetRenderer()->SetViewport(nx, ny, nw, nh);
-
-	}
-
 	Mapper::~Mapper()
 	{
 		if (_configUpdate)
