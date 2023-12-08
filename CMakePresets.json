@@ -9,7 +9,7 @@
         "installDir": "${sourceDir}/install/${presetName}",
         "cacheVariables": {
           "CMAKE_C_COMPILER": "clang",
-          "CMAKE_CXX_COMPILER": "clang",
+          "CMAKE_CXX_COMPILER": "clang++",
           "CMAKE_CXX_STANDARD": "23",
           "USE_ADDR_SANITIZER": false
         },

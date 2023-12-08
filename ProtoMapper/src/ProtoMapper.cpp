@@ -234,8 +234,6 @@ namespace proto
 		glfwSetMouseButtonCallback(_window.GetPtr(), Mapper::MouseButtonEventCallback);
 		glfwSetCursorPosCallback(_window.GetPtr(), Mapper::MouseMotionEventCallback);
 		glfwSetScrollCallback(_window.GetPtr(), Mapper::MouseScrollEventCallback);
-		glfwSetDropCallback(_window.GetPtr(), Mapper::DropEventCallback);
-		glfwSetFramebufferSizeCallback(_window.GetPtr(), Mapper::FrameBufferSizeCallback);
 
 		_scene = std::make_unique<Scene>(_ui.get());
 		_scene->Init();

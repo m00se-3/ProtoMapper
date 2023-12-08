@@ -28,6 +28,7 @@ module;
 module proto.Window;
 
 import proto.UI.Container;
+import proto.Mapper;
 
 namespace proto
 {
