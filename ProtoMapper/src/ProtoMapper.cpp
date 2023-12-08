@@ -194,7 +194,6 @@ namespace proto
 
 		_ui = std::make_unique<UIContainer>(_dataTextFields.at("assets_dir"));
 
-		Window::SetUIHandle(_ui.get());
 		Logger::Init();
 
 		glfwSetKeyCallback(_window.GetPtr(), Mapper::KeyboardEventCallback);
