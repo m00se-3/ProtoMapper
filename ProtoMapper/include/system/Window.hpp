@@ -21,12 +21,9 @@
 #include <filesystem>
 #include <memory>
 #include <string>
-#include <print>
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-
-#include "UIContainer.hpp"
 
 namespace proto
 {
@@ -44,11 +41,6 @@ namespace proto
 
         void SetSize(int w, int h);
 
-        [[nodiscard]]static UIContainer* UI();
-
-        static void SetUIHandle(UIContainer* ptr);
-
-        
         static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
         /*
@@ -70,8 +62,6 @@ namespace proto
 		GLFWmonitor* _monitor = nullptr;    // There is no terminate function for GLFWmonitors.
 
         int _wWidth = 1024, _wHeight = 768;
-
-        static UIContainer* _ui;
 
     };
 }

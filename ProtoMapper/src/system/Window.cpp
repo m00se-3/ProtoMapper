@@ -21,11 +21,6 @@
 
 namespace proto
 {
-	UIContainer* Window::_ui = nullptr;
-
-    UIContainer* Window::UI() { return _ui; }
-
-    void Window::SetUIHandle(UIContainer* ptr) { _ui = ptr; }
 
     Window::Window()
     {
