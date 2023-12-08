@@ -15,22 +15,18 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_IMAGE_HPP
+#define PROTO_IMAGE_HPP
 
 #include <cstdint>
 #include <filesystem>
-
-#undef STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-export module proto.Image;
 
 namespace proto
 {
     /*
 		Image container class.
 	*/
-	export class Image
+	class Image
 	{
 	public:
 		Image() = default;
@@ -59,3 +55,5 @@ namespace proto
 
 	};
 }
+
+#endif

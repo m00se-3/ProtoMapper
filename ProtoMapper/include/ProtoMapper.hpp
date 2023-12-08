@@ -15,27 +15,27 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_MAPPER_HPP
+#define PROTO_MAPPER_HPP
 
 #include <filesystem>
 #include <memory>
 #include <unordered_map>
 
+#include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "SimpleIni.h"
 
-export module proto.Mapper;
-
-import proto.UI.Container;
-import proto.Scene;
-import proto.Renderer;
-import proto.ResourceManager;
-import proto.Logger;
-import proto.Window;
+#include "UIContainer.hpp"
+#include "Scene.hpp"
+#include "Renderer.hpp"
+#include "ResourceManager.hpp"
+#include "Logger.hpp"
+#include "Window.hpp"
 
 namespace proto
 {
-    export class Mapper
+    class Mapper
 	{
 	public:
 		Mapper() = default;
@@ -84,3 +84,5 @@ namespace proto
 
 	};
 }
+
+#endif

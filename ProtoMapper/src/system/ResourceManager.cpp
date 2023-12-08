@@ -15,18 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
-
-#include <memory_resource>
-#include <map>
-#include <unordered_map>
-#include <span>
-#include <functional>
-
-module proto.ResourceManager;
-
-import proto.Texture;
-import proto.Shader;
+#include "ResourceManager.hpp"
 
 namespace proto
 {

@@ -15,17 +15,16 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_TEXTURE_HPP
+#define PROTO_TEXTURE_HPP
 
 #include <cstdint>
 
-export module proto.Texture;
-
-import proto.Image;
+#include "Image.hpp"
 
 namespace proto
 {
-    export struct Texture2D
+    struct Texture2D
 	{
 		using IDType = uint32_t;
 
@@ -61,3 +60,5 @@ namespace proto
 
 	};
 }
+
+#endif

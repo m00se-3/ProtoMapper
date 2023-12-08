@@ -15,15 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
-
-#include <vector>
-
-#include "glad/glad.h"
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-
-module proto.Vertex;
+#include "vertex.hpp"
 
 namespace proto
 {	

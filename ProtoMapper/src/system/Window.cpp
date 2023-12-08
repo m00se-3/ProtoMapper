@@ -15,20 +15,9 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#include "Window.hpp"
 
-#include <filesystem>
-#include <memory>
-#include <string>
-#include <format>
-
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
-
-module proto.Window;
-
-import proto.UI.Container;
-import proto.Mapper;
+#include "ProtoMapper.hpp"
 
 namespace proto
 {

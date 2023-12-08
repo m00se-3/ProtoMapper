@@ -15,14 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
-
-#include <list>
-
-module proto.Scene;
-
-import "entt/entt.hpp";
-import proto.UI.Container;
+#include "Scene.hpp"
 
 namespace proto
 {

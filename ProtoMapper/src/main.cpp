@@ -1,7 +1,4 @@
-#include <cstdio>
-#include <cstdlib>
-
-import proto.Mapper;
+#include "ProtoMapper.hpp"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {

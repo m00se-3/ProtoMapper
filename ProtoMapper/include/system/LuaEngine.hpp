@@ -15,15 +15,14 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_LUA_ENGINE_HPP
+#define PROTO_LUA_ENGINE_HPP
 
 #include "sol/sol.hpp"
 
-export module proto.LuaEngine;
-
 namespace proto
 {
-    export class LuaEngine
+    class LuaEngine
     {
     public:
         LuaEngine();
@@ -36,3 +35,5 @@ namespace proto
 
     };
 }
+
+#endif

@@ -15,7 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_RESOURCE_MANAGER_HPP
+#define PROTO_RESOURCE_MANAGER_HPP
 
 #include <memory_resource>
 #include <map>
@@ -23,14 +24,12 @@ module;
 #include <span>
 #include <functional>
 
-export module proto.ResourceManager;
-
-import proto.Texture;
-import proto.Shader;
+#include "Texture.hpp"
+#include "Shader.hpp"
 
 namespace proto
 {
-    export template<typename T>
+    template<typename T>
 	concept IdentifiedExternal = requires(T t, T o)
 	{
 		std::default_initializable<T>;
@@ -50,7 +49,7 @@ namespace proto
 		The ResouceManager is in charge of storing shaders, textures, and other external data resources.
 		It also keeps a reference count of shaders and textures.
 	*/
-	export class ResourceManager
+	class ResourceManager
 	{
 	public:
 		ResourceManager(const std::span<uint8_t>& resource);
@@ -75,7 +74,7 @@ namespace proto
 
 	};
 
-	export template<IdentifiedExternal Resource>
+	template<IdentifiedExternal Resource>
 	class GPUResource
 	{
 	public:
@@ -127,7 +126,7 @@ namespace proto
 		static ReferenceCounter<Resource>* _manager;
 	};
 
-	export template<IdentifiedExternal Resource>
+	template<IdentifiedExternal Resource>
 	class ReferenceCounter
 	{
 	public:
@@ -242,3 +241,5 @@ namespace proto
 	};
     
 }
+
+#endif

@@ -15,16 +15,10 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
-
-#include <cstdint>
-#include <filesystem>
+#include "Image.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#undef STB_IMAGE_IMPLEMENTATION
-
-module proto.Image;
 
 namespace proto
 {

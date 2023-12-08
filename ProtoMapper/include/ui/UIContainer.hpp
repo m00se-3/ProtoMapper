@@ -15,7 +15,8 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_UI_CONTAINER
+#define PROTO_UI_CONTAINER
 
 #include <filesystem>
 
@@ -31,16 +32,14 @@ module;
 #undef NK_IMPLEMENTATION
 #include "nuklear/nuklear.h"
 
-export module proto.UI.Container;
-
-import proto.Texture;
-import proto.Renderer;
-import proto.ResourceManager;
-import UI.Font;
+#include "Texture.hpp"
+#include "Renderer.hpp"
+#include "ResourceManager.hpp"
+#include "Font.hpp"
 
 namespace proto
 {
-	export class UIContainer
+	class UIContainer
 	{
 	public:
 		UIContainer(const std::string& assetsDir);
@@ -85,3 +84,5 @@ namespace proto
 	};
 
 }
+
+#endif

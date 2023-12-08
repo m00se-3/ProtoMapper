@@ -15,7 +15,8 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_FONT_HPP
+#define PROTO_FONT_HPP
 
 #include <filesystem>
 #include <unordered_map> 
@@ -32,13 +33,9 @@ module;
 #undef NK_IMPLEMENTATION
 #include "nuklear/nuklear.h"
 
-export module UI.Font;
-
-
-
 namespace proto
 {
-    export enum class FontStyle : uint32_t
+    enum class FontStyle : uint32_t
     {
         None = 0u,
         Normal = 1u,
@@ -51,7 +48,7 @@ namespace proto
         ItalicUnderlined = Italic | Underlined,
     };
     
-    export class FontGroup
+    class FontGroup
     {
     public:
         FontGroup();
@@ -71,3 +68,5 @@ namespace proto
         std::unordered_map<FontStyle, struct nk_font*> _fonts;
     };
 }
+
+#endif

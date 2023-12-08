@@ -15,7 +15,8 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_RENDERER_HPP
+#define PROTO_RENDERER_HPP
 
 #include <optional>
 #include <string>
@@ -29,17 +30,15 @@ module;
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
-export module proto.Renderer;
-
-import proto.Vertex;
-import proto.Texture;
-import proto.Shader;
-import proto.ResourceManager;
+#include "Vertex.hpp"
+#include "Texture.hpp"
+#include "Shader.hpp"
+#include "ResourceManager.hpp"
 
 namespace proto
 {
 
-	export class Renderer
+	class Renderer
 	{
 	public:
 		enum class mode
@@ -163,3 +162,5 @@ namespace proto
 	};
 
 }
+
+#endif

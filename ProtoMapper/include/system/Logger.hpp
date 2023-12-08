@@ -15,18 +15,17 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_LOGGER_HPP
+#define PROTO_LOGGER_HPP
 
 #include <string>
 #include <string_view>
 #include <semaphore>
 #include <memory>
 
-export module proto.Logger;
-
 namespace proto
 {
-    export class Logger
+    class Logger
     {
     public:
         Logger(const Logger&) = delete;
@@ -56,3 +55,5 @@ namespace proto
 
     };
 }
+
+#endif

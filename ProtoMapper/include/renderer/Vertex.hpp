@@ -15,15 +15,14 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_VERTEX_HPP
+#define PROTO_VERTEX_HPP
 
 #include <vector>
 
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-
-export module proto.Vertex;
 
 namespace proto
 {
@@ -33,7 +32,7 @@ namespace proto
 		{ T::Attributes() } -> std::same_as<void>;
 	};
 
-	export struct Vertex2D
+	struct Vertex2D
 	{
 		glm::vec2 pos;
 		glm::vec2 texCoords;
@@ -43,7 +42,7 @@ namespace proto
 	};
 
 
-	export template <VertexType VType>
+	template <VertexType VType>
 	class Buffer
 	{
 	public:
@@ -143,3 +142,5 @@ namespace proto
 	
 	};
 }
+
+#endif

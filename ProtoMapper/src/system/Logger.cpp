@@ -15,15 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
-
-#include <string>
-#include <string_view>
-#include <semaphore>
-#include <memory>
-
-module proto.Logger;
-
+#include "Logger.hpp"
 
 namespace proto
 {

@@ -15,16 +15,9 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#include "Shader.hpp"
 
-#include <cstdint>
-#include <utility>
-#include <functional>
 #include <format>
-
-#include "glad/glad.h"
-
-module proto.Shader;
 
 namespace proto
 {	

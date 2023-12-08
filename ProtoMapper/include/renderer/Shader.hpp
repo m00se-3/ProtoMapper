@@ -15,17 +15,18 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_SHADER_HPP
+#define PROTO_SHADER_HPP
 
 #include <cstdint>
 #include <utility>
 #include <functional>
 
-export module proto.Shader;
+#include "glad/glad.h"
 
 namespace proto
 {
-    export struct Shader
+    struct Shader
 	{
 		using IDType = uint32_t;
 
@@ -78,3 +79,5 @@ namespace proto
 	};
 
 } // namespace proto
+
+#endif

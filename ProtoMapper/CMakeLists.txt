@@ -21,7 +21,10 @@ target_include_directories(
 	ProtoMapper
 
 	PRIVATE 
-	${CMAKE_CURRENT_LIST_DIR}/inc
+	${CMAKE_CURRENT_LIST_DIR}/include
+	${CMAKE_CURRENT_LIST_DIR}/include/system
+	${CMAKE_CURRENT_LIST_DIR}/include/ui
+	${CMAKE_CURRENT_LIST_DIR}/include/renderer
 	${SIMPLEINI_INCLUDE_DIRS}
 	${stb_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
@@ -47,33 +50,26 @@ target_sources(
 
 	PUBLIC 
 
-	FILE_SET CXX_MODULES 
+	# Headers
 
-	BASE_DIRS
-
-	${CMAKE_CURRENT_LIST_DIR}/src/
-	${CMAKE_CURRENT_LIST_DIR}/imports/
-
-	FILES
-
-	# Interfaces
-
-	${CMAKE_CURRENT_LIST_DIR}/imports/ProtoMapper.ixx
-	${CMAKE_CURRENT_LIST_DIR}/imports/Scene.ixx
+	${CMAKE_CURRENT_LIST_DIR}/include/ProtoMapper.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Scene.hpp
 	
-	${CMAKE_CURRENT_LIST_DIR}/imports/ui/UIContainer.ixx
-	${CMAKE_CURRENT_LIST_DIR}/imports/ui/Font.ixx
+	${CMAKE_CURRENT_LIST_DIR}/include/ui/UIContainer.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/ui/Font.hpp
 
-	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Image.ixx
-	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Renderer.ixx
-	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Shader.ixx
-	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Texture.ixx
-	${CMAKE_CURRENT_LIST_DIR}/imports/renderer/Vertex.ixx
+	${CMAKE_CURRENT_LIST_DIR}/include/renderer/Image.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/renderer/Renderer.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/renderer/Shader.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/renderer/Texture.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/renderer/Vertex.hpp
 
-	${CMAKE_CURRENT_LIST_DIR}/imports/system/Logger.ixx
-	${CMAKE_CURRENT_LIST_DIR}/imports/system/LuaEngine.ixx
-	${CMAKE_CURRENT_LIST_DIR}/imports/system/ResourceManager.ixx
-	${CMAKE_CURRENT_LIST_DIR}/imports/system/Window.ixx
+	${CMAKE_CURRENT_LIST_DIR}/include/system/Logger.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/system/LuaEngine.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/system/ResourceManager.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/system/Window.hpp
+
+	PRIVATE 
 	
 	# Implementations
 	
@@ -93,8 +89,6 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/system/LuaEngine.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/ResourceManager.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/Window.cpp
-
-	PRIVATE 
 
 	${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/external/nuklear.cpp

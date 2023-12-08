@@ -15,15 +15,9 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
-
-#include <cstdint>
+#include "Texture.hpp"
 
 #include "glad/glad.h"
-
-module proto.Texture;
-
-import proto.Image;
 
 namespace proto
 {

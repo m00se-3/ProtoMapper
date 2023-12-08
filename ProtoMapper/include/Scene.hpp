@@ -15,21 +15,21 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_SCENE_HPP
+#define PROTO_SCENE_HPP
 
 #include <list>
 
-export module proto.Scene;
+#include "entt/entt.hpp"
 
-import "entt/entt.hpp";
-import proto.UI.Container;
+#include "UIContainer.hpp"
 
 namespace proto
 {
     /*
 		A tree of SceneNodes is constructed to organize the draw calls, and to allow for Scene customization in-app.
 	*/
-	export class SceneNode
+	class SceneNode
 	{
 	public:
 
@@ -54,7 +54,7 @@ namespace proto
 
 		When maps are open they are added to the tree.
 	*/
-	export class Scene
+	class Scene
 	{
 	public:
 		Scene(UIContainer* ptr);
@@ -76,3 +76,5 @@ namespace proto
 
 	};
 }
+
+#endif

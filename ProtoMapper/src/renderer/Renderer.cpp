@@ -15,26 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
-
-#include <optional>
-#include <string>
-#include <filesystem>
-#include <array>
-#include <functional>
-#include <memory>
-#include <cstdio>
-
-#include "glad/glad.h"
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-
-module proto.Renderer;
-
-import proto.Vertex;
-import proto.Texture;
-import proto.Shader;
-import proto.ResourceManager;
+#include "Renderer.hpp"
 
 namespace proto
 {

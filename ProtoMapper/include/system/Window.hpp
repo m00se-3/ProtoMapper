@@ -15,7 +15,8 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-module;
+#ifndef PROTO_WINDOW_HPP
+#define PROTO_WINDOW_HPP
 
 #include <filesystem>
 #include <memory>
@@ -25,13 +26,11 @@ module;
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
-export module proto.Window;
-
-import proto.UI.Container;
+#include "UIContainer.hpp"
 
 namespace proto
 {
-    export class Window
+    class Window
     {
     public:
 
@@ -76,3 +75,5 @@ namespace proto
 
     };
 }
+
+#endif
