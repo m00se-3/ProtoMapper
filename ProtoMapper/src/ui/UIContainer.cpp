@@ -94,32 +94,31 @@ namespace proto
 		_nullTexture.texture = nk_handle_id(static_cast<int>(nTexture.Get().ID));
 		_nullTexture.uv = nk_vec2(0.0f, 0.0f);
 
-		/*
-			Initialize the UI library and the fonts.
-		*/
-		nk_font_atlas_init_default(&_atlas);
-		nk_font_atlas_begin(&_atlas);
-
 		// Add Fonts to the FontGroup.
 
-		_fonts.AddFont(&_atlas, FontStyle::Normal, 16.0f, fontDir + "Roboto-Medium.ttf");
-		_fonts.AddFont(&_atlas, FontStyle::Bold, 16.0f, fontDir + "Roboto-Bold.ttf");
-		_fonts.AddFont(&_atlas, FontStyle::BoldItalic, 16.0f, fontDir + "Roboto-BoldItalic.ttf");
-		_fonts.AddFont(&_atlas, FontStyle::Italic, 16.0f, fontDir + "Roboto-Italic.ttf");
+		_fonts.Create();
+
+		_fonts.AddFont(FontStyle::Normal, 16.0f, fontDir + "Roboto-Medium.ttf");
+		_fonts.AddFont(FontStyle::Bold, 16.0f, fontDir + "Roboto-Bold.ttf");
+		_fonts.AddFont(FontStyle::BoldItalic, 16.0f, fontDir + "Roboto-BoldItalic.ttf");
+		_fonts.AddFont(FontStyle::Italic, 16.0f, fontDir + "Roboto-Italic.ttf");
+
+		/*
+            Because nk_font_atlas_end() frees the img pointer for us, we can't include a Bake function
+			in the FontGroup class that returns an Image.
+
+			As a result, it's just easier to handle baking this way.
+        */
+
+		int imgWidth = 0, imgHeight = 0;
+        const void* img = nk_font_atlas_bake(_fonts.GetAtlas(), &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 
 		// Create Texture object.
 
-		int imgWidth = 0, imgHeight = 0;
 		_fontTexture = _texMan->Load("Roboto-Medium", [](Texture2D& tex){ tex.Create(); });
-
-		// Load Font image data into Texture object.
-
-		const void* img = nk_font_atlas_bake(&_atlas, &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 		_fontTexture.Get().WriteData(img, imgWidth, imgHeight);
 
-		// Complete font atlas using Texture object.
-
-		nk_font_atlas_end(&_atlas, nk_handle_id((int)_fontTexture.Get().ID), /*This should always be nullptr*/nullptr);
+		_fonts.Finalize(_fontTexture.Get().GetID());
 
 
 		if (!nk_init_default(&_ctx, &_fonts.GetFont(FontStyle::Normal)->handle)) return;
@@ -171,8 +170,6 @@ namespace proto
 
 	UIContainer::~UIContainer()
 	{
-		nk_font_atlas_cleanup(&_atlas);
-		nk_font_atlas_clear(&_atlas);
 		nk_free(&_ctx);
 
 		_texMan->Unload("Roboto-Medium");

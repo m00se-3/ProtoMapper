@@ -66,7 +66,6 @@ namespace proto
 		*/
 
 		struct nk_context _ctx;
-		struct nk_font_atlas _atlas;
 		struct nk_convert_config _configurator;
 		struct nk_buffer _cmds, _verts, _inds;
 		struct nk_draw_null_texture _nullTexture;

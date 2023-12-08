@@ -35,6 +35,7 @@ module;
 export module UI.Font;
 
 
+
 namespace proto
 {
     export enum class FontStyle : uint32_t
@@ -53,14 +54,20 @@ namespace proto
     export class FontGroup
     {
     public:
-        FontGroup() = default;
-        ~FontGroup() = default;
+        FontGroup();
+        ~FontGroup();
 
-        void AddFont(struct nk_font_atlas* atlas, FontStyle styleMask, float size, const std::filesystem::path& filename);
+        void Create();
+        void Finalize(unsigned int id);
+        void AddFont(FontStyle styleMask, float size, const std::filesystem::path& filename);
+
         [[nodiscard]]nk_font* GetFont(FontStyle mask);
         [[nodiscard]]const nk_font* GetFont(FontStyle mask) const;
+        [[nodiscard]]nk_font_atlas* GetAtlas();
+        [[nodiscard]]const nk_font_atlas* GetAtlas() const;
 
     private:
+		struct nk_font_atlas _atlas;
         std::unordered_map<FontStyle, struct nk_font*> _fonts;
     };
 }
