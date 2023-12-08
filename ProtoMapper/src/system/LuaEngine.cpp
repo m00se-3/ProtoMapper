@@ -16,11 +16,14 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "LuaEngine.hpp"
+
+
 namespace proto
 {
     LuaEngine::LuaEngine()
     {
-        // Load core libraries that the application wil need.
+        // Load core libraries that the application will need.
         _lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math, sol::lib::string);
     }
+	
 }
