@@ -52,7 +52,7 @@ namespace proto
 
 		if (result > -1)
 		{
-			nk_input_button(self->UI()->Context(), (nk_buttons)result, (int)std::floor(mx), (int)std::floor(my), (action == GLFW_PRESS));
+			nk_input_button(self->UI()->Context(), (nk_buttons)result, std::lroundl(mx), std::lroundl(my), (action == GLFW_PRESS));
 		}
 	}
 
@@ -60,7 +60,7 @@ namespace proto
 	{
 		auto* self = Mapper::GetInstance();
 
-		nk_input_motion(self->UI()->Context(), (int)std::floor(x), (int)std::floor(y));
+		nk_input_motion(self->UI()->Context(), std::lroundl(x), std::lroundl(y));
 	}
 
 	void Mapper::MouseScrollEventCallback([[maybe_unused]] GLFWwindow* window, double offX, double offY)
