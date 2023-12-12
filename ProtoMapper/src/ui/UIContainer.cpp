@@ -17,6 +17,8 @@
 */
 #include "UIContainer.hpp"
 
+#include <format>
+
 #include "ProtoMapper.hpp"
 
 namespace proto
@@ -110,6 +112,8 @@ namespace proto
 
 		nk_buffer_init_default(&_cmds);
 
+		InitLua();
+
 		/*
 			Because I don't (yet) have the facilities to incorporate nuklear's buffer types into my own Buffer type,
 			I have to set up the buffers manually.
@@ -154,6 +158,8 @@ namespace proto
 		{
 			_interfaceDir = filepath;
 
+			_lua.script_file(_interfaceDir.string() + "titlebar.lua");
+
 			return true;
 		}
 		
@@ -185,7 +191,14 @@ namespace proto
 
 	void UIContainer::Update(float wWidth, float wHeight)
 	{
-		DrawCustomTitleBar(wWidth);
+		//DrawCustomTitleBar(wWidth);
+		sol::safe_function_result result = _lua["CustomTitleBar"](wWidth);
+
+		if (!result.valid())
+		{
+			sol::error err = result;
+			std::puts(std::format("The function goofed! {}\n", err.what()).c_str());
+		}
 	}
 
 	void UIContainer::Draw(Renderer* ren)
@@ -223,42 +236,44 @@ namespace proto
 	{
 		//auto& closeImg = _texMan->Get("iconClose").Get();
 		
-		if(nk_begin(&_ctx, "ProtoMapper", nk_rect(0.0f, 0.0f, width, 50.0f), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
-		{
-			nk_layout_space_begin(&_ctx, NK_STATIC, 20.0f, 2);
+		//if(nk_begin(&_ctx, "ProtoMapper", nk_rect(0.0f, 0.0f, width, 50.0f), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
+		//{
+		//	nk_layout_space_begin(&_ctx, NK_STATIC, 20.0f, 2);
 
-			nk_layout_space_push(&_ctx, nk_rect(0.0f, 0.0f, width - 100.0f, 25.0f));
-			nk_label(&_ctx, "ProtoMapper", NK_TEXT_LEFT);
-			
-			nk_layout_space_push(&_ctx, nk_rect(width - 35.f, 0.0f, 25.f, 20.0f));
-			//if(nk_button_image(&_ctx, nk_subimage_id(closeImg.GetID(), 24, 24, nk_rect(0, 0, 24, 24 ))))
-			if(nk_button_label(&_ctx, "X"))
-			{
-				glfwSetWindowShouldClose(Mapper::GetInstance()->GetWin().GetPtr(), 1);
-			}
+		//	nk_layout_space_push(&_ctx, nk_rect(0.0f, 0.0f, width - 100.0f, 25.0f));
+		//	nk_label(&_ctx, "ProtoMapper", NK_TEXT_LEFT);
+		//	
+		//	nk_layout_space_push(&_ctx, nk_rect(width - 35.f, 0.0f, 25.f, 20.0f));
+		//	//if(nk_button_image(&_ctx, nk_subimage_id(closeImg.GetID(), 24, 24, nk_rect(0, 0, 24, 24 ))))
+		//	if(nk_button_label(&_ctx, "X"))
+		//	{
+		//		glfwSetWindowShouldClose(Mapper::GetInstance()->GetWin().GetPtr(), 1);
+		//	}
 
-			nk_layout_space_end(&_ctx);			
-		
-			nk_layout_space_begin(&_ctx, NK_STATIC, 20.0f, 1);
+		//	nk_layout_space_end(&_ctx);			
+		//
+		//	nk_layout_space_begin(&_ctx, NK_STATIC, 20.0f, 1);
 
-			nk_layout_space_push(&_ctx, nk_rect(0.0f, 0.0f, 50.0f, 20.0f));
-			if (nk_menu_begin_label(&_ctx, "File", NK_TEXT_LEFT, nk_vec2(100.0f, 60.0f)))
-			{
-				nk_layout_row_static(&_ctx, 20.0f, 90, 1);
-				nk_menu_item_label(&_ctx, "New", NK_TEXT_LEFT);
+		//	nk_layout_space_push(&_ctx, nk_rect(0.0f, 0.0f, 50.0f, 20.0f));
+		//	if (nk_menu_begin_label(&_ctx, "File", NK_TEXT_LEFT, nk_vec2(100.0f, 60.0f)))
+		//	{
+		//		nk_layout_row_static(&_ctx, 20.0f, 90, 1);
+		//		nk_menu_item_label(&_ctx, "New", NK_TEXT_LEFT);
 
-				nk_menu_end(&_ctx);
-			}
+		//		nk_menu_end(&_ctx);
+		//	}
 
-			nk_layout_space_end(&_ctx);
+		//	nk_layout_space_end(&_ctx);
 
-		}
+		//}
 
-		nk_end(&_ctx);
+		//nk_end(&_ctx);
 	}
 
 	void UIContainer::InitLua()
 	{
+		_lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::math);
+		
 		// Useful types
 		{
 
@@ -275,11 +290,15 @@ namespace proto
 			auto rect = _lua.new_usertype<struct nk_rect>("rect", sol::no_constructor);
 			rect["x"] = &nk_rect::x;
 			rect["y"] = &nk_rect::y;
+			rect["w"] = &nk_rect::w;
+			rect["h"] = &nk_rect::h;
 			_lua["new_rect"] = nk_rect;
 
 			auto recti = _lua.new_usertype<struct nk_recti>("recti", sol::no_constructor);
 			recti["x"] = &nk_recti::x;
 			recti["y"] = &nk_recti::y;
+			recti["w"] = &nk_recti::w;
+			recti["h"] = &nk_recti::h;
 			_lua["new_recti"] = nk_recti;
 
 			auto color = _lua.new_usertype<struct nk_color>("color", sol::no_constructor);
@@ -349,7 +368,6 @@ namespace proto
 		// Access to the nuklear context.
 
 		_lua["Ctx"] = &_ctx;
-		_lua["Ctx"]["style"] = &_ctx.style;
 
 		/*
 			Define nuklear functions.
@@ -370,22 +388,24 @@ namespace proto
 
 		//Widgets
 
-		_lua["BeginMenuLbl"] = nk_menu_begin_label;
-		_lua["BeginMenuTxt"] = nk_menu_begin_text;
-		_lua["BeginMenuImg"] = nk_menu_begin_image;
-		_lua["BeginMenuImgTxt"] = nk_menu_begin_image_text;
-		_lua["BeginMenuImgLbl"] = nk_menu_begin_image_label;
-		_lua["BeginMenuSym"] = nk_menu_begin_symbol;
-		_lua["BeginMenuSymTxt"] = nk_menu_begin_symbol_text;
-		_lua["BeginMenuSymLbl"] = nk_menu_begin_symbol_label;
+		_lua["MenuBeginLbl"] = nk_menu_begin_label;
+		_lua["MenuBeginTxt"] = nk_menu_begin_text;
+		_lua["MenuBeginImg"] = nk_menu_begin_image;
+		_lua["MenuBeginImgTxt"] = nk_menu_begin_image_text;
+		_lua["MenuBeginImgLbl"] = nk_menu_begin_image_label;
+		_lua["MenuBeginSym"] = nk_menu_begin_symbol;
+		_lua["MenuBeginSymTxt"] = nk_menu_begin_symbol_text;
+		_lua["MenuBeginSymLbl"] = nk_menu_begin_symbol_label;
 		_lua["MenuItemTxt"] = nk_menu_item_text;
 		_lua["MenuItemLbl"] = nk_menu_item_label;
 		_lua["MenuItemImgLbl"] = nk_menu_item_image_label;
 		_lua["MenuItemImgTxt"] = nk_menu_item_image_text;
 		_lua["MenuItemSymTxt"] = nk_menu_item_symbol_text;
 		_lua["MenuItemSymLbl"] = nk_menu_item_symbol_label;
-		_lua["CloeMenu"] = nk_menu_close;
-		_lua["EndMenu"] = nk_menu_end;
+		_lua["MenuClose"] = nk_menu_close;
+		_lua["MenuEnd"] = nk_menu_end;
+
+		_lua["Label"] = nk_label;
 
 		_lua["ButtonTxt"] = nk_button_text;
 		_lua["ButtonLbl"] = nk_button_label;
@@ -483,6 +503,8 @@ namespace proto
 		};
 
 		_lua["StylePopFont"] = nk_style_pop_font;
+
+		_lua["RequestWindowToClose"] = []() { glfwSetWindowShouldClose(Mapper::GetInstance()->GetWin().GetPtr(), 1); };
 
 	}	
 }
