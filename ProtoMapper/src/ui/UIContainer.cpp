@@ -367,6 +367,7 @@ namespace proto
 
 		// Access to the nuklear context.
 
+		auto context = _lua.new_usertype<struct nk_context>("Context");
 		_lua["Ctx"] = &_ctx;
 
 		/*
@@ -375,136 +376,136 @@ namespace proto
 
 		// Windows
 
-		_lua["Begin"] = nk_begin;
-		_lua["End"] = nk_end;
+		context["Begin"] = nk_begin;
+		context["End"] = nk_end;
 
 		// Layouts
 
-		_lua["SpaceRowBegin"] = nk_layout_space_begin;
-		_lua["SpaceRowEnd"] = nk_layout_space_end;
-		_lua["SpaceRowPush"] = nk_layout_space_push;
-		_lua["StaticRow"] = nk_layout_row_static;
-		_lua["DynamicRow"] = nk_layout_row_dynamic;
+		context["SpaceRowBegin"] = nk_layout_space_begin;
+		context["SpaceRowEnd"] = nk_layout_space_end;
+		context["SpaceRowPush"] = nk_layout_space_push;
+		context["StaticRow"] = nk_layout_row_static;
+		context["DynamicRow"] = nk_layout_row_dynamic;
 
 		//Widgets
 
-		_lua["MenuBeginLbl"] = nk_menu_begin_label;
-		_lua["MenuBeginTxt"] = nk_menu_begin_text;
-		_lua["MenuBeginImg"] = nk_menu_begin_image;
-		_lua["MenuBeginImgTxt"] = nk_menu_begin_image_text;
-		_lua["MenuBeginImgLbl"] = nk_menu_begin_image_label;
-		_lua["MenuBeginSym"] = nk_menu_begin_symbol;
-		_lua["MenuBeginSymTxt"] = nk_menu_begin_symbol_text;
-		_lua["MenuBeginSymLbl"] = nk_menu_begin_symbol_label;
-		_lua["MenuItemTxt"] = nk_menu_item_text;
-		_lua["MenuItemLbl"] = nk_menu_item_label;
-		_lua["MenuItemImgLbl"] = nk_menu_item_image_label;
-		_lua["MenuItemImgTxt"] = nk_menu_item_image_text;
-		_lua["MenuItemSymTxt"] = nk_menu_item_symbol_text;
-		_lua["MenuItemSymLbl"] = nk_menu_item_symbol_label;
-		_lua["MenuClose"] = nk_menu_close;
-		_lua["MenuEnd"] = nk_menu_end;
+		context["MenuBeginLbl"] = nk_menu_begin_label;
+		context["MenuBeginTxt"] = nk_menu_begin_text;
+		context["MenuBeginImg"] = nk_menu_begin_image;
+		context["MenuBeginImgTxt"] = nk_menu_begin_image_text;
+		context["MenuBeginImgLbl"] = nk_menu_begin_image_label;
+		context["MenuBeginSym"] = nk_menu_begin_symbol;
+		context["MenuBeginSymTxt"] = nk_menu_begin_symbol_text;
+		context["MenuBeginSymLbl"] = nk_menu_begin_symbol_label;
+		context["MenuItemTxt"] = nk_menu_item_text;
+		context["MenuItemLbl"] = nk_menu_item_label;
+		context["MenuItemImgLbl"] = nk_menu_item_image_label;
+		context["MenuItemImgTxt"] = nk_menu_item_image_text;
+		context["MenuItemSymTxt"] = nk_menu_item_symbol_text;
+		context["MenuItemSymLbl"] = nk_menu_item_symbol_label;
+		context["MenuClose"] = nk_menu_close;
+		context["MenuEnd"] = nk_menu_end;
 
-		_lua["Label"] = nk_label;
+		context["Label"] = nk_label;
 
-		_lua["ButtonTxt"] = nk_button_text;
-		_lua["ButtonLbl"] = nk_button_label;
-		_lua["ButtonC"] = nk_button_color;
-		_lua["ButtonSym"] = nk_button_symbol;
-		_lua["ButtonImg"] = nk_button_image;
-		_lua["ButtonSymLbl"] = nk_button_symbol_label;
-		_lua["ButtonSymTxt"] = nk_button_symbol_text;
-		_lua["ButtonImgLbl"] = nk_button_image_label;
-		_lua["ButtonImgTxt"] = nk_button_image_text;
-		_lua["ButtonTxtSty"] = nk_button_text_styled;
-		_lua["ButtonLblSty"] = nk_button_label_styled;
-		_lua["ButtonSymSty"] = nk_button_symbol_styled;
-		_lua["ButtonImgSty"] = nk_button_image_styled;
-		_lua["ButtonSymTxtSty"] = nk_button_symbol_text_styled;
-		_lua["ButtonSymLblSty"] = nk_button_symbol_label_styled;
-		_lua["ButtonImgLblSty"] = nk_button_image_label_styled;
-		_lua["ButtonImgTxtSty"] = nk_button_image_text_styled;
+		context["ButtonTxt"] = nk_button_text;
+		context["ButtonLbl"] = nk_button_label;
+		context["ButtonC"] = nk_button_color;
+		context["ButtonSym"] = nk_button_symbol;
+		context["ButtonImg"] = nk_button_image;
+		context["ButtonSymLbl"] = nk_button_symbol_label;
+		context["ButtonSymTxt"] = nk_button_symbol_text;
+		context["ButtonImgLbl"] = nk_button_image_label;
+		context["ButtonImgTxt"] = nk_button_image_text;
+		context["ButtonTxtSty"] = nk_button_text_styled;
+		context["ButtonLblSty"] = nk_button_label_styled;
+		context["ButtonSymSty"] = nk_button_symbol_styled;
+		context["ButtonImgSty"] = nk_button_image_styled;
+		context["ButtonSymTxtSty"] = nk_button_symbol_text_styled;
+		context["ButtonSymLblSty"] = nk_button_symbol_label_styled;
+		context["ButtonImgLblSty"] = nk_button_image_label_styled;
+		context["ButtonImgTxtSty"] = nk_button_image_text_styled;
 
-		_lua["CheckLbl"] = nk_check_label;
-		_lua["CheckTxt"] = nk_check_text;
-		_lua["CheckFlagLbl"] = nk_check_flags_label;
-		_lua["CheckFlagTxt"] = nk_check_flags_text;
-		_lua["CheckboxLbl"] = nk_checkbox_label;
-		_lua["CheckboxTxt"] = nk_checkbox_text;
-		_lua["CheckboxFlagLbl"] = nk_checkbox_flags_label;
-		_lua["CheckboxFlagTxt"] = nk_checkbox_flags_text;
+		context["CheckLbl"] = nk_check_label;
+		context["CheckTxt"] = nk_check_text;
+		context["CheckFlagLbl"] = nk_check_flags_label;
+		context["CheckFlagTxt"] = nk_check_flags_text;
+		context["CheckboxLbl"] = nk_checkbox_label;
+		context["CheckboxTxt"] = nk_checkbox_text;
+		context["CheckboxFlagLbl"] = nk_checkbox_flags_label;
+		context["CheckboxFlagTxt"] = nk_checkbox_flags_text;
 
-		_lua["RadioLbl"] = nk_radio_label;
-		_lua["RadioTxt"] = nk_radio_text;
-		_lua["RadioOptLbl"] = nk_option_label;
-		_lua["RadioOptTxt"] = nk_option_text;
+		context["RadioLbl"] = nk_radio_label;
+		context["RadioTxt"] = nk_radio_text;
+		context["RadioOptLbl"] = nk_option_label;
+		context["RadioOptTxt"] = nk_option_text;
 
-		_lua["SelectableLbl"] = nk_selectable_label;
-		_lua["SelectableTxt"] = nk_selectable_text;
-		_lua["SelectableImgLbl"] = nk_selectable_image_label;
-		_lua["SelectableImgTxt"] = nk_selectable_image_text;
-		_lua["SelectableSymLbl"] = nk_selectable_symbol_label;
-		_lua["SelectableSymTxt"] = nk_selectable_symbol_text;
+		context["SelectableLbl"] = nk_selectable_label;
+		context["SelectableTxt"] = nk_selectable_text;
+		context["SelectableImgLbl"] = nk_selectable_image_label;
+		context["SelectableImgTxt"] = nk_selectable_image_text;
+		context["SelectableSymLbl"] = nk_selectable_symbol_label;
+		context["SelectableSymTxt"] = nk_selectable_symbol_text;
 
-		_lua["SelectLbl"] = nk_select_label;
-		_lua["SelectTxt"] = nk_select_text;
-		_lua["SelectImgLbl"] = nk_select_image_label;
-		_lua["SelectImgTxt"] = nk_select_image_text;
-		_lua["SelectSymLbl"] = nk_select_symbol_label;
-		_lua["SelectSymTxt"] = nk_select_symbol_text;
+		context["SelectLbl"] = nk_select_label;
+		context["SelectTxt"] = nk_select_text;
+		context["SelectImgLbl"] = nk_select_image_label;
+		context["SelectImgTxt"] = nk_select_image_text;
+		context["SelectSymLbl"] = nk_select_symbol_label;
+		context["SelectSymTxt"] = nk_select_symbol_text;
 
-		_lua["SlideF"] = nk_slide_float;
-		_lua["SlideI"] = nk_slide_int;
-		_lua["SliderF"] = nk_slider_float;
-		_lua["SliderI"] = nk_slider_int;
+		context["SlideF"] = nk_slide_float;
+		context["SlideI"] = nk_slide_int;
+		context["SliderF"] = nk_slider_float;
+		context["SliderI"] = nk_slider_int;
 
-		_lua["Progress"] = nk_progress;
-		_lua["Prog"] = nk_prog;
+		context["Progress"] = nk_progress;
+		context["Prog"] = nk_prog;
 
-		_lua["ColorPicker"] = nk_color_picker;
-		_lua["PickColor"] = nk_color_pick;
+		context["ColorPicker"] = nk_color_picker;
+		context["PickColor"] = nk_color_pick;
 
-		_lua["PopupBegin"] = nk_popup_begin;
-		_lua["PopupClose"] = nk_popup_close;
-		_lua["PopupEnd"] = nk_popup_end;
-		_lua["PopupGetScr"] = nk_popup_get_scroll;
-		_lua["PopupSetScr"] = nk_popup_set_scroll;
+		context["PopupBegin"] = nk_popup_begin;
+		context["PopupClose"] = nk_popup_close;
+		context["PopupEnd"] = nk_popup_end;
+		context["PopupGetScr"] = nk_popup_get_scroll;
+		context["PopupSetScr"] = nk_popup_set_scroll;
 
-		_lua["Combo"] = nk_combo;
-		_lua["ComboSep"] = nk_combo_separator;
-		_lua["ComboStr"] = nk_combo_string;
-		_lua["ComboCallb"] = nk_combo_callback;
-		_lua["Combobox"] = nk_combobox;
-		_lua["ComboboxStr"] = nk_combobox_string;
-		_lua["ComboboxSep"] = nk_combobox_separator;
-		_lua["ComboboxCallb"] = nk_combobox_callback;
+		context["Combo"] = nk_combo;
+		context["ComboSep"] = nk_combo_separator;
+		context["ComboStr"] = nk_combo_string;
+		context["ComboCallb"] = nk_combo_callback;
+		context["Combobox"] = nk_combobox;
+		context["ComboboxStr"] = nk_combobox_string;
+		context["ComboboxSep"] = nk_combobox_separator;
+		context["ComboboxCallb"] = nk_combobox_callback;
 
-		_lua["ContextBegin"] = nk_contextual_begin;
-		_lua["ContextItemTxt"] = nk_contextual_item_text;
-		_lua["ContextItemLbl"] = nk_contextual_item_label;
-		_lua["ContextItemImgLbl"] = nk_contextual_item_image_label;
-		_lua["ContextItemImgTxt"] = nk_contextual_item_image_text;
-		_lua["ContextItemSymLbl"] = nk_contextual_item_symbol_label;
-		_lua["ContextItemSymTxt"] = nk_contextual_item_symbol_text;
-		_lua["ContextClose"] = nk_contextual_close;
-		_lua["ContextEnd"] = nk_contextual_end;
+		context["ContextBegin"] = nk_contextual_begin;
+		context["ContextItemTxt"] = nk_contextual_item_text;
+		context["ContextItemLbl"] = nk_contextual_item_label;
+		context["ContextItemImgLbl"] = nk_contextual_item_image_label;
+		context["ContextItemImgTxt"] = nk_contextual_item_image_text;
+		context["ContextItemSymLbl"] = nk_contextual_item_symbol_label;
+		context["ContextItemSymTxt"] = nk_contextual_item_symbol_text;
+		context["ContextClose"] = nk_contextual_close;
+		context["ContextEnd"] = nk_contextual_end;
 
-		_lua["TooltipTxt"] = nk_tooltip;
-		_lua["TooltipBegin"] = nk_tooltip_begin;
-		_lua["TooltipEnd"] = nk_tooltip_end;
+		context["TooltipTxt"] = nk_tooltip;
+		context["TooltipBegin"] = nk_tooltip_begin;
+		context["TooltipEnd"] = nk_tooltip_end;
 
 		// Styles
 
-		_lua["StylePushFont"] = [this](sol::optional<FontStyle> style) {
+		context["StylePushFont"] = [this](sol::optional<FontStyle> style) {
 				if (style)
 				{
 					nk_style_push_font(&_ctx, &_fonts.GetFont(*style)->handle);
 				}
 		};
 
-		_lua["StylePopFont"] = nk_style_pop_font;
+		context["StylePopFont"] = nk_style_pop_font;
 
-		_lua["RequestWindowToClose"] = []() { glfwSetWindowShouldClose(Mapper::GetInstance()->GetWin().GetPtr(), 1); };
+		context["RequestWindowToClose"] = []() { glfwSetWindowShouldClose(Mapper::GetInstance()->GetWin().GetPtr(), 1); };
 
 	}	
 }

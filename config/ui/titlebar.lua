@@ -1,33 +1,33 @@
 function CustomTitleBar(width)
-    if Begin(Ctx, "ProtoMapper", new_rect(0.0, 0.0, width, 50.0), PanelFlag.NoScrollbar | PanelFlag.Border) ~= 0 then
+    if Ctx:Begin("ProtoMapper", new_rect(0.0, 0.0, width, 50.0), PanelFlag.NoScrollbar | PanelFlag.Border) ~= 0 then
         
-        SpaceRowBegin(Ctx, Layout.Static, 20.0, 2)
+        Ctx:SpaceRowBegin(Layout.Static, 20.0, 2)
 
-        SpaceRowPush(Ctx, new_rect(0.0, 0.0, width - 100.0, 25.0))
-        Label(Ctx, "ProtoMapper", TextAlign.Left)
+        Ctx:SpaceRowPush(new_rect(0.0, 0.0, width - 100.0, 25.0))
+        Ctx:Label("ProtoMapper", TextAlign.Left)
 
-        SpaceRowPush(Ctx, new_rect(width - 35.0, 0.0, 25.0, 20.0))
-        if ButtonLbl(Ctx, "X") ~= 0 then
-            RequestWindowToClose()
+        Ctx:SpaceRowPush(new_rect(width - 35.0, 0.0, 25.0, 20.0))
+        if Ctx:ButtonLbl("X") ~= 0 then
+            Ctx:RequestWindowToClose()
         end
 
-        SpaceRowEnd(Ctx)
+        Ctx:SpaceRowEnd()
 
-        SpaceRowBegin(Ctx, Layout.Static, 20.0, 1)
+        Ctx:SpaceRowBegin(Layout.Static, 20.0, 1)
 
-        SpaceRowPush(Ctx, new_rect(0.0, 0.0, 50.0, 20.0))
-        if MenuBeginLbl(Ctx, "File", TextAlign.Left, new_vec2(100.0, 60.0)) ~= 0 then
+        Ctx:SpaceRowPush(new_rect(0.0, 0.0, 50.0, 20.0))
+        if Ctx:MenuBeginLbl("File", TextAlign.Left, new_vec2(100.0, 60.0)) ~= 0 then
 
-            StaticRow(Ctx, 20.0, 90, 1)
-            MenuItemLbl(Ctx, "New", TextAlign.Left)
+            Ctx:StaticRow(20.0, 90, 1)
+            Ctx:MenuItemLbl("New", TextAlign.Left)
             
-            MenuEnd(Ctx)
+            Ctx:MenuEnd()
 
         end
 
-        SpaceRowEnd(Ctx)
+        Ctx:SpaceRowEnd()
 
     end
 
-    End(Ctx)
+    Ctx:End()
 end
