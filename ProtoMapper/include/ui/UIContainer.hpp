@@ -57,7 +57,6 @@ namespace proto
 
 	private:
 
-		void DrawCustomTitleBar(float width);
 		void InitLua();
 
 		std::filesystem::path _interfaceDir;

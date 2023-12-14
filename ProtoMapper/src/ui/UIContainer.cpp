@@ -191,13 +191,12 @@ namespace proto
 
 	void UIContainer::Update(float wWidth, float wHeight)
 	{
-		//DrawCustomTitleBar(wWidth);
 		sol::safe_function_result result = _lua["CustomTitleBar"](wWidth);
 
 		if (!result.valid())
 		{
 			sol::error err = result;
-			std::puts(std::format("The function goofed! {}\n", err.what()).c_str());
+			std::puts(std::format("Titlebar Error!\n{}\n", err.what()).c_str());
 		}
 	}
 
@@ -230,44 +229,6 @@ namespace proto
 
 		nk_clear(&_ctx);
 		nk_buffer_clear(&_cmds);
-	}
-
-	void UIContainer::DrawCustomTitleBar(float width)
-	{
-		//auto& closeImg = _texMan->Get("iconClose").Get();
-		
-		//if(nk_begin(&_ctx, "ProtoMapper", nk_rect(0.0f, 0.0f, width, 50.0f), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
-		//{
-		//	nk_layout_space_begin(&_ctx, NK_STATIC, 20.0f, 2);
-
-		//	nk_layout_space_push(&_ctx, nk_rect(0.0f, 0.0f, width - 100.0f, 25.0f));
-		//	nk_label(&_ctx, "ProtoMapper", NK_TEXT_LEFT);
-		//	
-		//	nk_layout_space_push(&_ctx, nk_rect(width - 35.f, 0.0f, 25.f, 20.0f));
-		//	//if(nk_button_image(&_ctx, nk_subimage_id(closeImg.GetID(), 24, 24, nk_rect(0, 0, 24, 24 ))))
-		//	if(nk_button_label(&_ctx, "X"))
-		//	{
-		//		glfwSetWindowShouldClose(Mapper::GetInstance()->GetWin().GetPtr(), 1);
-		//	}
-
-		//	nk_layout_space_end(&_ctx);			
-		//
-		//	nk_layout_space_begin(&_ctx, NK_STATIC, 20.0f, 1);
-
-		//	nk_layout_space_push(&_ctx, nk_rect(0.0f, 0.0f, 50.0f, 20.0f));
-		//	if (nk_menu_begin_label(&_ctx, "File", NK_TEXT_LEFT, nk_vec2(100.0f, 60.0f)))
-		//	{
-		//		nk_layout_row_static(&_ctx, 20.0f, 90, 1);
-		//		nk_menu_item_label(&_ctx, "New", NK_TEXT_LEFT);
-
-		//		nk_menu_end(&_ctx);
-		//	}
-
-		//	nk_layout_space_end(&_ctx);
-
-		//}
-
-		//nk_end(&_ctx);
 	}
 
 	void UIContainer::InitLua()
