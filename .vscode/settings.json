@@ -1,0 +1,14 @@
+{
+    "Lua.diagnostics.globals": [
+        "Ctx",
+        "new_rect",
+        "new_recti",
+        "new_vec2",
+        "new_vec2i",
+        "PanelFlag",
+        "TextAlign",
+        "Layout"
+    ],
+    "Lua.completion.showWord": "Enable",
+    "Lua.completion.workspaceWord": true
+}
