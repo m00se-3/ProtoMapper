@@ -214,7 +214,7 @@ namespace proto
 		/*
 			Load all preload assets and data files. 
 		*/
-		if(!_ui->SetDefinitionsPath(_dataTextFields.at("user_interface_dir"))) return 3;
+		if(!_ui->SetDefinitions(_dataTextFields.at("user_interface_dir"))) return 3;
 
 		// Text files
 		std::filesystem::path textDir = _dataTextFields.at("text_dir");

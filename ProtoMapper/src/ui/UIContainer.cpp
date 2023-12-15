@@ -152,13 +152,21 @@ namespace proto
 		_texMan->Unload("Roboto-Medium");
 	}
 
-	bool UIContainer::SetDefinitionsPath(const std::filesystem::path& filepath)
+	bool UIContainer::SetDefinitions(const std::filesystem::path& filepath)
 	{
 		if(std::filesystem::exists(filepath))
 		{
 			_interfaceDir = filepath;
 
-			_lua.script_file(_interfaceDir.string() + "titlebar.lua");
+			for (auto& iterator : std::filesystem::directory_iterator(_interfaceDir))
+			{
+				auto& file = iterator.path();
+
+				if (file.extension() == ".lua")
+				{
+					_lua.script_file(file.string());
+				}
+			}
 
 			return true;
 		}

@@ -46,7 +46,7 @@ namespace proto
 		UIContainer(const std::string& assetsDir);
 		~UIContainer();
 
-		[[nodiscard]]bool SetDefinitionsPath(const std::filesystem::path& filepath);
+		[[nodiscard]]bool SetDefinitions(const std::filesystem::path& filepath);
 		[[nodiscard]]nk_context* Context();
 
 		void Update(float wWidth, float wHeight); // This is the big function.
