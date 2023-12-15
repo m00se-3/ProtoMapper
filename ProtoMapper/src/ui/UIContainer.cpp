@@ -267,12 +267,14 @@ namespace proto
 			color["g"] = &nk_color::g;
 			color["b"] = &nk_color::b;
 			color["a"] = &nk_color::a;
+			_lua["rgba"] = nk_rgba;
 
 			auto colorf = _lua.new_usertype<struct nk_colorf>("colorf", sol::no_constructor);
 			colorf["r"] = &nk_colorf::r;
 			colorf["g"] = &nk_colorf::g;
 			colorf["b"] = &nk_colorf::b;
 			colorf["a"] = &nk_colorf::a;
+			_lua["rgba_f"] = nk_rgba_f;
 
 
 			_lua.new_enum<FontStyle>( "FontStyle",
@@ -466,7 +468,26 @@ namespace proto
 
 		context["StylePopFont"] = nk_style_pop_font;
 
+		// Window commands
+
 		context["RequestWindowToClose"] = []() { glfwSetWindowShouldClose(Mapper::GetInstance()->GetWin().GetPtr(), 1); };
+
+		context["RequestWindowToggle"] = []() {
+			auto* app = Mapper::GetInstance();
+			if (app->IsFullscreen())
+			{
+				glfwRestoreWindow(app->GetWin().GetPtr());
+			}
+			else
+			{
+				glfwMaximizeWindow(app->GetWin().GetPtr());
+			}
+			
+		};
+
+		context["RequestWindowRestore"] = []() { glfwRestoreWindow(Mapper::GetInstance()->GetWin().GetPtr()); };
+
+		context["RequestWindowIconify"] = []() { glfwIconifyWindow(Mapper::GetInstance()->GetWin().GetPtr()); };
 
 	}	
 }

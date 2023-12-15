@@ -51,6 +51,7 @@ namespace proto
 		if (fullscreen)
 		{
 			_window = glfwCreateWindow(_wWidth, _wHeight, title.c_str(), _monitor, nullptr);
+			glfwSetWindowPos(_window, 100, 100);
 		}
 		else
 		{
@@ -162,7 +163,7 @@ namespace proto
 
 	void Window::WindowMaximizeCallback(GLFWwindow* window, int maximized)
 	{
-		
+		Mapper::GetInstance()->SetFullscreen((bool)maximized);
 	}
 
 	void Window::WindowMinimizedCallback(GLFWwindow* window, int iconified)
