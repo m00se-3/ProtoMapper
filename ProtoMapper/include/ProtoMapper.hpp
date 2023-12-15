@@ -42,9 +42,11 @@ namespace proto
 		~Mapper();
 
 		[[nodiscard]]static Mapper* GetInstance();
+		[[nodiscard]]bool IsFullscreen() const;
 		[[nodiscard]]bool Configure();
 		[[nodiscard]]int Run();
 		void SetContextSize(int w, int h);
+		void SetFullscreen(bool full);
 
 		[[nodiscard]]Window& GetWin();
 		[[nodiscard]]Renderer* GetRenderer();

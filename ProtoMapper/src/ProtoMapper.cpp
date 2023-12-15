@@ -88,6 +88,8 @@ namespace proto
 		_resources.reset(nullptr);
 	}
 
+	bool Mapper::IsFullscreen() const { return _fullscreen; }
+
 	bool Mapper::Configure()
 	{
 		_self = this;
@@ -274,6 +276,11 @@ namespace proto
 	{
 		_window.SetSize(w, h);
 		_renderer->SetRenderSize(w, h);
+	}
+
+	void Mapper::SetFullscreen(bool full)
+	{
+		_fullscreen = full;
 	}
 
 	Window& Mapper::GetWin() { return _window; }
