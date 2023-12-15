@@ -5,9 +5,12 @@
         "new_recti",
         "new_vec2",
         "new_vec2i",
+        "rgba",
+        "rgba_f",
         "PanelFlag",
         "TextAlign",
-        "Layout"
+        "Layout",
+        "FontStyle"
     ],
     "Lua.completion.showWord": "Enable",
     "Lua.completion.workspaceWord": true
