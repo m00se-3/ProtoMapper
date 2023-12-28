@@ -8,30 +8,24 @@
 
 The following items need to be designed/decided on and implemented:  
 
-- [ ] Lua API.
+-  Lua API. Finish polishing the UI API and design an API for use in the mapp editor.
 
-- [ ] Logging framework that can be extended to support multithreaded access.
+-  Logging framework that can be extended to support multithreaded access.
 
-- [ ] What data format, if any, will be used to automate UI building?
-
-- [ ] How will projects be organized in data format?  
+-  How will projects be organized in data format?  
 
 The following items need to be tested and polished:
 
-- [ ] The ResourceManager's polymorphic allocator. Does it work correctly?
+-  The ResourceManager's polymorphic allocator. Does it work correctly?
 
-- [ ] Mouse and keyboard handling.
+-  Mouse and keyboard handling.
 
-- [ ] Handling of window related events.
+-  Handling of window related events. (Ongoing)
 
 ---
 
 ## Low Priority TODOs
 
-- [ ] Figure out a method of compressing/hiding shaders and other assets so they are not easily tampered with.
+-  Compile sample text, assets, and other things for testing.
 
-- [ ] Decide whether to allow external scripts to define UI components and, if so, how.
-
-- [ ] Compile sample text, assets, and other things for testing.
-
-- [ ] Figure out how to make things pretty in the UI.
+-  Figure out how to make things pretty in the UI.
