@@ -235,8 +235,8 @@ namespace proto
 			offset += cmd->elem_count;
 		}
 
-		nk_clear(&_ctx);
 		nk_buffer_clear(&_cmds);
+		nk_clear(&_ctx);
 	}
 
 	void UIContainer::InitLua()
@@ -360,6 +360,8 @@ namespace proto
 
 		//Widgets
 
+		context["MenubarBegin"] = nk_menubar_begin;
+		context["MenubarEnd"] = nk_menubar_end;
 		context["MenuBeginLbl"] = nk_menu_begin_label;
 		context["MenuBeginTxt"] = nk_menu_begin_text;
 		context["MenuBeginImg"] = nk_menu_begin_image;
