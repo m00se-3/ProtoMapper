@@ -337,6 +337,25 @@ namespace proto
 				}
 			);
 
+			_lua.new_enum<nk_symbol_type>("Symbol",
+				{
+					std::make_pair("None", NK_SYMBOL_NONE),
+					std::make_pair("X", NK_SYMBOL_X),
+					std::make_pair("UnderScore", NK_SYMBOL_UNDERSCORE),
+					std::make_pair("SolidCircle", NK_SYMBOL_CIRCLE_SOLID),
+					std::make_pair("LineCircle", NK_SYMBOL_CIRCLE_OUTLINE),
+					std::make_pair("SolidRect", NK_SYMBOL_RECT_SOLID),
+					std::make_pair("LineRect", NK_SYMBOL_RECT_OUTLINE),
+					std::make_pair("UpTriangle", NK_SYMBOL_TRIANGLE_UP),
+					std::make_pair("DownTriangle", NK_SYMBOL_TRIANGLE_DOWN),
+					std::make_pair("LeftTriangle", NK_SYMBOL_TRIANGLE_LEFT),
+					std::make_pair("RightTriangle", NK_SYMBOL_TRIANGLE_RIGHT),
+					std::make_pair("Plus", NK_SYMBOL_PLUS),
+					std::make_pair("Minus", NK_SYMBOL_MINUS),
+					std::make_pair("Max", NK_SYMBOL_MAX)
+				}
+			);
+
 		}
 
 
@@ -351,7 +370,14 @@ namespace proto
 
 		// Windows
 
-		context["Begin"] = nk_begin;
+		context["Begin"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<struct nk_rect> size, sol::optional<nk_panel_flags> flags) -> bool
+			{
+				// Unfortunately, for now there is no getting around using nk_strlen here.
+
+				return static_cast<bool>(nk_begin(ctx, text.value().data(), *size, *flags));
+			};
+
 		context["End"] = nk_end;
 
 		// Layouts
@@ -366,42 +392,132 @@ namespace proto
 
 		context["MenubarBegin"] = nk_menubar_begin;
 		context["MenubarEnd"] = nk_menubar_end;
-		context["MenuBeginLbl"] = nk_menu_begin_label;
-		context["MenuBeginTxt"] = nk_menu_begin_text;
-		context["MenuBeginImg"] = nk_menu_begin_image;
-		context["MenuBeginImgTxt"] = nk_menu_begin_image_text;
-		context["MenuBeginImgLbl"] = nk_menu_begin_image_label;
-		context["MenuBeginSym"] = nk_menu_begin_symbol;
-		context["MenuBeginSymTxt"] = nk_menu_begin_symbol_text;
-		context["MenuBeginSymLbl"] = nk_menu_begin_symbol_label;
-		context["MenuItemTxt"] = nk_menu_item_text;
-		context["MenuItemLbl"] = nk_menu_item_label;
-		context["MenuItemImgLbl"] = nk_menu_item_image_label;
-		context["MenuItemImgTxt"] = nk_menu_item_image_text;
-		context["MenuItemSymTxt"] = nk_menu_item_symbol_text;
-		context["MenuItemSymLbl"] = nk_menu_item_symbol_label;
+
+		context["MenuBeginLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<struct nk_vec2> size) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_menu_begin_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *size));
+			};
+
+		context["MenuBeginImg"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> id, sol::optional<struct nk_vec2> size) -> bool
+			{
+				/*
+					Fix the magic number in this function before testing.
+				*/
+				return static_cast<bool>(nk_menu_begin_image(ctx, id.value().data(), nk_image_id(1), *size));
+			};
+
+		context["MenuBeginImgLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<struct nk_image> img, sol::optional<struct nk_vec2> size) -> bool
+			{
+				const auto& str = text.value();
+				
+				return static_cast<bool>(nk_menu_begin_image_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *img, *size));
+
+			};
+
+		context["MenuBeginSym"] =
+			[](nk_context* ctx, sol::optional<std::string_view> id, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
+			{
+				return static_cast<bool>(nk_menu_begin_symbol(ctx, id.value().data(), *sym, *size));
+			}; 
+
+		context["MenuBeginSymLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
+			{
+				const auto& str = text.value();
+				
+				return static_cast<bool>(nk_menu_begin_symbol_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *sym, *size));
+			};
+
+		context["MenuItemLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_menu_item_text(ctx, str.data(), static_cast<int>(str.size()), *flags));
+			};
+
+		context["MenuItemImgLbl"] = 
+			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_menu_item_image_text(ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
+
+			};
+
+		context["MenuItemSymLbl"] = 
+			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_menu_item_symbol_text(ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
+			};
+
 		context["MenuClose"] = nk_menu_close;
 		context["MenuEnd"] = nk_menu_end;
 
-		context["Label"] = nk_label;
+		context["Label"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags)
+			{
+				const auto& str = text.value();
+				
+				nk_text(ctx, str.data(), static_cast<int>(str.size()), *flags);
+			};
 
-		context["ButtonTxt"] = nk_button_text;
-		context["ButtonLbl"] = nk_button_label;
-		context["ButtonC"] = nk_button_color;
-		context["ButtonSym"] = nk_button_symbol;
-		context["ButtonImg"] = nk_button_image;
-		context["ButtonSymLbl"] = nk_button_symbol_label;
-		context["ButtonSymTxt"] = nk_button_symbol_text;
-		context["ButtonImgLbl"] = nk_button_image_label;
-		context["ButtonImgTxt"] = nk_button_image_text;
-		context["ButtonTxtSty"] = nk_button_text_styled;
-		context["ButtonLblSty"] = nk_button_label_styled;
-		context["ButtonSymSty"] = nk_button_symbol_styled;
-		context["ButtonImgSty"] = nk_button_image_styled;
-		context["ButtonSymTxtSty"] = nk_button_symbol_text_styled;
-		context["ButtonSymLblSty"] = nk_button_symbol_label_styled;
-		context["ButtonImgLblSty"] = nk_button_image_label_styled;
-		context["ButtonImgTxtSty"] = nk_button_image_text_styled;
+		context["ButtonLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_button_text(ctx, str.data(), static_cast<int>(str.size())));
+			};
+
+		context["ButtonC"] = 
+			[](nk_context* ctx, sol::optional<struct nk_color> color) -> bool
+			{
+				return static_cast<bool>(nk_button_color(ctx, *color));
+			};
+
+		context["ButtonSym"] = 
+			[](nk_context* ctx, sol::optional<nk_symbol_type> sym) -> bool
+			{
+				return static_cast<bool>(nk_button_symbol(ctx, *sym));
+			};
+
+		context["ButtonImg"] = 
+			[](nk_context* ctx, sol::optional<struct nk_image> img) -> bool
+			{
+				return static_cast<bool>(nk_button_image(ctx, *img));
+			};
+
+		context["ButtonSymLbl"] = 
+			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			{
+				
+				const auto& str = text.value();
+				
+				return static_cast<bool>(nk_button_symbol_text(ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
+			};
+
+		context["ButtonImgLbl"] = 
+			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			{
+
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_button_image_text(ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
+			};
+
+		//context["ButtonLblSty"] = nk_button_label_styled;
+		//context["ButtonSymSty"] = nk_button_symbol_styled;
+		//context["ButtonImgSty"] = nk_button_image_styled;
+		//context["ButtonSymLblSty"] = nk_button_symbol_label_styled;
+		//context["ButtonImgLblSty"] = nk_button_image_label_styled;
 
 		context["CheckLbl"] = nk_check_label;
 		context["CheckTxt"] = nk_check_text;
@@ -473,11 +589,13 @@ namespace proto
 
 		// Styles
 
-		context["StylePushFont"] = [this](sol::optional<FontStyle> style) {
+		context["StylePushFont"] = [this](sol::optional<FontStyle> style) -> bool {
 				if (style)
 				{
-					nk_style_push_font(&_ctx, &_fonts.GetFont(*style)->handle);
+					return static_cast<bool>(nk_style_push_font(&_ctx, &_fonts.GetFont(*style)->handle));
 				}
+
+				return false;
 		};
 
 		context["StylePopFont"] = nk_style_pop_font;
