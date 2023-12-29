@@ -12,7 +12,7 @@ function CustomTitleBar(width)
         titleLabelWidth = width - titleButtonsWidth - 10.0
     end
     
-    if Ctx:Begin("ProtoMapper", new_rect(0.0, 0.0, width, 40.0), PanelFlag.NoScrollbar) ~= 0 then
+    if Ctx:Begin("ProtoMapper", new_rect(0.0, 0.0, width, 30.0), PanelFlag.NoScrollbar) ~= 0 then
         
         Ctx:SpaceRowBegin(Layout.Static, 20.0, 4)
 
@@ -48,28 +48,25 @@ function CustomTitleBar(width)
 
 
     -- The menu bar.
-    if Ctx:Begin("Menubar", new_rect(0.0, 40.0, width, 30.0), 0) ~= 0 then
+    if Ctx:Begin("Menubar", new_rect(0.0, 30.0, width, 30.0), 0) ~= 0 then
         Ctx:MenubarBegin()
 
         -- The menu bar.
         Ctx:StaticRow(20.0, 50, 15)
-        if Ctx:MenuBeginLbl("File", TextAlign.Left, new_vec2(100, 120)) ~= 0 then
-            Ctx:StaticRow(20, 90, 1)
 
-            Ctx:MenuItemLbl("New", TextAlign.Left)
-            Ctx:MenuItemLbl("Open", TextAlign.Left)
-            Ctx:MenuItemLbl("Save", TextAlign.Left)
-            Ctx:MenuItemLbl("Close", TextAlign.Left)
+        -- We use numerical loops here to guarantee that all menubar items will be iterated in the correct order.
+        for index = 1, #UI.menubar do
+            local menu = UI.menubar -- Create a local reference to the menubar table to help with readability.
 
-            Ctx:MenuEnd()
-        end
+            if Ctx:MenuBeginLbl(menu[index].name, TextAlign.Left, new_vec2(100, #menu[index].items * 30)) ~= 0 then
+                Ctx:StaticRow(20, 90, 1)
 
-        if Ctx:MenuBeginLbl("Edit", TextAlign.Left, new_vec2(100, 120)) ~= 0 then
-            Ctx:StaticRow(20, 90, 1)
-
-            Ctx:MenuItemLbl("Poop", TextAlign.Left)
-
-            Ctx:MenuEnd()
+                for ind = 1, #menu[index].items do
+                    Ctx:MenuItemLbl(menu[index].items[ind].name, TextAlign.Left)
+                end
+                
+                Ctx:MenuEnd()
+            end
         end
 
         Ctx:MenubarEnd()
