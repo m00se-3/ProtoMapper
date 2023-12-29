@@ -29,7 +29,7 @@ namespace proto
 		NOTE: If you experience rendering issues while building the ui, consider increasing this buffer size.
 	*/
 
-	constexpr long long MaxVertexBuffer = 32 * 1024;
+	constexpr uint64_t MaxVertexBuffer = 32ull * 1024ull;
 
 	/*
 		Special Vertex struct that has a nuklear friendly layout and alignment.
