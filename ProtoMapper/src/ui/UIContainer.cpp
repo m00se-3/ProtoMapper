@@ -337,6 +337,13 @@ namespace proto
 				}
 			);
 
+			_lua.new_enum<nk_color_format>("ColorFmt",
+				{
+					std::make_pair("RGB", NK_RGB),
+					std::make_pair("RGBA", NK_RGBA)
+				}
+			);
+
 			_lua.new_enum<nk_symbol_type>("Symbol",
 				{
 					std::make_pair("None", NK_SYMBOL_NONE),
@@ -519,44 +526,132 @@ namespace proto
 		//context["ButtonSymLblSty"] = nk_button_symbol_label_styled;
 		//context["ButtonImgLblSty"] = nk_button_image_label_styled;
 
-		context["CheckLbl"] = nk_check_label;
-		context["CheckTxt"] = nk_check_text;
-		context["CheckFlagLbl"] = nk_check_flags_label;
-		context["CheckFlagTxt"] = nk_check_flags_text;
-		context["CheckboxLbl"] = nk_checkbox_label;
-		context["CheckboxTxt"] = nk_checkbox_text;
-		context["CheckboxFlagLbl"] = nk_checkbox_flags_label;
-		context["CheckboxFlagTxt"] = nk_checkbox_flags_text;
+		context["CheckLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<bool> active) -> bool
+			{
+				const auto& str = text.value();
 
-		context["RadioLbl"] = nk_radio_label;
-		context["RadioTxt"] = nk_radio_text;
-		context["RadioOptLbl"] = nk_option_label;
-		context["RadioOptTxt"] = nk_option_text;
+				return static_cast<bool>(nk_check_text(ctx, str.data(), static_cast<int>(str.size()), *active));
+			};
 
-		context["SelectableLbl"] = nk_selectable_label;
-		context["SelectableTxt"] = nk_selectable_text;
-		context["SelectableImgLbl"] = nk_selectable_image_label;
-		context["SelectableImgTxt"] = nk_selectable_image_text;
-		context["SelectableSymLbl"] = nk_selectable_symbol_label;
-		context["SelectableSymTxt"] = nk_selectable_symbol_text;
+		context["CheckFlagLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<unsigned int> flags, sol::optional<unsigned int> value) -> unsigned int
+			{
+				const auto& str = text.value();
 
-		context["SelectLbl"] = nk_select_label;
-		context["SelectTxt"] = nk_select_text;
-		context["SelectImgLbl"] = nk_select_image_label;
-		context["SelectImgTxt"] = nk_select_image_text;
-		context["SelectSymLbl"] = nk_select_symbol_label;
-		context["SelectSymTxt"] = nk_select_symbol_text;
+				return static_cast<unsigned int>(nk_check_flags_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+			};
+
+		context["CheckboxLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<int*> active) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_checkbox_text(ctx, str.data(), static_cast<int>(str.size()), *active));
+			};
+
+		context["CheckboxFlagLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<unsigned int*> flags, sol::optional<unsigned int> value) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_checkbox_flags_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+			};
+
+		context["RadioLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<int*> active) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_radio_text(ctx, str.data(), static_cast<int>(str.size()), *active));
+			};
+
+		context["RadioOptLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<int> active) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_option_text(ctx, str.data(), static_cast<int>(str.size()), *active));
+			};
+
+		context["SelectableLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_selectable_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+			};
+
+		context["SelectableImgLbl"] = 
+			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_selectable_image_text(ctx, *img, str.data(), static_cast<int>(str.size()), *flags, *value));
+			};
+
+		context["SelectableSymLbl"] = 
+			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_selectable_symbol_text(ctx, *sym, str.data(), static_cast<int>(str.size()), *flags, *value));
+			};
+
+		context["SelectLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_select_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+			};
+
+		context["SelectImgLbl"] = 
+			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_select_image_text(ctx, *img, str.data(), static_cast<int>(str.size()), *flags, *value));
+			};
+
+		context["SelectSymLbl"] = 
+			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_select_symbol_text(ctx, *sym, str.data(), static_cast<int>(str.size()), *flags, *value));
+			};
 
 		context["SlideF"] = nk_slide_float;
 		context["SlideI"] = nk_slide_int;
-		context["SliderF"] = nk_slider_float;
-		context["SliderI"] = nk_slider_int;
 
-		context["Progress"] = nk_progress;
+		context["SliderF"] = 
+			[](nk_context* ctx, sol::optional<float> min, sol::optional<float*> value, sol::optional<float> max, sol::optional<float> step) -> bool
+			{
+				return static_cast<bool>(nk_slider_float(ctx, *min, *value, *max, *step));
+			};
+
+		context["SliderI"] = 
+			[](nk_context* ctx, sol::optional<int> min, sol::optional<int*> value, sol::optional<int> max, sol::optional<int> step) -> bool
+			{
+				return static_cast<bool>(nk_slider_int(ctx, *min, *value, *max, *step));
+			};
+
+		context["Progress"] =
+			[](nk_context* ctx, sol::optional<uintptr_t*> current, sol::optional<uintptr_t> max, sol::optional<bool> mod) -> bool
+			{
+				return static_cast<bool>(nk_progress(ctx, *current, *max, *mod));
+			};
+			
 		context["Prog"] = nk_prog;
 
 		context["ColorPicker"] = nk_color_picker;
-		context["PickColor"] = nk_color_pick;
+
+		context["PickColor"] =
+			[](nk_context* ctx, sol::optional<struct nk_colorf*> color, sol::optional<nk_color_format> fmt) -> bool
+			{
+				return static_cast<bool>(nk_color_pick(ctx, *color, *fmt));
+			};
 
 		context["PopupBegin"] = nk_popup_begin;
 		context["PopupClose"] = nk_popup_close;
