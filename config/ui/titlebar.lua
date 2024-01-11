@@ -74,6 +74,14 @@ function CustomTitleBar(width)
             Ctx:MenuEnd()
         end
 
+        if Ctx:MenuBeginLbl("?", TextAlign.Left, new_vec2(100, 1 * 30)) then
+            Ctx:StaticRow(20, 90, 1)
+
+            Ctx:MenuItemLbl("About", TextAlign.Left)
+            
+            Ctx:MenuEnd()
+        end
+
         Ctx:MenubarEnd()
 
         Ctx:End()
