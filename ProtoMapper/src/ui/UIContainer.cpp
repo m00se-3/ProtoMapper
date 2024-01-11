@@ -243,6 +243,11 @@ namespace proto
 		nk_clear(&_ctx);
 	}
 
+	void UIContainer::ShowAboutWindow(nk_context* ctx)
+	{
+
+	}
+
 	void UIContainer::InitLua()
 	{
 		_lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::math);

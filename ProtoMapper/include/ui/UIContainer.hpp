@@ -52,6 +52,7 @@ namespace proto
 		void Update(float wWidth, float wHeight); // This is the big function.
 		void Compile();
 		void Draw(Renderer* ren);
+		void ShowAboutWindow(nk_context* ctx);
 
 		static void SetResourceManager(ReferenceCounter<Texture2D>* ptr);
 
