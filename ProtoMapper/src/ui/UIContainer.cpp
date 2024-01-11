@@ -363,6 +363,13 @@ namespace proto
 				}
 			);
 
+			_lua.new_enum<nk_popup_type>("Popup",
+				{
+					std::make_pair("Static", NK_POPUP_STATIC),
+					std::make_pair("Dynamic", NK_POPUP_DYNAMIC),
+				}
+			);
+
 		}
 
 
@@ -653,7 +660,12 @@ namespace proto
 				return static_cast<bool>(nk_color_pick(ctx, *color, *fmt));
 			};
 
-		context["PopupBegin"] = nk_popup_begin;
+		context["PopupBegin"] = 
+			[](nk_context* ctx, sol::optional<nk_popup_type> type, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<struct nk_rect> bounds)
+			{
+				return static_cast<bool>(nk_popup_begin(ctx, *type, text.value().data(), *flags, *bounds));
+			};
+
 		context["PopupClose"] = nk_popup_close;
 		context["PopupEnd"] = nk_popup_end;
 		context["PopupGetScr"] = nk_popup_get_scroll;
@@ -668,18 +680,47 @@ namespace proto
 		context["ComboboxSep"] = nk_combobox_separator;
 		context["ComboboxCallb"] = nk_combobox_callback;
 
-		context["ContextBegin"] = nk_contextual_begin;
-		context["ContextItemTxt"] = nk_contextual_item_text;
-		context["ContextItemLbl"] = nk_contextual_item_label;
-		context["ContextItemImgLbl"] = nk_contextual_item_image_label;
-		context["ContextItemImgTxt"] = nk_contextual_item_image_text;
-		context["ContextItemSymLbl"] = nk_contextual_item_symbol_label;
-		context["ContextItemSymTxt"] = nk_contextual_item_symbol_text;
+		context["ContextBegin"] = 
+			[](nk_context* ctx, sol::optional<nk_flags> flags, sol::optional<struct nk_vec2> size, sol::optional<struct nk_rect> bounds)
+			{
+				return static_cast<bool>(nk_contextual_begin(ctx, *flags, *size, *bounds));
+			};
+
+		context["ContextItemLbl"] = 
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags)
+			{
+				const auto& str = text.value();
+				
+				return static_cast<bool>(nk_contextual_item_text(ctx, str.data(), static_cast<int>(str.size()), *flags));
+			};
+
+		context["ContextItemImgLbl"] = 
+			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags)
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_contextual_item_image_text(ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
+			};
+
+		context["ContextItemSymLbl"] = 
+			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags)
+			{
+				const auto& str = text.value();
+
+				return static_cast<bool>(nk_contextual_item_symbol_text(ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
+			};
+
 		context["ContextClose"] = nk_contextual_close;
 		context["ContextEnd"] = nk_contextual_end;
 
 		context["TooltipTxt"] = nk_tooltip;
-		context["TooltipBegin"] = nk_tooltip_begin;
+
+		context["TooltipBegin"] = 
+			[](nk_context* ctx, sol::optional<float> width)
+			{
+				return static_cast<bool>(nk_tooltip_begin(ctx, *width));
+			};
+
 		context["TooltipEnd"] = nk_tooltip_end;
 
 		// Styles
