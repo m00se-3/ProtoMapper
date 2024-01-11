@@ -12,7 +12,8 @@
         "Layout",
         "FontStyle",
         "ColorFmt",
-        "Symbol"
+        "Symbol",
+        "Popup"
     ],
     "Lua.completion.showWord": "Enable",
     "Lua.completion.workspaceWord": true
