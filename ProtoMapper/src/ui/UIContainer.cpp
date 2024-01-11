@@ -293,6 +293,10 @@ namespace proto
 			colorf["a"] = &nk_colorf::a;
 			_lua["rgba_f"] = nk_rgba_f;
 
+			auto scroll = _lua.new_usertype<struct nk_scroll>("scroll", sol::no_constructor);
+			scroll["x"] = &nk_scroll::x;
+			scroll["y"] = &nk_scroll::y;
+
 
 			_lua.new_enum<FontStyle>( "FontStyle",
 				{
@@ -389,6 +393,8 @@ namespace proto
 
 		// Windows
 
+		_lua.new_usertype<struct nk_window>("Window");
+
 		context["Begin"] = 
 			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<struct nk_rect> size, sol::optional<nk_panel_flags> flags) -> bool
 			{
@@ -398,6 +404,42 @@ namespace proto
 			};
 
 		context["End"] = nk_end;
+
+		// Groups
+
+		_lua.new_usertype<struct nk_group>("Group");
+
+		context["GroupBegin"] =
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			{
+				return static_cast<bool>(nk_group_begin(ctx, text.value().data(), *flags));
+			};
+
+		context["GroupEnd"] = nk_group_end;
+
+		context["GroupBeginScroll"] =
+			[](nk_context* ctx, sol::optional<struct nk_scroll*> off, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			{
+				return static_cast<bool>(nk_group_scrolled_begin(ctx, *off, text.value().data(), *flags));
+			};
+
+		context["GroupEndScroll"] = nk_group_scrolled_end;
+
+		context["GroupGetScroll"] =
+			[](nk_context* ctx, sol::optional<std::string_view> id) -> std::pair<uint32_t, uint32_t>
+			{
+				uint32_t scrX = 0, scrY = 0;
+
+				nk_group_get_scroll(ctx, id.value().data(), &scrX, &scrY);
+
+				return std::make_pair(scrX, scrY);
+			};
+
+		context["GroupSetScroll"] =
+			[](nk_context* ctx, sol::optional<std::string_view> id, sol::optional<uint32_t> offX, sol::optional<uint32_t> offY)
+			{
+				nk_group_set_scroll(ctx, id.value().data(), *offX, *offY);
+			};
 
 		// Layouts
 
@@ -666,7 +708,7 @@ namespace proto
 			};
 
 		context["PopupBegin"] = 
-			[](nk_context* ctx, sol::optional<nk_popup_type> type, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<struct nk_rect> bounds)
+			[](nk_context* ctx, sol::optional<nk_popup_type> type, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<struct nk_rect> bounds) -> bool
 			{
 				return static_cast<bool>(nk_popup_begin(ctx, *type, text.value().data(), *flags, *bounds));
 			};
@@ -686,13 +728,13 @@ namespace proto
 		context["ComboboxCallb"] = nk_combobox_callback;
 
 		context["ContextBegin"] = 
-			[](nk_context* ctx, sol::optional<nk_flags> flags, sol::optional<struct nk_vec2> size, sol::optional<struct nk_rect> bounds)
+			[](nk_context* ctx, sol::optional<nk_flags> flags, sol::optional<struct nk_vec2> size, sol::optional<struct nk_rect> bounds) -> bool
 			{
 				return static_cast<bool>(nk_contextual_begin(ctx, *flags, *size, *bounds));
 			};
 
 		context["ContextItemLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags)
+			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
 				const auto& str = text.value();
 				
@@ -700,7 +742,7 @@ namespace proto
 			};
 
 		context["ContextItemImgLbl"] = 
-			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags)
+			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
 				const auto& str = text.value();
 
@@ -708,7 +750,7 @@ namespace proto
 			};
 
 		context["ContextItemSymLbl"] = 
-			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags)
+			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
 				const auto& str = text.value();
 
@@ -721,7 +763,7 @@ namespace proto
 		context["TooltipTxt"] = nk_tooltip;
 
 		context["TooltipBegin"] = 
-			[](nk_context* ctx, sol::optional<float> width)
+			[](nk_context* ctx, sol::optional<float> width) -> bool
 			{
 				return static_cast<bool>(nk_tooltip_begin(ctx, *width));
 			};
