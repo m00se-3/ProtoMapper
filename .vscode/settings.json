@@ -10,7 +10,9 @@
         "PanelFlag",
         "TextAlign",
         "Layout",
-        "FontStyle"
+        "FontStyle",
+        "ColorFmt",
+        "Symbol"
     ],
     "Lua.completion.showWord": "Enable",
     "Lua.completion.workspaceWord": true

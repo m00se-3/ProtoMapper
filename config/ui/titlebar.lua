@@ -54,19 +54,24 @@ function CustomTitleBar(width)
         -- The menu bar.
         Ctx:StaticRow(20.0, 50, 15)
 
-        -- We use numerical loops here to guarantee that all menubar items will be iterated in the correct order.
-        for index = 1, #UI.menubar do
-            local menu = UI.menubar -- Create a local reference to the menubar table to help with readability.
+        if Ctx:MenuBeginLbl("File", TextAlign.Left, new_vec2(100, 4 * 30)) then
+            Ctx:StaticRow(20, 90, 1)
 
-            if Ctx:MenuBeginLbl(menu[index].name, TextAlign.Left, new_vec2(100, #menu[index].items * 30)) then
-                Ctx:StaticRow(20, 90, 1)
+            Ctx:MenuItemSymLbl(Symbol.RightTriangle, "New", TextAlign.Left)
+            Ctx:MenuItemSymLbl(Symbol.RightTriangle, "Open", TextAlign.Left)
+            Ctx:MenuItemLbl("Save", TextAlign.Left)
+            Ctx:MenuItemLbl("Close", TextAlign.Left)
+            
+            Ctx:MenuEnd()
+        end
 
-                for ind = 1, #menu[index].items do
-                    Ctx:MenuItemLbl(menu[index].items[ind].name, TextAlign.Left)
-                end
-                
-                Ctx:MenuEnd()
-            end
+        if Ctx:MenuBeginLbl("Edit", TextAlign.Left, new_vec2(100, 2 * 30)) then
+            Ctx:StaticRow(20, 90, 1)
+
+            Ctx:MenuItemLbl("Preferences", TextAlign.Left)
+            Ctx:MenuItemLbl("Options", TextAlign.Left)
+            
+            Ctx:MenuEnd()
         end
 
         Ctx:MenubarEnd()
