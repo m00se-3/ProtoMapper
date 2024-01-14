@@ -120,15 +120,17 @@ namespace proto
 
 	void Renderer::End()
 	{
-		switch (_currentMode)
+		while (!_drawQueue.empty())
 		{
-		case Renderer::mode::Two:
-		{
-			//glEnable(GL_DEPTH_TEST);
-			break;
-		}
-		case Renderer::mode::Three:
-			break;
+			auto& call = _drawQueue.front();
+
+			UseTexture(call.texture);
+			UseShader(call.shader);
+			SetUniforms(call.uniforms);
+
+			Draw<uint32_t>(call.buffer, call.elemCount, (uint32_t*)call.offset, call.drawMode);
+
+			_drawQueue.pop();
 		}
 	}
 
@@ -216,6 +218,11 @@ namespace proto
 	}
 
 	void Renderer::SetUniforms(const std::function<void()>& uniforms) { _uniforms = uniforms; }
+
+	void Renderer::PushDrawCall(const DrawCall& call)
+	{
+		_drawQueue.push(call);
+	}
 
 	Renderer::~Renderer()
 	{

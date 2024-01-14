@@ -257,8 +257,8 @@ namespace proto
 
 			_ui->Draw(_renderer.get());
 
-			glfwSwapBuffers(_window.GetPtr());
 			_renderer->End();
+			glfwSwapBuffers(_window.GetPtr());
 
 			/*
 				Capture input events for the GUI and the simulation.
