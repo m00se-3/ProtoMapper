@@ -191,16 +191,14 @@ namespace proto
 		{
 			if (!cmd->elem_count) continue;
 
+			DrawCall draw{ _nkBuffer.VAO(), GL_TRIANGLES, (uint32_t)offset, static_cast<int>(cmd->elem_count) };
+
 			if(cmd->texture.id && glIsTexture((unsigned int)cmd->texture.id) == GL_TRUE)
 			{			
-				ren->UseTexture(Texture2D{ static_cast<Texture2D::IDType>(cmd->texture.id) });
-			}
-			else
-			{
-				ren->UseTexture();
+				draw.texture = Texture2D{ static_cast<Texture2D::IDType>(cmd->texture.id) };
 			}
 
-			ren->DrawBuffer(_nkBuffer, cmd->elem_count, offset);
+			ren->PushDrawCall(draw);
 			offset += cmd->elem_count;
 		}
 
