@@ -19,8 +19,7 @@
 
 namespace proto
 {
-	Scene::Scene(UIContainer* ptr)
-		: _uiInternal(ptr)
+	Scene::Scene()
 	{
 
 	}
@@ -28,68 +27,25 @@ namespace proto
 
 	bool Scene::Init()
 	{
-		/*
-			Create the root SceneNode, this will draw a background if there are no open files.
-		*/
-
-		auto rID = manager.create();
-
-		root = new SceneNode(nullptr, rID);
-
-
+		
 
 		return true;
 	}
 
 	void Scene::Update(float dt)
 	{
-		//root->Update(this, dt);
+		
 	}
 
 	void Scene::DrawNodes()
 	{
-		//root->Draw();
+		
 	}
-
-
 
 	void Scene::Cleanup()
 	{
-		//root->Destroy();
-		//delete root;
+		
 	}
 
 	entt::registry& Scene::Manager() { return manager; }
-
-	SceneNode::SceneNode(SceneNode* par, entt::entity inID)
-		: parent(par), id(inID)
-	{
-
-	}
-
-	entt::entity SceneNode::ID() const { return id; }
-
-	void SceneNode::Update(Scene* container, float dt)
-	{
-		auto& man = container->Manager();
-
-
-		for (auto& child : children)
-		{
-			child->Update(container, dt);
-		}
-	}
-
-	void SceneNode::Draw()
-	{
-	}
-
-	void SceneNode::Destroy()
-	{
-		for (auto* child : children)
-		{
-			child->Destroy();
-			delete child;
-		}
-	}
 }

@@ -204,7 +204,7 @@ namespace proto
 		glfwSetCursorPosCallback(_window.GetPtr(), Mapper::MouseMotionEventCallback);
 		glfwSetScrollCallback(_window.GetPtr(), Mapper::MouseScrollEventCallback);
 
-		_scene = std::make_unique<Scene>(_ui.get());
+		_scene = std::make_unique<Scene>();
 		_scene->Init();
 
 		/*
