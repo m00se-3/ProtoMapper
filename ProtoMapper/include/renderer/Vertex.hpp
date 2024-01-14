@@ -54,6 +54,8 @@ namespace proto
 		void* Data() const { return (void*)_vertices.data(); }
 		void* Indices() const { return (void*)_indices.data(); }
 
+		IndType VAO() const { return _vao; }
+
 		size_t GetBufferSize() const { return _vertices.size(); }
 
 		Buffer& Generate(size_t numVertices, size_t numIndices)
