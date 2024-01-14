@@ -37,6 +37,7 @@
 #include "Renderer.hpp"
 #include "ResourceManager.hpp"
 #include "Font.hpp"
+#include "Vertex.hpp"
 
 namespace proto
 {
@@ -52,7 +53,6 @@ namespace proto
 		void Update(float wWidth, float wHeight); // This is the big function.
 		void Compile();
 		void Draw(Renderer* ren);
-		void ShowAboutWindow(nk_context* ctx);
 
 		static void SetResourceManager(ReferenceCounter<Texture2D>* ptr);
 
@@ -74,9 +74,10 @@ namespace proto
 		GPUResource<Texture2D> _fontTexture;
 		FontGroup _fonts;
 		
+		Buffer<Vertex2D> _nkBuffer;
 
-		unsigned int _vertexArray = 0u, _vb = 0u, _ib = 0u;
-		void* _vertices = nullptr, * _indices = nullptr;
+		/*unsigned int _vertexArray = 0u, _vb = 0u, _ib = 0u;
+		void* _vertices = nullptr, * _indices = nullptr;*/
 
 		/*
 			End nuklear buffer variables.

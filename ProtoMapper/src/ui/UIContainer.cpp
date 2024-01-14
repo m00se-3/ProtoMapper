@@ -31,20 +31,10 @@ namespace proto
 
 	constexpr uint64_t MaxVertexBuffer = 32ull * 1024ull;
 
-	/*
-		Special Vertex struct that has a nuklear friendly layout and alignment.
-	*/
-	struct NKVertex
-	{
-		float pos[2];
-		float tex[2];
-		nk_byte color[4];
-	};
-
 	static const struct nk_draw_vertex_layout_element vertex_layout[] = {
-		{NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct NKVertex, pos)},
-		{NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(struct NKVertex, tex)},
-		{NK_VERTEX_COLOR, NK_FORMAT_B8G8R8A8, NK_OFFSETOF(struct NKVertex, color)},
+		{NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(Vertex2D, pos)},
+		{NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(Vertex2D, texCoords)},
+		{NK_VERTEX_COLOR, NK_FORMAT_R32G32B32A32_FLOAT, NK_OFFSETOF(Vertex2D, color)},
 		{NK_VERTEX_LAYOUT_END}
 	};
 
@@ -106,8 +96,8 @@ namespace proto
 		_configurator.shape_AA = NK_ANTI_ALIASING_ON;
 		_configurator.line_AA = NK_ANTI_ALIASING_ON;
 		_configurator.vertex_layout = vertex_layout;
-		_configurator.vertex_alignment = NK_ALIGNOF(struct NKVertex);
-		_configurator.vertex_size = sizeof(struct NKVertex);
+		_configurator.vertex_alignment = NK_ALIGNOF(Vertex2D);
+		_configurator.vertex_size = sizeof(Vertex2D);
 		_configurator.circle_segment_count = 20;
 		_configurator.curve_segment_count = 20;
 		_configurator.arc_segment_count = 20;
@@ -118,35 +108,8 @@ namespace proto
 
 		InitLua();
 
-		/*
-			Because I don't (yet) have the facilities to incorporate nuklear's buffer types into my own Buffer type,
-			I have to set up the buffers manually.
-		*/
-
-		glGenVertexArrays(1, &_vertexArray);
-		glGenBuffers(1, &_vb);
-		glGenBuffers(1, &_ib);
-
-		glBindVertexArray(_vertexArray);
-		glBindBuffer(GL_ARRAY_BUFFER, _vb);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ib);
-
-		glBufferData(GL_ARRAY_BUFFER, MaxVertexBuffer, nullptr, GL_DYNAMIC_DRAW);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, MaxVertexBuffer, nullptr, GL_DYNAMIC_DRAW);
-
-		// Vertex positions
-		glVertexAttribPointer(0u, 2, GL_FLOAT, GL_FALSE, sizeof(NKVertex), 0);
-		glEnableVertexAttribArray(0u);
-
-		// Texture coordinates
-		glVertexAttribPointer(1u, 2, GL_FLOAT, GL_FALSE, sizeof(NKVertex), (const void*)(sizeof(float) * 2u));
-		glEnableVertexAttribArray(1u);
-
-		// Color values
-		glVertexAttribPointer(2u, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(NKVertex), (const void*)(sizeof(float) * 4u));
-		glEnableVertexAttribArray(2u);
-
-		glBindVertexArray(0);
+		_nkBuffer.Generate(MaxVertexBuffer, MaxVertexBuffer);
+		
 	}
 
 	UIContainer::~UIContainer()
@@ -182,20 +145,22 @@ namespace proto
 
 	void UIContainer::Compile()
 	{
-		glBindVertexArray(_vertexArray);
+		_nkBuffer.Bind();
 
-		_vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-		_indices = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+		void* verts = _nkBuffer.Data(), * inds = _nkBuffer.Indices();
 
-		nk_buffer_init_fixed(&_verts, _vertices, MaxVertexBuffer);
-		nk_buffer_init_fixed(&_inds, _indices, MaxVertexBuffer);
+		verts = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+		inds = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+		nk_buffer_init_fixed(&_verts, verts, MaxVertexBuffer);
+		nk_buffer_init_fixed(&_inds, inds, MaxVertexBuffer);
 
 		nk_convert(&_ctx, &_cmds, &_verts, &_inds, &_configurator);
 
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 		glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 
-		glBindVertexArray(0u);
+		_nkBuffer.Unbind();
 
 		nk_buffer_free(&_verts);
 		nk_buffer_free(&_inds);
@@ -235,17 +200,12 @@ namespace proto
 				ren->UseTexture();
 			}
 
-			ren->DrawFromExternal<unsigned int>(_vertexArray, (int)cmd->elem_count, GL_TRIANGLES, offset);
+			ren->DrawBuffer(_nkBuffer, cmd->elem_count, offset);
 			offset += cmd->elem_count;
 		}
 
 		nk_buffer_clear(&_cmds);
 		nk_clear(&_ctx);
-	}
-
-	void UIContainer::ShowAboutWindow(nk_context* ctx)
-	{
-
 	}
 
 	void UIContainer::InitLua()
@@ -406,8 +366,6 @@ namespace proto
 		context["End"] = nk_end;
 
 		// Groups
-
-		_lua.new_usertype<struct nk_group>("Group");
 
 		context["GroupBegin"] =
 			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
