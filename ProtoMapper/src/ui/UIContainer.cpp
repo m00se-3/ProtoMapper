@@ -185,13 +185,13 @@ namespace proto
 		*/
 
 		const nk_draw_command* cmd = nullptr;
-		const nk_draw_index* offset = nullptr;
+		uint32_t offset = 0u;
 
 		nk_draw_foreach(cmd, &_ctx, &_cmds)
 		{
 			if (!cmd->elem_count) continue;
 
-			DrawCall draw{ _nkBuffer.VAO(), GL_TRIANGLES, (uint32_t)offset, static_cast<int>(cmd->elem_count) };
+			DrawCall draw{ _nkBuffer.VAO(), GL_TRIANGLES, offset, static_cast<int>(cmd->elem_count) };
 
 			if(cmd->texture.id && glIsTexture((unsigned int)cmd->texture.id) == GL_TRUE)
 			{			
@@ -199,7 +199,7 @@ namespace proto
 			}
 
 			ren->PushDrawCall(draw);
-			offset += cmd->elem_count;
+			offset += (cmd->elem_count * sizeof(uint32_t) );
 		}
 
 		nk_buffer_clear(&_cmds);
