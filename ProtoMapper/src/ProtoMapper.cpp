@@ -235,7 +235,7 @@ namespace proto
 		*/
 
 		glfwShowWindow(_window.GetPtr());
-		glClearColor(0.3f, 0.3f, 0.3f, 1.f);
+		_renderer->SetBackgroundColor(glm::vec4{ 0.3f, 0.3f, 0.3f, 1.f });
 
 		time::time_point last = time::now();
 
@@ -243,18 +243,15 @@ namespace proto
 		{
 			time::time_point current = time::now();
 			float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
-
-			_scene->Update(microseconds * 1000000.f);
 			
 			_ui->Update((float)_window.GetWidth(), (float)_window.GetHeight());
 			_ui->Compile();
 
+			_scene->Update(microseconds * 1000000.f);
+
 			_renderer->Begin();
 
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			_scene->DrawNodes();
-
+			_scene->Render();
 			_ui->Draw(_renderer.get());
 
 			_renderer->End();

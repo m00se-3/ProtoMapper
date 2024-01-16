@@ -105,7 +105,7 @@ namespace proto
 	int Renderer::GetRenderY() const { return _vY; }
 
 	void Renderer::Begin()
-	{
+	{	
 		switch (_currentMode)
 		{
 		case Renderer::mode::Two:
@@ -116,6 +116,8 @@ namespace proto
 		case Renderer::mode::Three:
 			break;
 		}
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	void Renderer::End()
@@ -130,6 +132,11 @@ namespace proto
 
 			_drawQueue.pop();
 		}
+	}
+
+	void Renderer::SetBackgroundColor(const glm::vec4& col)
+	{
+		glClearColor(col.r, col.g, col.b, col.a);
 	}
 
 	Renderer::mode Renderer::GetRenderMode() const { return _currentMode; }

@@ -69,6 +69,7 @@ namespace proto
 		void Begin();
 		void End();
 
+		void SetBackgroundColor(const glm::vec4& col);
 		void SetRenderSize(int w, int h);
 		void RefreshProjection();
 		int GetRenderWidth() const;
