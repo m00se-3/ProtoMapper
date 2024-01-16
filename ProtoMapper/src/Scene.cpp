@@ -17,9 +17,12 @@
 */
 #include "Scene.hpp"
 
+#include "Renderer.hpp"
+
 namespace proto
 {
-	Scene::Scene()
+	Scene::Scene(Renderer* ren)
+		: _renderer(ren)
 	{
 
 	}
@@ -37,15 +40,13 @@ namespace proto
 		
 	}
 
-	void Scene::DrawNodes()
-	{
-		
-	}
-
 	void Scene::Cleanup()
 	{
 		
 	}
 
-	entt::registry& Scene::Manager() { return manager; }
+	void Scene::Render()
+	{
+
+	}
 }

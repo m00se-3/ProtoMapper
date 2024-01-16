@@ -18,32 +18,29 @@
 #ifndef PROTO_SCENE_HPP
 #define PROTO_SCENE_HPP
 
-#include <list>
-
 #include "entt/entt.hpp"
-
-#include "UIContainer.hpp"
 
 namespace proto
 {
+
+	class Renderer;
     
-	/*
-		The main container class for the many maps and other components in the app.
-	*/
+	
 	class Scene
 	{
 	public:
-		Scene();
+		Scene(Renderer* ren);
 
 		bool Init();
-		void Update(float dt);
-		void DrawNodes();
+		void Update([[maybe_unused]]float dt);
 		void Cleanup();
-
-		entt::registry& Manager();
+		void Render();
 
 	protected:
 		entt::registry manager;
+
+	private:
+		Renderer* _renderer = nullptr;
 
 	};
 }
