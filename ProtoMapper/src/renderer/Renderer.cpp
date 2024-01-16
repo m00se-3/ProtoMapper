@@ -125,8 +125,6 @@ namespace proto
 			auto& call = _drawQueue.front();
 
 			UseTexture(call.texture);
-			UseShader(call.shader);
-			SetUniforms(call.uniforms);
 
 			Draw<uint32_t>(call.buffer, call.elemCount, (uint32_t*)call.offset, call.drawMode);
 

@@ -47,8 +47,6 @@ namespace proto
 		uint32_t offset = 0u;
 		int32_t elemCount = 0;
 		std::optional<Texture2D> texture = std::nullopt;
-		std::optional<Shader> shader = std::nullopt;
-		std::function<void()> uniforms = []() {};
 	};
 	
 	class Renderer
