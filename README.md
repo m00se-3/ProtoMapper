@@ -16,7 +16,7 @@ note of the pixel coordinates, and hard code them into my game? Do I simply try 
 iterating over it until I have a level that's playable? Do I use strings to visually draw my level? 
 
 What about pathfinding? How do I know that all the NPCs in my game will behave the way I expect? Will I choose the wrong algorithm 
-and release a game that uses more system reources than what is necessary? Will I mistakingly place a route destination on the wrong side 
+and release a game that uses more system resources than what is necessary? Will I mistakingly place a route destination on the wrong side 
 of an important wall, causing the NPC to get stuck or reveal some hidden speedrun short cut in the level I didn't intend to create?
 
 Of course, at least from a level design perspective, many of the bigger game engines typically include tools that help you get started 
