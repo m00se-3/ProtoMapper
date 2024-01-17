@@ -2,8 +2,11 @@
     This function controls the program's title bar along with the menubar controls underneath.
 
     This function is not replaceable with a custom function.
+
+    Each UI function must accept 2 arguments, the width and height of the window. This is true
+    even if your function doesn't use them.
 ]]
-function CustomTitleBar(width)
+function CustomTitleBar(width, _)
     local titleLabelWidth = width - 100.0
     local titleButtonsWidth = width - 105.0
 
@@ -88,3 +91,6 @@ function CustomTitleBar(width)
     end
     
 end
+
+-- The script must return the name of the function and the error message prefix you want to use to identify it.
+return "CustomTitleBar", "TitleBar Error!"
