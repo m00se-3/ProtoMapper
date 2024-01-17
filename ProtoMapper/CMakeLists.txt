@@ -66,7 +66,9 @@ target_sources(
 
 	${CMAKE_CURRENT_LIST_DIR}/include/system/Logger.hpp
 	${CMAKE_CURRENT_LIST_DIR}/include/system/LuaEngine.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/system/RenderingSystem.hpp
 	${CMAKE_CURRENT_LIST_DIR}/include/system/ResourceManager.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/system/System.hpp
 	${CMAKE_CURRENT_LIST_DIR}/include/system/Window.hpp
 
 	PRIVATE 
@@ -87,7 +89,9 @@ target_sources(
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/system/Logger.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/LuaEngine.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/system/RenderingSystem.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/ResourceManager.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/system/System.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/Window.cpp
 
 	${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
