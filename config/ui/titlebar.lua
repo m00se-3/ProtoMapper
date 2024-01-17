@@ -2,9 +2,6 @@
     This function controls the program's title bar along with the menubar controls underneath.
 
     This function is not replaceable with a custom function.
-
-    Each UI function must accept 2 arguments, the width and height of the window. This is true
-    even if your function doesn't use them.
 ]]
 function CustomTitleBar()
     local width = Host.wWidth
