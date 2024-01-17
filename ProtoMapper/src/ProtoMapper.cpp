@@ -81,8 +81,6 @@ namespace proto
 		_scene->Cleanup();
 		_scene.reset(nullptr);
 		
-		Logger::Reset();
-
 		_ui.reset(nullptr);
 		_renderer.reset(nullptr);
 		_resources.reset(nullptr);
@@ -195,8 +193,6 @@ namespace proto
 		_renderer->Init(Renderer::mode::Two);
 
 		_ui = std::make_unique<UIContainer>(_dataTextFields.at("assets_dir"));
-
-		Logger::Init();
 
 		glfwSetKeyCallback(_window.GetPtr(), Mapper::KeyboardEventCallback);
 		glfwSetCharCallback(_window.GetPtr(), Mapper::TextEventCallback);

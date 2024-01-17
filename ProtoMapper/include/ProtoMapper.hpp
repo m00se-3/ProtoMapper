@@ -30,7 +30,6 @@
 #include "Scene.hpp"
 #include "Renderer.hpp"
 #include "ResourceManager.hpp"
-#include "Logger.hpp"
 #include "Window.hpp"
 
 namespace proto
