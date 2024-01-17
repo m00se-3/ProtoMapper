@@ -21,8 +21,7 @@
 
 namespace proto
 {
-	Scene::Scene(Renderer* ren)
-		: _renderer(ren)
+	Scene::Scene()
 	{
 
 	}

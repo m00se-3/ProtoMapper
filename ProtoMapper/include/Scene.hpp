@@ -18,7 +18,13 @@
 #ifndef PROTO_SCENE_HPP
 #define PROTO_SCENE_HPP
 
+#include <unordered_map>
+#include <memory>
+#include <string>
+
 #include "entt/entt.hpp"
+
+#include "System.hpp"
 
 namespace proto
 {
@@ -29,7 +35,7 @@ namespace proto
 	class Scene
 	{
 	public:
-		Scene(Renderer* ren);
+		Scene();
 
 		bool Init();
 		void Update([[maybe_unused]]float dt);
@@ -37,10 +43,11 @@ namespace proto
 		void Render();
 
 	protected:
-		entt::registry manager;
+		entt::registry registry;
+
+		std::unordered_map<std::string, std::shared_ptr<System>> systems;
 
 	private:
-		Renderer* _renderer = nullptr;
 
 	};
 }
