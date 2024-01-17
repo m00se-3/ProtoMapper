@@ -21,21 +21,22 @@
 #include <unordered_map>
 #include <memory>
 #include <string>
+#include <span>
 
 #include "entt/entt.hpp"
 
-#include "System.hpp"
+#include "Renderer.hpp"
 
 namespace proto
 {
 
-	class Renderer;
-    
+	class System;
+	class Window;
 	
 	class Scene
 	{
 	public:
-		Scene();
+		Scene(const std::unordered_map<std::string, std::string>& data, Renderer* ren, Window* win);
 
 		bool Init();
 		void Update([[maybe_unused]]float dt);
@@ -48,7 +49,7 @@ namespace proto
 		std::unordered_map<std::string, std::shared_ptr<System>> systems;
 
 	private:
-
+		std::span<DrawCall> _uiDrawCalls;
 	};
 }
 

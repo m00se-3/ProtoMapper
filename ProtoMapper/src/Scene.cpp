@@ -17,13 +17,17 @@
 */
 #include "Scene.hpp"
 
-#include "Renderer.hpp"
+#include "RenderingSystem.hpp"
+#include "UIContainer.hpp"
 
 namespace proto
 {
-	Scene::Scene()
+	Scene::Scene(const std::unordered_map<std::string, std::string>& data, Renderer* ren, Window* win)
 	{
+		systems.insert_or_assign("render", std::make_shared<RenderingSystem>(ren));
+		auto ui = systems.insert_or_assign("ui", std::make_shared<UIContainer>(data.at("assets_dir"), win));
 
+		static_cast<UIContainer*>(ui.first->second.get())->SetDefinitions(data.at("user_interface_dir"));
 	}
 
 
@@ -36,7 +40,15 @@ namespace proto
 
 	void Scene::Update(float dt)
 	{
-		
+		auto& ren = systems.at("render");
+		auto& ui = systems.at("ui");
+
+		if (ren->IsActive() && ui->IsActive())
+		{
+			ui->Update(registry, dt);
+			static_cast<RenderingSystem*>(ren.get())->SetUIDrawCalls(static_cast<UIContainer*>(ui.get())->Compile());
+			ren->Update(registry, dt);
+		}
 	}
 
 	void Scene::Cleanup()
