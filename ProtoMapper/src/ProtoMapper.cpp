@@ -81,7 +81,6 @@ namespace proto
 		_scene->Cleanup();
 		_scene.reset(nullptr);
 		
-		_ui.reset(nullptr);
 		_renderer.reset(nullptr);
 		_resources.reset(nullptr);
 	}
@@ -192,25 +191,18 @@ namespace proto
 		_renderer->SetViewport(0, 0, _window.GetWidth(), _window.GetHeight());
 		_renderer->Init(Renderer::mode::Two);
 
-		_ui = std::make_unique<UIContainer>(_dataTextFields.at("assets_dir"));
-
 		glfwSetKeyCallback(_window.GetPtr(), Mapper::KeyboardEventCallback);
 		glfwSetCharCallback(_window.GetPtr(), Mapper::TextEventCallback);
 		glfwSetMouseButtonCallback(_window.GetPtr(), Mapper::MouseButtonEventCallback);
 		glfwSetCursorPosCallback(_window.GetPtr(), Mapper::MouseMotionEventCallback);
 		glfwSetScrollCallback(_window.GetPtr(), Mapper::MouseScrollEventCallback);
 
-		_scene = std::make_unique<Scene>();
+		_scene = std::make_unique<Scene>(_dataTextFields, _renderer.get(), &_window);
 		_scene->Init();
 
 		/*
 			TODO: Load all assets on multiple threads.
 		*/
-
-		/*
-			Load all preload assets and data files. 
-		*/
-		if(!_ui->SetDefinitions(_dataTextFields.at("user_interface_dir"))) return 3;
 
 		// Text files
 		std::filesystem::path textDir = _dataTextFields.at("text_dir");
@@ -239,16 +231,12 @@ namespace proto
 		{
 			time::time_point current = time::now();
 			float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
-			
-			_ui->Update((float)_window.GetWidth(), (float)_window.GetHeight());
-			_ui->Compile();
 
 			_scene->Update(microseconds * 1000000.f);
 
 			_renderer->Begin();
 
 			_scene->Render();
-			_ui->Draw(_renderer.get());
 
 			_renderer->End();
 			glfwSwapBuffers(_window.GetPtr());
@@ -281,11 +269,6 @@ namespace proto
 	Renderer* Mapper::GetRenderer()
 	{
 		return _renderer.get();
-	}
-
-	UIContainer* Mapper::UI()
-	{
-		return _ui.get();
 	}
 
 	int Mapper::GLFWKeytoNKKey(int key, int mods)

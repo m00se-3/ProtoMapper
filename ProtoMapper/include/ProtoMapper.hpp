@@ -49,7 +49,6 @@ namespace proto
 
 		[[nodiscard]]Window& GetWin();
 		[[nodiscard]]Renderer* GetRenderer();
-		[[nodiscard]]UIContainer* UI();
 
 		// GLFW input event callbacks.
 		
@@ -70,7 +69,6 @@ namespace proto
 		std::unique_ptr<uint8_t[]> _stringMemoryBuffer;
 
 		std::unique_ptr<Scene> _scene;
-		std::unique_ptr<UIContainer> _ui;
 		std::unique_ptr<Renderer> _renderer;
 		std::unique_ptr<ResourceManager> _resources;
 
