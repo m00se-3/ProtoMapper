@@ -6,7 +6,9 @@
     Each UI function must accept 2 arguments, the width and height of the window. This is true
     even if your function doesn't use them.
 ]]
-function CustomTitleBar(width, _)
+function CustomTitleBar()
+    local width = Host.wWidth
+
     local titleLabelWidth = width - 100.0
     local titleButtonsWidth = width - 105.0
 

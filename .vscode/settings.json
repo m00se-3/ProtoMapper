@@ -13,7 +13,8 @@
         "FontStyle",
         "ColorFmt",
         "Symbol",
-        "Popup"
+        "Popup",
+        "Host"
     ],
     "Lua.completion.showWord": "Enable",
     "Lua.completion.workspaceWord": true
