@@ -15,8 +15,6 @@ namespace proto
 		System() = default;
 		virtual ~System() = default;
 
-	protected:
-
 		virtual bool IsActive() const = 0;
 		virtual void Update(entt::registry& registry, [[maybe_unused]] float dt) = 0;
 	};
