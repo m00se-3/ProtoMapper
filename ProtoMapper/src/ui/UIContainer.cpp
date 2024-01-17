@@ -41,7 +41,8 @@ namespace proto
 	void UIContainer::SetResourceManager(ReferenceCounter<Texture2D>* ptr) { _texMan = ptr; }
 
 
-	UIContainer::UIContainer(const std::string& assetsDir)
+	UIContainer::UIContainer(const std::string& assetsDir, Window* win)
+		: _window(win)
 	{
 		std::string fontDir =  assetsDir + "/fonts/roboto/";
 		std::filesystem::path imgDir = assetsDir + "/icons/";
@@ -119,6 +120,8 @@ namespace proto
 		_texMan->Unload("Roboto-Medium");
 	}
 
+	bool UIContainer::IsActive() const { return true; }
+
 	bool UIContainer::SetDefinitions(const std::filesystem::path& filepath)
 	{
 		if(std::filesystem::exists(filepath))
@@ -149,8 +152,9 @@ namespace proto
 
 	nk_context* UIContainer::Context() { return &_ctx; }
 
-	void UIContainer::Compile()
+	std::span<DrawCall> UIContainer::Compile()
 	{
+		_drawCalls.clear();
 		_nkBuffer.Bind();
 
 		void* verts = _nkBuffer.Data(), * inds = _nkBuffer.Indices();
@@ -170,24 +174,7 @@ namespace proto
 
 		nk_buffer_free(&_verts);
 		nk_buffer_free(&_inds);
-	}
 
-	void UIContainer::Update(float wWidth, float wHeight)
-	{
-		for (auto& [name, errorMsg] : _luaFunctions)
-		{
-			sol::safe_function_result result = _lua[name](wWidth, wHeight);
-
-			if (!result.valid())
-			{
-				sol::error err = result;
-				std::puts(std::format("{}\n{}\n", errorMsg, err.what()).c_str());
-			}
-		}
-	}
-
-	void UIContainer::Draw(Renderer* ren)
-	{
 		/*
 			Made using the examples in the nuklear repository. Made a rough API for nuklear to use with
 			my Renderer class.
@@ -202,22 +189,43 @@ namespace proto
 
 			DrawCall draw{ _nkBuffer.VAO(), GL_TRIANGLES, offset, static_cast<int>(cmd->elem_count) };
 
-			if(cmd->texture.id && glIsTexture((unsigned int)cmd->texture.id) == GL_TRUE)
-			{			
+			if (cmd->texture.id && glIsTexture((unsigned int)cmd->texture.id) == GL_TRUE)
+			{
 				draw.texture = Texture2D{ static_cast<Texture2D::IDType>(cmd->texture.id) };
 			}
 
-			ren->PushDrawCall(draw);
-			offset += (cmd->elem_count * sizeof(uint32_t) );
+			_drawCalls.emplace_back(draw);
+			offset += (cmd->elem_count * sizeof(uint32_t));
 		}
 
 		nk_buffer_clear(&_cmds);
 		nk_clear(&_ctx);
+
+		return std::span<DrawCall> { _drawCalls.begin(), _drawCalls.size() };
+	}
+
+	void UIContainer::Update(entt::registry& registry, [[maybe_unused]] float dt)
+	{
+		_dimensions.set("wWidth", _window->GetWidth(), "wHeight", _window->GetHeight());
+		
+		for (auto& [name, errorMsg] : _luaFunctions)
+		{
+			sol::safe_function_result result = _lua[name]();
+
+			if (!result.valid())
+			{
+				sol::error err = result;
+				std::puts(std::format("{}\n{}\n", errorMsg, err.what()).c_str());
+			}
+		}
 	}
 
 	void UIContainer::InitLua()
 	{
 		_lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::math);
+
+		// Create a reference table for the nuklear functions.
+		_dimensions = _lua.create_named_table("Host");
 		
 		// Useful types
 		{
@@ -750,24 +758,24 @@ namespace proto
 
 		// Window commands
 
-		context["RequestWindowToClose"] = []() { glfwSetWindowShouldClose(Mapper::GetInstance()->GetWin().GetPtr(), 1); };
+		context["RequestWindowToClose"] = [this]() { glfwSetWindowShouldClose(_window->GetPtr(), 1); };
 
-		context["RequestWindowToggle"] = []() {
-			auto* app = Mapper::GetInstance();
-			if (app->IsFullscreen())
+		context["RequestWindowToggle"] = [this]() {
+			
+			if (Mapper::GetInstance()->IsFullscreen())
 			{
-				glfwRestoreWindow(app->GetWin().GetPtr());
+				glfwRestoreWindow(_window->GetPtr());
 			}
 			else
 			{
-				glfwMaximizeWindow(app->GetWin().GetPtr());
+				glfwMaximizeWindow(_window->GetPtr());
 			}
 			
 		};
 
-		context["RequestWindowRestore"] = []() { glfwRestoreWindow(Mapper::GetInstance()->GetWin().GetPtr()); };
+		context["RequestWindowRestore"] = [this]() { glfwRestoreWindow(_window->GetPtr()); };
 
-		context["RequestWindowIconify"] = []() { glfwIconifyWindow(Mapper::GetInstance()->GetWin().GetPtr()); };
+		context["RequestWindowIconify"] = [this]() { glfwIconifyWindow(_window->GetPtr()); };
 
 	}	
 }

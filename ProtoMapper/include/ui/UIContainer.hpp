@@ -39,24 +39,27 @@
 #include "ResourceManager.hpp"
 #include "Font.hpp"
 #include "Vertex.hpp"
+#include "Window.hpp"
+#include "System.hpp"
 
 namespace proto
 {
-	class UIContainer
+	class UIContainer : public System
 	{
 	public:
-		UIContainer(const std::string& assetsDir);
+		UIContainer(const std::string& assetsDir, Window* win);
 		~UIContainer();
 
 		// Defines each UI function for the application to use.
 		[[nodiscard]]bool SetDefinitions(const std::filesystem::path& filepath);
 
 		[[nodiscard]]nk_context* Context();
+		[[nodiscard]] bool IsActive() const override;
 
 		// Calls each UI Lua function and reports any errors.
-		void Update(float wWidth, float wHeight); // This is the big function.
-		void Compile();
-		void Draw(Renderer* ren);
+		void Update(entt::registry& registry, [[maybe_unused]] float dt) override;
+
+		[[nodiscard]]std::span<DrawCall> Compile();
 
 		static void SetResourceManager(ReferenceCounter<Texture2D>* ptr);
 
@@ -66,8 +69,10 @@ namespace proto
 
 		std::filesystem::path _interfaceDir;
 		sol::state _lua;
+		sol::table _dimensions;
 
 		std::map<std::string, std::string> _luaFunctions;
+		std::vector<DrawCall> _drawCalls;
 		
 		/*
 			All things below are necessary for nuklear to work and are, mostly, taken from the documentation.
@@ -89,6 +94,7 @@ namespace proto
 			End nuklear buffer variables.
 		*/
 
+		Window* _window = nullptr;
 		static ReferenceCounter<Texture2D>* _texMan;
 
 	};
