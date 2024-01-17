@@ -32,7 +32,6 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "Vertex.hpp"
 #include "Texture.hpp"
 #include "Shader.hpp"
 #include "ResourceManager.hpp"
