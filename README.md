@@ -44,7 +44,7 @@ For inquiries about the project, you can contact me via the email address on my 
 
 ## Features
 
-**Key features of this program will appear here as dvelopment progresses.**
+**Key features of this program will appear here as development progresses.**
 
 ## Icons
 
