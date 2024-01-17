@@ -19,6 +19,7 @@
 #define PROTO_UI_CONTAINER
 
 #include <filesystem>
+#include <map>
 
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_STANDARD_IO
@@ -47,9 +48,12 @@ namespace proto
 		UIContainer(const std::string& assetsDir);
 		~UIContainer();
 
+		// Defines each UI function for the application to use.
 		[[nodiscard]]bool SetDefinitions(const std::filesystem::path& filepath);
+
 		[[nodiscard]]nk_context* Context();
 
+		// Calls each UI Lua function and reports any errors.
 		void Update(float wWidth, float wHeight); // This is the big function.
 		void Compile();
 		void Draw(Renderer* ren);
@@ -62,6 +66,8 @@ namespace proto
 
 		std::filesystem::path _interfaceDir;
 		sol::state _lua;
+
+		std::map<std::string, std::string> _luaFunctions;
 		
 		/*
 			All things below are necessary for nuklear to work and are, mostly, taken from the documentation.

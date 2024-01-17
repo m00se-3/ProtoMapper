@@ -131,7 +131,13 @@ namespace proto
 
 				if (file.extension() == ".lua")
 				{
-					_lua.script_file(file.string());
+					sol::protected_function_result result = _lua.script_file(file.string());
+
+					if (result.valid())
+					{
+						std::pair<std::string, std::string> stuff = result;
+						_luaFunctions.insert_or_assign(stuff.first, stuff.second);
+					}
 				}
 			}
 
@@ -168,12 +174,15 @@ namespace proto
 
 	void UIContainer::Update(float wWidth, float wHeight)
 	{
-		sol::safe_function_result result = _lua["CustomTitleBar"](wWidth);
-
-		if (!result.valid())
+		for (auto& [name, errorMsg] : _luaFunctions)
 		{
-			sol::error err = result;
-			std::puts(std::format("Titlebar Error!\n{}\n", err.what()).c_str());
+			sol::safe_function_result result = _lua[name](wWidth, wHeight);
+
+			if (!result.valid())
+			{
+				sol::error err = result;
+				std::puts(std::format("{}\n{}\n", errorMsg, err.what()).c_str());
+			}
 		}
 	}
 
