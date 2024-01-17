@@ -363,11 +363,11 @@ namespace proto
 		_lua.new_usertype<struct nk_window>("Window");
 
 		context["Begin"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<struct nk_rect> size, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<struct nk_rect> size, sol::optional<nk_panel_flags> flags) -> bool
 			{
 				// Unfortunately, for now there is no getting around using nk_strlen here.
 
-				return static_cast<bool>(nk_begin(ctx, text.value().data(), *size, *flags));
+				return static_cast<bool>(nk_begin(*ctx, text.value().data(), *size, *flags));
 			};
 
 		context["End"] = nk_end;
@@ -375,35 +375,35 @@ namespace proto
 		// Groups
 
 		context["GroupBegin"] =
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
-				return static_cast<bool>(nk_group_begin(ctx, text.value().data(), *flags));
+				return static_cast<bool>(nk_group_begin(*ctx, text.value().data(), *flags));
 			};
 
 		context["GroupEnd"] = nk_group_end;
 
 		context["GroupBeginScroll"] =
-			[](nk_context* ctx, sol::optional<struct nk_scroll*> off, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_scroll*> off, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
-				return static_cast<bool>(nk_group_scrolled_begin(ctx, *off, text.value().data(), *flags));
+				return static_cast<bool>(nk_group_scrolled_begin(*ctx, *off, text.value().data(), *flags));
 			};
 
 		context["GroupEndScroll"] = nk_group_scrolled_end;
 
 		context["GroupGetScroll"] =
-			[](nk_context* ctx, sol::optional<std::string_view> id) -> std::pair<uint32_t, uint32_t>
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id) -> std::pair<uint32_t, uint32_t>
 			{
 				uint32_t scrX = 0, scrY = 0;
 
-				nk_group_get_scroll(ctx, id.value().data(), &scrX, &scrY);
+				nk_group_get_scroll(*ctx, id.value().data(), &scrX, &scrY);
 
 				return std::make_pair(scrX, scrY);
 			};
 
 		context["GroupSetScroll"] =
-			[](nk_context* ctx, sol::optional<std::string_view> id, sol::optional<uint32_t> offX, sol::optional<uint32_t> offY)
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<uint32_t> offX, sol::optional<uint32_t> offY)
 			{
-				nk_group_set_scroll(ctx, id.value().data(), *offX, *offY);
+				nk_group_set_scroll(*ctx, id.value().data(), *offX, *offY);
 			};
 
 		// Layouts
@@ -420,123 +420,123 @@ namespace proto
 		context["MenubarEnd"] = nk_menubar_end;
 
 		context["MenuBeginLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<struct nk_vec2> size) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<struct nk_vec2> size) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_menu_begin_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *size));
+				return static_cast<bool>(nk_menu_begin_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *size));
 			};
 
 		context["MenuBeginImg"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> id, sol::optional<struct nk_vec2> size) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<struct nk_vec2> size) -> bool
 			{
 				/*
 					Fix the magic number in this function before testing.
 				*/
-				return static_cast<bool>(nk_menu_begin_image(ctx, id.value().data(), nk_image_id(1), *size));
+				return static_cast<bool>(nk_menu_begin_image(*ctx, id.value().data(), nk_image_id(1), *size));
 			};
 
 		context["MenuBeginImgLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<struct nk_image> img, sol::optional<struct nk_vec2> size) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<struct nk_image> img, sol::optional<struct nk_vec2> size) -> bool
 			{
 				const auto& str = text.value();
 				
-				return static_cast<bool>(nk_menu_begin_image_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *img, *size));
+				return static_cast<bool>(nk_menu_begin_image_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *img, *size));
 
 			};
 
 		context["MenuBeginSym"] =
-			[](nk_context* ctx, sol::optional<std::string_view> id, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
 			{
-				return static_cast<bool>(nk_menu_begin_symbol(ctx, id.value().data(), *sym, *size));
+				return static_cast<bool>(nk_menu_begin_symbol(*ctx, id.value().data(), *sym, *size));
 			}; 
 
 		context["MenuBeginSymLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
 			{
 				const auto& str = text.value();
 				
-				return static_cast<bool>(nk_menu_begin_symbol_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *sym, *size));
+				return static_cast<bool>(nk_menu_begin_symbol_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *sym, *size));
 			};
 
 		context["MenuItemLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_menu_item_text(ctx, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_menu_item_text(*ctx, str.data(), static_cast<int>(str.size()), *flags));
 			};
 
 		context["MenuItemImgLbl"] = 
-			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_menu_item_image_text(ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_menu_item_image_text(*ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
 
 			};
 
 		context["MenuItemSymLbl"] = 
-			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_menu_item_symbol_text(ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_menu_item_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
 			};
 
 		context["MenuClose"] = nk_menu_close;
 		context["MenuEnd"] = nk_menu_end;
 
 		context["Label"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags)
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags)
 			{
 				const auto& str = text.value();
 				
-				nk_text(ctx, str.data(), static_cast<int>(str.size()), *flags);
+				nk_text(*ctx, str.data(), static_cast<int>(str.size()), *flags);
 			};
 
 		context["ButtonLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_button_text(ctx, str.data(), static_cast<int>(str.size())));
+				return static_cast<bool>(nk_button_text(*ctx, str.data(), static_cast<int>(str.size())));
 			};
 
 		context["ButtonC"] = 
-			[](nk_context* ctx, sol::optional<struct nk_color> color) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_color> color) -> bool
 			{
-				return static_cast<bool>(nk_button_color(ctx, *color));
+				return static_cast<bool>(nk_button_color(*ctx, *color));
 			};
 
 		context["ButtonSym"] = 
-			[](nk_context* ctx, sol::optional<nk_symbol_type> sym) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym) -> bool
 			{
-				return static_cast<bool>(nk_button_symbol(ctx, *sym));
+				return static_cast<bool>(nk_button_symbol(*ctx, *sym));
 			};
 
 		context["ButtonImg"] = 
-			[](nk_context* ctx, sol::optional<struct nk_image> img) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img) -> bool
 			{
-				return static_cast<bool>(nk_button_image(ctx, *img));
+				return static_cast<bool>(nk_button_image(*ctx, *img));
 			};
 
 		context["ButtonSymLbl"] = 
-			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
 				
 				const auto& str = text.value();
 				
-				return static_cast<bool>(nk_button_symbol_text(ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_button_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
 			};
 
 		context["ButtonImgLbl"] = 
-			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
 
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_button_image_text(ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_button_image_text(*ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
 			};
 
 		//context["ButtonLblSty"] = nk_button_label_styled;
@@ -546,120 +546,120 @@ namespace proto
 		//context["ButtonImgLblSty"] = nk_button_image_label_styled;
 
 		context["CheckLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<bool> active) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<bool> active) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_check_text(ctx, str.data(), static_cast<int>(str.size()), *active));
+				return static_cast<bool>(nk_check_text(*ctx, str.data(), static_cast<int>(str.size()), *active));
 			};
 
 		context["CheckFlagLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<unsigned int> flags, sol::optional<unsigned int> value) -> unsigned int
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<unsigned int> flags, sol::optional<unsigned int> value) -> unsigned int
 			{
 				const auto& str = text.value();
 
-				return static_cast<unsigned int>(nk_check_flags_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<unsigned int>(nk_check_flags_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
 			};
 
 		context["CheckboxLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<int*> active) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<int*> active) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_checkbox_text(ctx, str.data(), static_cast<int>(str.size()), *active));
+				return static_cast<bool>(nk_checkbox_text(*ctx, str.data(), static_cast<int>(str.size()), *active));
 			};
 
 		context["CheckboxFlagLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<unsigned int*> flags, sol::optional<unsigned int> value) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<unsigned int*> flags, sol::optional<unsigned int> value) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_checkbox_flags_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_checkbox_flags_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
 			};
 
 		context["RadioLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<int*> active) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<int*> active) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_radio_text(ctx, str.data(), static_cast<int>(str.size()), *active));
+				return static_cast<bool>(nk_radio_text(*ctx, str.data(), static_cast<int>(str.size()), *active));
 			};
 
 		context["RadioOptLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<int> active) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<int> active) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_option_text(ctx, str.data(), static_cast<int>(str.size()), *active));
+				return static_cast<bool>(nk_option_text(*ctx, str.data(), static_cast<int>(str.size()), *active));
 			};
 
 		context["SelectableLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_selectable_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_selectable_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
 			};
 
 		context["SelectableImgLbl"] = 
-			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_selectable_image_text(ctx, *img, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_selectable_image_text(*ctx, *img, str.data(), static_cast<int>(str.size()), *flags, *value));
 			};
 
 		context["SelectableSymLbl"] = 
-			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_selectable_symbol_text(ctx, *sym, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_selectable_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), *flags, *value));
 			};
 
 		context["SelectLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_select_text(ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_select_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
 			};
 
 		context["SelectImgLbl"] = 
-			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_select_image_text(ctx, *img, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_select_image_text(*ctx, *img, str.data(), static_cast<int>(str.size()), *flags, *value));
 			};
 
 		context["SelectSymLbl"] = 
-			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_select_symbol_text(ctx, *sym, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_select_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), *flags, *value));
 			};
 
 		context["SlideF"] = nk_slide_float;
 		context["SlideI"] = nk_slide_int;
 
 		context["SliderF"] = 
-			[](nk_context* ctx, sol::optional<float> min, sol::optional<float*> value, sol::optional<float> max, sol::optional<float> step) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<float> min, sol::optional<float*> value, sol::optional<float> max, sol::optional<float> step) -> bool
 			{
-				return static_cast<bool>(nk_slider_float(ctx, *min, *value, *max, *step));
+				return static_cast<bool>(nk_slider_float(*ctx, *min, *value, *max, *step));
 			};
 
 		context["SliderI"] = 
-			[](nk_context* ctx, sol::optional<int> min, sol::optional<int*> value, sol::optional<int> max, sol::optional<int> step) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<int> min, sol::optional<int*> value, sol::optional<int> max, sol::optional<int> step) -> bool
 			{
-				return static_cast<bool>(nk_slider_int(ctx, *min, *value, *max, *step));
+				return static_cast<bool>(nk_slider_int(*ctx, *min, *value, *max, *step));
 			};
 
 		context["Progress"] =
-			[](nk_context* ctx, sol::optional<uintptr_t*> current, sol::optional<uintptr_t> max, sol::optional<bool> mod) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<uintptr_t*> current, sol::optional<uintptr_t> max, sol::optional<bool> mod) -> bool
 			{
-				return static_cast<bool>(nk_progress(ctx, *current, *max, *mod));
+				return static_cast<bool>(nk_progress(*ctx, *current, *max, *mod));
 			};
 			
 		context["Prog"] = nk_prog;
@@ -667,15 +667,15 @@ namespace proto
 		context["ColorPicker"] = nk_color_picker;
 
 		context["PickColor"] =
-			[](nk_context* ctx, sol::optional<struct nk_colorf*> color, sol::optional<nk_color_format> fmt) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_colorf*> color, sol::optional<nk_color_format> fmt) -> bool
 			{
-				return static_cast<bool>(nk_color_pick(ctx, *color, *fmt));
+				return static_cast<bool>(nk_color_pick(*ctx, *color, *fmt));
 			};
 
 		context["PopupBegin"] = 
-			[](nk_context* ctx, sol::optional<nk_popup_type> type, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<struct nk_rect> bounds) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_popup_type> type, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<struct nk_rect> bounds) -> bool
 			{
-				return static_cast<bool>(nk_popup_begin(ctx, *type, text.value().data(), *flags, *bounds));
+				return static_cast<bool>(nk_popup_begin(*ctx, *type, text.value().data(), *flags, *bounds));
 			};
 
 		context["PopupClose"] = nk_popup_close;
@@ -693,33 +693,33 @@ namespace proto
 		context["ComboboxCallb"] = nk_combobox_callback;
 
 		context["ContextBegin"] = 
-			[](nk_context* ctx, sol::optional<nk_flags> flags, sol::optional<struct nk_vec2> size, sol::optional<struct nk_rect> bounds) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_flags> flags, sol::optional<struct nk_vec2> size, sol::optional<struct nk_rect> bounds) -> bool
 			{
-				return static_cast<bool>(nk_contextual_begin(ctx, *flags, *size, *bounds));
+				return static_cast<bool>(nk_contextual_begin(*ctx, *flags, *size, *bounds));
 			};
 
 		context["ContextItemLbl"] = 
-			[](nk_context* ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
 				const auto& str = text.value();
 				
-				return static_cast<bool>(nk_contextual_item_text(ctx, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_contextual_item_text(*ctx, str.data(), static_cast<int>(str.size()), *flags));
 			};
 
 		context["ContextItemImgLbl"] = 
-			[](nk_context* ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_contextual_item_image_text(ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_contextual_item_image_text(*ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
 			};
 
 		context["ContextItemSymLbl"] = 
-			[](nk_context* ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_contextual_item_symbol_text(ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_contextual_item_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
 			};
 
 		context["ContextClose"] = nk_contextual_close;
@@ -728,9 +728,9 @@ namespace proto
 		context["TooltipTxt"] = nk_tooltip;
 
 		context["TooltipBegin"] = 
-			[](nk_context* ctx, sol::optional<float> width) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<float> width) -> bool
 			{
-				return static_cast<bool>(nk_tooltip_begin(ctx, *width));
+				return static_cast<bool>(nk_tooltip_begin(*ctx, *width));
 			};
 
 		context["TooltipEnd"] = nk_tooltip_end;
