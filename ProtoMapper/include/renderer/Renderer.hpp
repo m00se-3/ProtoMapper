@@ -82,11 +82,12 @@ namespace proto
 		void UseTexture(std::optional<Texture2D> texture = std::nullopt);
 		void UseShader(std::optional<Shader> shader = std::nullopt);
 		void PushDrawCall(const DrawCall& call);
+		void PushDrawCallRange(const std::span<DrawCall>& range);
 
 	private:
 
 		template<typename IndexType, typename OffsetType>
-		const unsigned int* Draw(unsigned int vertexArray, int numInds, const OffsetType* offset = nullptr, unsigned int drawMode = GL_TRIANGLES)
+		void Draw(unsigned int vertexArray, int numInds, const OffsetType* offset = nullptr, unsigned int drawMode = GL_TRIANGLES)
 		{
 			unsigned int GLIndexType = 0u;
 
@@ -118,8 +119,6 @@ namespace proto
 
 			texture.Unbind();
 			shader.Unbind();
-
-			return offset + numInds;
 		}
 
 		glm::mat4 _model, _view, _projection;

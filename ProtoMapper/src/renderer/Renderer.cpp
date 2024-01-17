@@ -229,6 +229,14 @@ namespace proto
 		_drawQueue.push(call);
 	}
 
+	void Renderer::PushDrawCallRange(const std::span<DrawCall>& range)
+	{
+		for (auto& call : range)
+		{
+			_drawQueue.push(call);
+		}
+	}
+
 	Renderer::~Renderer()
 	{
 		if (_currentTexture) _currentTexture->Destroy();
