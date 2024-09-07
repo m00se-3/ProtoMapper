@@ -35,7 +35,7 @@ namespace proto
 		return std::make_pair(vs, fs);
 	}
 
-	unsigned int Shader::Attach(const char* src, Shader::IDType type)
+	unsigned int Shader::Attach(const char* src, Shader::IDType type) const
 	{
 		unsigned int shader = glCreateShader(type);
 
@@ -56,7 +56,7 @@ namespace proto
 
 			glGetShaderInfoLog(shader, 100u, &length, buffer);
 
-			std::puts(std::format("Vertex shader failed to compile: {}\n", buffer).c_str());
+			std::puts("Vertex shader failed to compile.\n");
 
 			return 0u;
 		}
@@ -74,7 +74,7 @@ namespace proto
 
 	void Shader::Reset() { ID = 0u; }
 
-	void Shader::Link()
+	void Shader::Link() const
 	{
 		glLinkProgram(ID);
 
@@ -93,12 +93,12 @@ namespace proto
 
 			glGetProgramInfoLog(ID, 100u, &length, buffer);
 
-			std::puts(std::format("Could not link shader program: {}\n", buffer).c_str());
+			std::puts("Could not link shader program.\n");
 		}
 #endif
 	}
 
-	void Shader::Link(const std::pair<Shader::IDType, Shader::IDType>& shaders)
+	void Shader::Link(const std::pair<Shader::IDType, Shader::IDType>& shaders) const
 	{
 		auto [vs, fs] = shaders;
 
@@ -107,16 +107,9 @@ namespace proto
 		glDetachShader(ID, vs);
 		glDetachShader(ID, fs);
 	}
-
-	void Shader::Bind() { glUseProgram(ID); }
-
-	void Shader::Bind() const { glUseProgram(ID); }
-
 	void Shader::Unbind() { glUseProgram(0); }
 
-	void Shader::Unbind() const { glUseProgram(0); }
-
-	void Shader::Destroy() { glDeleteProgram(ID); }
+	void Shader::Destroy() const { glDeleteProgram(ID); }
 
 
 	void Shader::Uniforms(const std::function<void()>& func)
@@ -124,27 +117,8 @@ namespace proto
 		func();
 	}
 
-	Shader::Shader(const Shader& other)
-		:ID(other.ID)
-	{
-	}
-
 	Shader::Shader(IDType id)
 		:ID(id)
 	{
-	}
-
-	Shader::~Shader() {  }
-
-	bool Shader::operator==(const Shader& rhs) const
-	{
-		return ID == rhs.ID;
-	}
-
-	Shader& Shader::operator=(const Shader& rhs)
-	{
-		ID = rhs.ID;
-
-		return *this;
 	}
 }

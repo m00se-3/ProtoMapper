@@ -17,6 +17,13 @@
 */
 #include "Renderer.hpp"
 
+#include <filesystem>
+#include <array>
+#include <memory>
+#include <cstdio>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
 namespace proto
 {
 
@@ -30,7 +37,7 @@ namespace proto
 	{
 		using FileDeleter = std::function<void(std::FILE*)>;
 
-		auto destructor = [](std::FILE* handle){ if(handle) { std::fclose(handle); } };
+		auto destructor = [](std::FILE* handle){ if(handle != nullptr) { [[maybe_unused]] auto i = std::fclose(handle); } };
 
 		_defaultTexture.Create().GenerateBlank(1, 1);
 
@@ -50,10 +57,10 @@ namespace proto
 		std::FILE* tempVS = nullptr;
 		std::FILE* tempFS = nullptr;
 
-		fopen_s(&tempVS, vs.string().c_str(), "r");
-		fopen_s(&tempFS, fs.string().c_str(), "r");
+		const auto erVS = fopen_s(&tempVS, vs.string().c_str(), "r");
+		const auto erFS = fopen_s(&tempFS, fs.string().c_str(), "r");
 
-		if (tempVS && tempFS)
+		if (erVS == 0 && erFS == 0)
 		{
 			vsHandle.reset(tempVS);
 			fsHandle.reset(tempFS);
@@ -70,12 +77,16 @@ namespace proto
 			std::array<char, 50u> buffer = { 0 };
 
 			while (std::feof(vsHandle.get()) == 0)
+			{
 				vsSrc += std::fgets(buffer.data(), 50, vsHandle.get());
+			}
 
 			std::memset(buffer.data(), 0, 50u);	// Reset the buffer memory to ensure no garbage data is present.
 
 			while (std::feof(fsHandle.get()) == 0)
+			{
 				fsSrc += std::fgets(buffer.data(), 50, fsHandle.get());
+			}
 
 			auto objs = _defaultShader.CreateBasic(vsSrc.c_str(), fsSrc.c_str());
 			_defaultShader.Link(objs);
@@ -128,7 +139,7 @@ namespace proto
 
 			UseTexture(call.texture);
 
-			Draw<uint32_t>(call.buffer, call.elemCount, (uint32_t*)call.offset, call.drawMode);
+			Draw<uint32_t>(call.buffer, call.elemCount, call.offset, call.drawMode);
 
 			_drawQueue.pop();
 		}
@@ -235,14 +246,5 @@ namespace proto
 		{
 			_drawQueue.push(call);
 		}
-	}
-
-	Renderer::~Renderer()
-	{
-		if (_currentTexture) _currentTexture->Destroy();
-		if (_currentShader) _currentShader->Destroy();
-
-		_defaultTexture.Destroy();
-		_defaultShader.Destroy();
 	}
 }

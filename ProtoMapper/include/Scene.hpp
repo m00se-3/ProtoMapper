@@ -43,13 +43,10 @@ namespace proto
 		void Cleanup();
 		void Render();
 
-	protected:
-		entt::registry registry;
-
-		std::unordered_map<std::string, std::shared_ptr<System>> systems;
-
 	private:
 		std::span<DrawCall> _uiDrawCalls;
+		entt::registry registry;
+		std::unordered_map<std::string, std::shared_ptr<System>> systems;
 	};
 }
 

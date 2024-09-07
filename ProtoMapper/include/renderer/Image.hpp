@@ -20,6 +20,8 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <vector>
+#include <span>
 
 namespace proto
 {
@@ -31,8 +33,7 @@ namespace proto
 	public:
 		Image() = default;
 		Image(const std::filesystem::path& filename);
-		Image(int w, int h, uint8_t* ptr = nullptr);
-		~Image();
+		Image(uint32_t w, uint32_t h, std::span<uint8_t> dataIn);
 
 		// Load a fresh image from a file.
 		void Load(const std::filesystem::path& filename);
@@ -40,18 +41,16 @@ namespace proto
 		// Copy image data from an existing memory buffer.
 		// This will erase any data already contained in the Image buffer.
 		// Passing null pointer will zero-initialize the image buffer to requested size.
-		void LoadCopy(int w, int h, uint8_t* ptr = nullptr);
+		void LoadCopy(uint32_t w, uint32_t h, std::span<uint8_t> dataIn);
 
-		uint8_t* Data() const;
-		int Width() const;
-		int Height() const;
-		[[nodiscard("The boolean returned from Image::Empty() has been ignored.")]] bool Empty() const;
-
-		void Destroy();
+		[[nodiscard]] constexpr auto Data(this auto&& self) { return std::span<uint8_t>(self._data.begin(), self._data.end()); }
+		[[nodiscard]] constexpr auto&& Width(this auto&& self) { return self._width; }
+		[[nodiscard]] constexpr auto&& Height(this auto&& self) { return self._height; }
+		[[nodiscard("The boolean returned from Image::Empty() has been ignored.")]] bool Empty() const { return _data.empty(); }
 
 	private:
-		int _width = 0, _height = 0, _channels = 4;
-		uint8_t* _data = nullptr;
+		uint32_t _width, _height;
+		std::vector<uint8_t> _data;
 
 	};
 }

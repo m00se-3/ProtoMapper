@@ -10,8 +10,8 @@
     "entt",
     "simpleini",
     "lua",
-    "sol2",
     "tinyxml2",
-    "nuklear"
+    "nuklear",
+    "gsl-lite"
   ]
 }

@@ -37,49 +37,56 @@ namespace proto
     class Mapper
 	{
 	public:
-		Mapper() = default;
-		~Mapper();
+	    Mapper() = default;
+	    ~Mapper();
 
-		[[nodiscard]]static Mapper* GetInstance();
-		[[nodiscard]]bool IsFullscreen() const;
-		[[nodiscard]]bool Configure();
-		[[nodiscard]]int Run();
-		void SetContextSize(int w, int h);
-		void SetFullscreen(bool full);
+	    Mapper(const Mapper&) = delete;
+	    Mapper(Mapper&&) = delete;
+	    Mapper& operator=(const Mapper&) = delete;
+	    Mapper& operator=(Mapper&&) = delete;
 
-		[[nodiscard]]Window& GetWin();
-		[[nodiscard]]Renderer* GetRenderer();
+	    [[nodiscard]] static Mapper* GetInstance();
+	    [[nodiscard]] bool IsFullscreen() const;
+	    [[nodiscard]] bool Configure();
+	    [[nodiscard]] int Run();
+	    void SetContextSize(int w, int h);
+	    void SetFullscreen(bool full);
 
-		// GLFW input event callbacks.
-		
-		static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
-		static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
-		static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
-		static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
-		static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
+	    [[nodiscard]] Window& GetWin();
+	    [[nodiscard]] Renderer* GetRenderer();
+	    [[nodiscard]] UIContainer* UI() { return _ui.get(); }
 
-		static int GLFWKeytoNKKey(int key, int mods);
-		static int GLFWButtontoNKButton(int button);
+	    // GLFW input event callbacks.
+	    
+	    static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
+	    static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
+	    static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
+	    static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
+	    static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
+
+	    static int GLFWKeytoNKKey(int key, int mods);
+	    static int GLFWButtontoNKButton(int button);
 
 	private:
-		const std::string _title = "ProtoMapper";
-		std::filesystem::path _rootDir;
-		bool _appRunning = true, _fullscreen = true, _configUpdate = false;
+	    const std::string _title = "ProtoMapper";
+	    std::filesystem::path _rootDir;
+	    bool _appRunning = true, _fullscreen = true, _configUpdate = false;
 
-		std::unique_ptr<uint8_t[]> _stringMemoryBuffer;
+	    std::unique_ptr<uint8_t[]> _stringMemoryBuffer;
 
-		std::unique_ptr<Scene> _scene;
-		std::unique_ptr<Renderer> _renderer;
-		std::unique_ptr<ResourceManager> _resources;
+	    std::unique_ptr<Scene> _scene;
+	    std::unique_ptr<UIContainer> _ui;
+	    std::unique_ptr<Renderer> _renderer;
+	    std::unique_ptr<ResourceManager> _resources;
 
-		std::filesystem::path _configFile;
-		CSimpleIniA _configData;
-		Window _window;
+	    std::filesystem::path _configFile;
+	    CSimpleIniA _configData;
+	    Window _window;
 
-		// Text directories as defined in config.ini section [preload_directories].
-		std::unordered_map<std::string, std::string> _dataTextFields;
+	    // Text directories as defined in config.ini section [preload_directories].
+	    std::unordered_map<std::string, std::string> _dataTextFields;
 
-		static Mapper* _self;
+	    static Mapper* _self;
 
 	};
 }

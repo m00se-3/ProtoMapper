@@ -17,30 +17,11 @@
 */
 #include "Texture.hpp"
 
-#include "glad/glad.h"
-
 namespace proto
 {
-	Texture2D::Texture2D(const Texture2D& other)
-		:ID(other.ID)
-	{
-	}
-
 	Texture2D::Texture2D(IDType id)
 		:ID(id)
 	{
-	}
-
-	bool Texture2D::operator==(const Texture2D& rhs) const
-	{
-		return ID == rhs.ID;
-	}
-
-	Texture2D& Texture2D::operator=(const Texture2D& rhs)
-	{
-		ID = rhs.ID;
-
-		return *this;
 	}
 
 	Texture2D& Texture2D::Create()
@@ -58,32 +39,14 @@ namespace proto
 
 	void Texture2D::Reset() { ID = 0u; }
 
-	bool Texture2D::Valid() const { return ID != 0; }
-
-	Texture2D::IDType Texture2D::GetID() const { return ID; }
-
 	void Texture2D::Destroy() { glDeleteTextures(1, &ID); }
-
-	void Texture2D::Bind(uint32_t slot)
-	{
-		glActiveTexture(GL_TEXTURE0 + slot);
-		glBindTexture(GL_TEXTURE_2D, ID);
-	}
-
-	void Texture2D::Bind(uint32_t slot) const
-	{
-		glActiveTexture(GL_TEXTURE0 + slot);
-		glBindTexture(GL_TEXTURE_2D, ID);
-	}
 
 	void Texture2D::Unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
 
-	void Texture2D::Unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
-
-	Texture2D& Texture2D::WriteImage(const Image& img)
+	Texture2D& Texture2D::WriteImage(Image& img)
 	{
 		Bind();
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.Width(), img.Height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.Data());
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, static_cast<int>(img.Width()), static_cast<int>(img.Height()), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.Data().data());
 		Unbind();
 		return *this;
 	}
@@ -103,9 +66,4 @@ namespace proto
 		Unbind();
 		return *this;
 	}
-
-	Texture2D::IDType Texture2D::Target() const { return GL_TEXTURE_2D; }
-
-
-	Texture2D::~Texture2D() {  }
 }

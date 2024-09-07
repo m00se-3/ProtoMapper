@@ -17,7 +17,8 @@
 */
 #include "UIContainer.hpp"
 
-#include <format>
+#include <cstdio>
+#include <array>
 
 #include "ProtoMapper.hpp"
 
@@ -29,29 +30,29 @@ namespace proto
 		NOTE: If you experience rendering issues while building the ui, consider increasing this buffer size.
 	*/
 
-	constexpr uint64_t MaxVertexBuffer = 32ull * 1024ull;
+	static constexpr uint64_t MaxVertexBuffer = 32ull * 1024ull;
 
-	static const struct nk_draw_vertex_layout_element vertex_layout[] = {
-		{NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(Vertex2D, pos)},
-		{NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(Vertex2D, texCoords)},
-		{NK_VERTEX_COLOR, NK_FORMAT_R32G32B32A32_FLOAT, NK_OFFSETOF(Vertex2D, color)},
-		{NK_VERTEX_LAYOUT_END}
+	static constexpr std::array<struct nk_draw_vertex_layout_element, 4z> vertex_layout = {
+		nk_draw_vertex_layout_element{NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(Vertex2D, pos)},
+		nk_draw_vertex_layout_element{NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(Vertex2D, texCoords)},
+		nk_draw_vertex_layout_element{NK_VERTEX_COLOR, NK_FORMAT_R32G32B32A32_FLOAT, NK_OFFSETOF(Vertex2D, color)},
+		nk_draw_vertex_layout_element{NK_VERTEX_LAYOUT_END}
 	};
 
 	void UIContainer::SetResourceManager(ReferenceCounter<Texture2D>* ptr) { _texMan = ptr; }
 
 
 	UIContainer::UIContainer(const std::string& assetsDir, Window* win)
-		: _window(win)
+		: _ctx(), _configurator(), _cmds(), _verts(), _inds(), _nullTexture(), _window(win)
 	{
 		std::string fontDir =  assetsDir + "/fonts/roboto/";
 		std::filesystem::path imgDir = assetsDir + "/icons/";
 
 		if(std::filesystem::exists(imgDir))
 		{
-			for(auto& icon : std::filesystem::directory_iterator(imgDir))
+			for(const auto& icon : std::filesystem::directory_iterator(imgDir))
 			{
-				auto& file = icon.path();
+				const auto& file = icon.path();
 
 				Image img{file};
 				auto iconImg = _texMan->Load(file.stem().string(), [](Texture2D& tex){ tex.Create(); });
@@ -91,12 +92,15 @@ namespace proto
 		_fonts.Finalize(_fontTexture.Get().GetID());
 
 
-		if (!nk_init_default(&_ctx, &_fonts.GetFont(FontStyle::Normal)->handle)) return;
+		if (nk_init_default(&_ctx, &_fonts.GetFont(FontStyle::Normal)->handle) != 0)
+		{
+		    return;
+		}
 
 		memset(&_configurator, 0, sizeof(_configurator));
 		_configurator.shape_AA = NK_ANTI_ALIASING_ON;
 		_configurator.line_AA = NK_ANTI_ALIASING_ON;
-		_configurator.vertex_layout = vertex_layout;
+		_configurator.vertex_layout = vertex_layout.data();
 		_configurator.vertex_alignment = NK_ALIGNOF(Vertex2D);
 		_configurator.vertex_size = sizeof(Vertex2D);
 		_configurator.circle_segment_count = 20;
@@ -128,9 +132,9 @@ namespace proto
 		{
 			_interfaceDir = filepath;
 
-			for (auto& iterator : std::filesystem::directory_iterator(_interfaceDir))
+			for (const auto& iterator : std::filesystem::directory_iterator(_interfaceDir))
 			{
-				auto& file = iterator.path();
+				const auto& file = iterator.path();
 
 				if (file.extension() == ".lua")
 				{
@@ -185,11 +189,14 @@ namespace proto
 
 		nk_draw_foreach(cmd, &_ctx, &_cmds)
 		{
-			if (!cmd->elem_count) continue;
+			if (cmd->elem_count == 0u) 
+			{
+			    continue;
+			}
 
 			DrawCall draw{ _nkBuffer.VAO(), GL_TRIANGLES, offset, static_cast<int>(cmd->elem_count) };
 
-			if (cmd->texture.id && glIsTexture((unsigned int)cmd->texture.id) == GL_TRUE)
+			if (cmd->texture.id != 0 && glIsTexture((unsigned int)cmd->texture.id) == GL_TRUE)
 			{
 				draw.texture = Texture2D{ static_cast<Texture2D::IDType>(cmd->texture.id) };
 			}
@@ -215,7 +222,7 @@ namespace proto
 			if (!result.valid())
 			{
 				sol::error err = result;
-				std::puts(std::format("{}\n{}\n", errorMsg, err.what()).c_str());
+				std::fprintf(stderr, "%s\n%s\n", errorMsg.c_str(), err.what()); // NOLINT
 			}
 		}
 	}
@@ -558,7 +565,7 @@ namespace proto
 			{
 				const auto& str = text.value();
 
-				return static_cast<bool>(nk_check_text(*ctx, str.data(), static_cast<int>(str.size()), *active));
+				return static_cast<bool>(nk_check_text(*ctx, str.data(), static_cast<int>(str.size()), nk_bool{*active}));
 			};
 
 		context["CheckFlagLbl"] = 
@@ -667,7 +674,7 @@ namespace proto
 		context["Progress"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<uintptr_t*> current, sol::optional<uintptr_t> max, sol::optional<bool> mod) -> bool
 			{
-				return static_cast<bool>(nk_progress(*ctx, *current, *max, *mod));
+				return static_cast<bool>(nk_progress(*ctx, *current, *max, nk_bool{*mod}));
 			};
 			
 		context["Prog"] = nk_prog;

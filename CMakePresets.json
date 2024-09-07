@@ -10,15 +10,17 @@
         "cacheVariables": {
           "CMAKE_C_COMPILER": "clang",
           "CMAKE_CXX_COMPILER": "clang++",
-          "CMAKE_CXX_STANDARD": "20",
+          "CMAKE_CXX_STANDARD": "23",
+          "CMAKE_EXPORT_COMPILE_COMMANDS":  true,
           "USE_ADDR_SANITIZER": false
         },
         "environment": {
           "PROGRAM_VERSION": "0.1.0",
           "PROGRAM_DESCRIPTION": "A prototyping tool for level design, map generation, and pathfinding algorithms.",
           "PROGRAM_URL": "https://github.com/m00se-3/ProtoMapper",
+          "CMAKE_BUILD_PARALLEL_LEVEL": "12",
           "ROOT_FOLDER": "${sourceDir}"
-          
+
         }
       },
       {

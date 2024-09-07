@@ -20,6 +20,7 @@
 
 #include <cstdint>
 
+#include "glad/glad.h"
 #include "Image.hpp"
 
 namespace proto
@@ -31,32 +32,32 @@ namespace proto
 		IDType ID = 0u;
 
 		Texture2D() = default;
-		Texture2D(const Texture2D&);
 		explicit Texture2D(IDType id);
-		~Texture2D();
 
-		bool operator==(const Texture2D& rhs) const;
-		Texture2D& operator=(const Texture2D& rhs);
+		bool operator==(const Texture2D& rhs) const = default;
 
 		Texture2D& Create();
 
-		bool Valid() const; // Is the Texture valid.
+		[[nodiscard]] constexpr bool Valid() const { return ID != 0; } // Is the Texture valid.
 
 		// Resets the current reference object to 0.
 		void Reset();
 
-		IDType GetID() const;
+		[[nodiscard]] constexpr IDType GetID() const { return ID; }
+
+		void Bind(this auto&& self, uint32_t slot = 0u)
+		{
+		    glActiveTexture(GL_TEXTURE0 + slot);
+		    glBindTexture(GL_TEXTURE_2D, self.ID);
+		}
 
 		void Destroy();
-		void Bind(uint32_t slot = 0u);
-		void Bind(uint32_t slot = 0u) const;
-		void Unbind();
-		void Unbind() const;
-		Texture2D& WriteImage(const Image& img);
+		static void Unbind();
+		Texture2D& WriteImage(Image& img);
 		Texture2D& WriteData(const void* data, int width, int height);
 		Texture2D& GenerateBlank(int w, int h, uint32_t colorValue = 0xFFFFFFFF);
 
-		IDType Target() const;
+		[[nodiscard]] static constexpr IDType Target() { return GL_TEXTURE_2D; }
 
 	};
 }

@@ -20,16 +20,10 @@
 
 #include <optional>
 #include <string>
-#include <filesystem>
-#include <array>
 #include <functional>
-#include <memory>
-#include <cstdio>
 #include <queue>
 
 #include "glad/glad.h"
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
 #include "Texture.hpp"
@@ -58,23 +52,22 @@ namespace proto
 		};
 
 		Renderer(const std::string& dir);
-		~Renderer();
 
 		static void SetResourceManager(ResourceManager* ptr);
 
-		mode GetRenderMode() const;
+		[[nodiscard]] mode GetRenderMode() const;
 
 		bool Init(mode newMode);
 		void Begin();
 		void End();
 
-		void SetBackgroundColor(const glm::vec4& col);
+		static void SetBackgroundColor(const glm::vec4& col);
 		void SetRenderSize(int w, int h);
 		void RefreshProjection();
-		int GetRenderWidth() const;
-		int GetRenderHeight() const;
-		int GetRenderX() const;
-		int GetRenderY() const;
+		[[nodiscard]] int GetRenderWidth() const;
+		[[nodiscard]] int GetRenderHeight() const;
+		[[nodiscard]] int GetRenderX() const;
+		[[nodiscard]] int GetRenderY() const;
 
 		void SetUniforms(const std::function<void()>& uniforms);
 		void SetViewport(int x, int y, int w, int h);
@@ -87,7 +80,7 @@ namespace proto
 	private:
 
 		template<typename IndexType, typename OffsetType>
-		void Draw(unsigned int vertexArray, int numInds, const OffsetType* offset = nullptr, unsigned int drawMode = GL_TRIANGLES)
+		void Draw(unsigned int vertexArray, int numInds, OffsetType offset = 0u, unsigned int drawMode = GL_TRIANGLES)
 		{
 			unsigned int GLIndexType = 0u;
 
@@ -106,19 +99,19 @@ namespace proto
 			glBindVertexArray(vertexArray);
 			texture.Bind();
 			shader.Bind();
-			shader.Uniforms(_uniforms);
+			Shader::Uniforms(_uniforms);
 
 			glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(_model));
 			glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(_view));
 			glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
 			glUniform1i(glGetUniformLocation(shader.ID, "textureData"), 0);
 
-			glDrawElements(drawMode, numInds, GLIndexType, offset);
+			glDrawElements(drawMode, numInds, GLIndexType, (const void*)offset);
 
 			glBindVertexArray(0u);
 
-			texture.Unbind();
-			shader.Unbind();
+			Texture2D::Unbind();
+			Shader::Unbind();
 		}
 
 		glm::mat4 _model, _view, _projection;

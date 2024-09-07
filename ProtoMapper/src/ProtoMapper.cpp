@@ -16,9 +16,10 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "ProtoMapper.hpp"
+#include <GLFW/glfw3.h>
 namespace proto 
 {
-	constexpr const size_t InitialTextBufferSize = 8u * 1024u;	// Allocate 8 KB for the text memory buffer. Can change later if needed.
+	constexpr const size_t InitialTextBufferSize = 8z * 1024z;	// Allocate 8 KB for the text memory buffer. Can change later if needed.
 
 	Mapper* Mapper::_self = nullptr;
 
@@ -91,7 +92,7 @@ namespace proto
 	{
 		_self = this;
 
-		if (!glfwInit())
+		if (glfwInit() == GLFW_FALSE)
 		{
 			return false;
 		}
@@ -116,10 +117,14 @@ namespace proto
 		{
 			auto err = _configData.LoadFile(_configFile.string().c_str());
 
-			if (err < 0) return false;
+			if (err < 0)
+			{
+				return false;
+			}
 		}
-		else
+		else {
 			return false;
+		}
 
 		/*
 			Read and set the map of data file directories. This will be used to reference all configuration files
@@ -127,13 +132,16 @@ namespace proto
 		*/
 
 		std::list<CSimpleIniA::Entry> preloadDirectoryKeys;
-		if (!_configData.GetAllKeys("preload_directories", preloadDirectoryKeys)) return false;
+		if (!_configData.GetAllKeys("preload_directories", preloadDirectoryKeys))
+		{
+			return false;
+		}
 
 		auto tmpRoot = _rootDir.string();
 
 		for (auto& key : preloadDirectoryKeys)
 		{
-			auto item = _configData.GetValue("preload_directories", key.pItem);
+			const auto* item = _configData.GetValue("preload_directories", key.pItem);
 
 			if (item != nullptr)
 			{
@@ -151,7 +159,9 @@ namespace proto
 		auto height = _configData.GetLongValue("startup_display", "height", -1);
 
 		if (width < 0 || height < 0)
+		{
 			return false;
+		}
 
 		/*
 			If one of the dimensions is zero, it's safe to assume the native display resolution is being used.
@@ -180,7 +190,10 @@ namespace proto
 	{
 		using time = std::chrono::high_resolution_clock;
 
-		if(!_window.Construct(_title, _fullscreen)) return 2;
+		if(!_window.Construct(_title, _fullscreen))
+		{
+			return 2;
+		}
 
 		/*
 			Create internal Renderer, UIContainer, and Scene objects.
@@ -227,7 +240,7 @@ namespace proto
 
 		time::time_point last = time::now();
 
-		while (!glfwWindowShouldClose(_window.GetPtr()) && _appRunning)
+		while (glfwWindowShouldClose(_window.GetPtr()) == GLFW_FALSE && _appRunning)
 		{
 			time::time_point current = time::now();
 			float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
@@ -275,9 +288,9 @@ namespace proto
 	{
 		switch (key)
 		{
-		case GLFW_KEY_LEFT_SHIFT:			return NK_KEY_SHIFT;
+		case GLFW_KEY_LEFT_SHIFT:
 		case GLFW_KEY_RIGHT_SHIFT:			return NK_KEY_SHIFT;
-		case GLFW_KEY_LEFT_CONTROL:			return NK_KEY_CTRL;
+		case GLFW_KEY_LEFT_CONTROL:
 		case GLFW_KEY_RIGHT_CONTROL:		return NK_KEY_CTRL;
 		case GLFW_KEY_DELETE:				return NK_KEY_DEL;
 		case GLFW_KEY_ENTER:				return NK_KEY_ENTER;
@@ -289,22 +302,28 @@ namespace proto
 		case GLFW_KEY_RIGHT:				return NK_KEY_RIGHT;
 		case GLFW_KEY_C:
 		{
-			if (mods & GLFW_MOD_CONTROL)
+			if ((mods & GLFW_MOD_CONTROL) == GLFW_MOD_CONTROL)
+			{
 				return NK_KEY_COPY;
+			}
 			
 			break;
 		}
 		case GLFW_KEY_V:
 		{
-			if (mods & GLFW_MOD_CONTROL)
+			if ((mods & GLFW_MOD_CONTROL) == GLFW_MOD_CONTROL)
+			{
 				return NK_KEY_PASTE;
+			}
 
 			break;
 		}
 		case GLFW_KEY_X:
 		{
-			if (mods & GLFW_MOD_CONTROL)
+			if ((mods & GLFW_MOD_CONTROL) == GLFW_MOD_CONTROL)
+			{
 				return NK_KEY_CUT;
+			}
 
 			break;
 		}

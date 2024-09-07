@@ -1,7 +1,6 @@
 #ifndef PROTO_RENDERINGSYSTEM_HPP
 #define PROTO_RENDERINGSYSTEM_HPP
 
-#include <vector>
 #include <span>
 
 #include "System.hpp"
@@ -17,7 +16,7 @@ namespace proto
 	public:
 		RenderingSystem(Renderer* ren);
 
-		bool IsActive() const override;
+		[[nodiscard]] bool IsActive() const override;
 		void Update(entt::registry& registry, [[maybe_unused]]float dt) override;
 		void SetUIDrawCalls(const std::span<DrawCall>& calls);
 

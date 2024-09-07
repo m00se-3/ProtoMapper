@@ -48,7 +48,7 @@ namespace proto
 	{
 	public:
 		UIContainer(const std::string& assetsDir, Window* win);
-		~UIContainer();
+		~UIContainer() override;
 
 		// Defines each UI function for the application to use.
 		[[nodiscard]]bool SetDefinitions(const std::filesystem::path& filepath);

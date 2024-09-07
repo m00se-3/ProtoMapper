@@ -64,7 +64,7 @@ namespace proto
         [[nodiscard]]const nk_font_atlas* GetAtlas() const;
 
     private:
-		struct nk_font_atlas _atlas;
+	struct nk_font_atlas _atlas;
         std::unordered_map<FontStyle, struct nk_font*> _fonts;
     };
 }

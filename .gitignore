@@ -367,3 +367,4 @@ FodyWeavers.xsd
 xmake.lua
 .vscode/compile_commands.json
 CMakeUserPresets.json
+compile_commands.json

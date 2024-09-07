@@ -51,12 +51,12 @@ namespace proto
 		Buffer() = default;
 		Buffer(size_t numVertices, size_t numIndices) { Generate(numVertices, numIndices); }
 
-		void* Data() const { return (void*)_vertices.data(); }
-		void* Indices() const { return (void*)_indices.data(); }
+		[[nodiscard]] void* Data() const { return (void*)_vertices.data(); }
+		[[nodiscard]] void* Indices() const { return (void*)_indices.data(); }
 
-		IndType VAO() const { return _vao; }
+		[[nodiscard]] IndType VAO() const { return _vao; }
 
-		size_t GetBufferSize() const { return _vertices.size(); }
+		[[nodiscard]] size_t GetBufferSize() const { return _vertices.size(); }
 
 		Buffer& Generate(size_t numVertices, size_t numIndices)
 		{
@@ -95,7 +95,7 @@ namespace proto
 				_vertices.push_back(vert);
 			}
 
-			for (auto& ind : inds)
+			for (const auto& ind : inds)
 			{
 				_indices.push_back(ind);
 			}
@@ -119,16 +119,14 @@ namespace proto
 			return *this;
 		}
 
-		size_t GetNumberOfIndices() const { return _indices.size(); }
+		[[nodiscard]] size_t GetNumberOfIndices() const { return _indices.size(); }
 
-		bool Bind() const
+		void Bind() const
 		{
 			if (_initialized)
 			{
 				glBindVertexArray(_vao);
-				return true;
 			}
-			return false;
 		}
 
 		void Unbind() const { glBindVertexArray(0); }

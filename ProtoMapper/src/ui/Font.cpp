@@ -20,6 +20,7 @@
 namespace proto
 {
     FontGroup::FontGroup()
+    : _atlas()
     {
         nk_font_atlas_init_default(&_atlas);
     }
@@ -27,7 +28,7 @@ namespace proto
     FontGroup::~FontGroup()
     {
         nk_font_atlas_cleanup(&_atlas);
-		nk_font_atlas_clear(&_atlas);
+	nk_font_atlas_clear(&_atlas);
     }
 
     void FontGroup::Create()
@@ -45,7 +46,10 @@ namespace proto
         if(!_fonts.contains(styleMask))
         {
             struct nk_font* temp = nk_font_atlas_add_from_file(&_atlas, filename.string().c_str(), size, nullptr);
-            if(temp) _fonts.insert_or_assign(styleMask, temp);
+            if(temp != nullptr) 
+            {
+                _fonts.insert_or_assign(styleMask, temp);
+            }
         }
     }
 

@@ -53,7 +53,6 @@ namespace proto
 	{
 	public:
 		ResourceManager(const std::span<uint8_t>& resource);
-		~ResourceManager() = default;
 		
 		ReferenceCounter<Texture2D>* Textures();
 		ReferenceCounter<Shader>* Shaders();
@@ -116,7 +115,7 @@ namespace proto
 
 		Resource& Get() { return _object; }
 
-		const Resource& Get() const { return _object; }
+		[[nodiscard]] const Resource& Get() const { return _object; }
 
 		static void SetManager(ReferenceCounter<Resource>* ptr) { _manager = ptr; }
 
@@ -133,14 +132,11 @@ namespace proto
 		using IDType = unsigned int;
 
 		ReferenceCounter() = default;
+		~ReferenceCounter() = default;
 		ReferenceCounter(const ReferenceCounter&) = delete;
 		ReferenceCounter(ReferenceCounter&&) = delete;
-
-		~ReferenceCounter()
-		{
-			_references.clear();
-			_storage.clear();
-		}
+		ReferenceCounter& operator=(const ReferenceCounter&) = default;
+		ReferenceCounter& operator=(ReferenceCounter&&);
 
 		GPUResource<Resource> Load(const std::string_view& name, const std::function<void(Resource&)>& onLoad = [](Resource&){})
 		{

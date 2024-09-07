@@ -37,29 +37,29 @@ namespace proto
         [[nodiscard]]GLFWwindow* GetPtr() const;
         [[nodiscard]]bool Construct(const std::string& title, bool fullscreen);
         [[nodiscard]]int GetWidth() const;
-		[[nodiscard]]int GetHeight() const;
+	[[nodiscard]]int GetHeight() const;
 
         void SetSize(int w, int h);
 
         static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
         /*
-			GLFW callback functions
-		*/
+                GLFW callback functions
+        */
 
-		static void ContextErrorMessage(int code, const char* description);
-		static void MonitorCallback(GLFWmonitor* monitor, int event);
-		static void WindowCloseCallback(GLFWwindow* window);
-		static void WindowMaximizeCallback(GLFWwindow* window, int maximized);
-		static void WindowMinimizedCallback(GLFWwindow* window, int iconified);
-		static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
-		static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
+        static void ContextErrorMessage(int code, const char* description);
+        static void MonitorCallback(GLFWmonitor* monitor, int event);
+        static void WindowCloseCallback(GLFWwindow* window);
+        static void WindowMaximizeCallback(GLFWwindow* window, int maximized);
+        static void WindowMinimizedCallback(GLFWwindow* window, int iconified);
+        static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
+        static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
 
 
     private:
 
         GLFWwindow* _window = nullptr;
-		GLFWmonitor* _monitor = nullptr;    // There is no terminate function for GLFWmonitors.
+    	GLFWmonitor* _monitor = nullptr;    // There is no terminate function for GLFWmonitors.
 
         int _wWidth = 1024, _wHeight = 768;
 

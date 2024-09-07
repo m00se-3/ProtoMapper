@@ -33,15 +33,12 @@ namespace proto
 		IDType ID = 0u;
 
 		Shader() = default;
-		Shader(const Shader&);
 		explicit Shader(IDType id);
-		~Shader();
 
-		bool operator==(const Shader& rhs) const;
-		Shader& operator=(const Shader& rhs);
+		bool operator==(const Shader& rhs) const = default;
 
-		IDType GetID() const;
-		bool Valid() const;
+		[[nodiscard]] IDType GetID() const;
+		[[nodiscard]] bool Valid() const;
 
 		/*
 			Create a simple shader program from the traditional vertex and fragment shader combo.
@@ -56,25 +53,23 @@ namespace proto
 		/*
 			Attach an individual shader object and return the id.
 		*/
-		unsigned int Attach(const char* src, IDType type);
+		unsigned int Attach(const char* src, IDType type) const;
 
 		/*
 			Final linking stage of creating an OpenGL shader.
 		*/
-		void Link();
+		void Link() const;
 
 		/*
 			Same as Link(), but deletes and detaches the vertex and fragment shader pair after finished.
 		*/
-		void Link(const std::pair<IDType, IDType>& shaders);
-		void Bind();
-		void Bind() const;
-		void Unbind();
-		void Unbind() const;
-		void Destroy();
+		void Link(const std::pair<IDType, IDType>& shaders) const;
+		void Bind(this auto&& self) { glUseProgram(self.ID); }
+		static void Unbind();
+		void Destroy() const;
 
 		// Pass in a lambda that sets up the uniforms for the shader.
-		void Uniforms(const std::function<void()>& func);
+		static void Uniforms(const std::function<void()>& func);
 
 	};
 

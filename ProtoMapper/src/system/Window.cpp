@@ -30,7 +30,7 @@ namespace proto
     Window::~Window()
     {
         glfwDestroyWindow(_window);
-		glfwTerminate();
+	glfwTerminate();
     }
 
     bool Window::Construct(const std::string& title, bool fullscreen)
@@ -100,12 +100,12 @@ namespace proto
 
     void Window::DebugOpenGL(GLenum src, GLenum type, [[maybe_unused]] GLuint id, GLenum severity, [[maybe_unused]] GLsizei length, const GLchar* message, [[maybe_unused]] const void* userParam)
 	{
-		std::puts(std::format("Error {} {} {} - {}", src, type, severity, message).c_str());
+		std::fprintf(stderr, "Error %d %d %d - %s", src, type, severity, message); //NOLINT
 	}
 
 	void Window::ContextErrorMessage(int code, const char* description)
 	{
-		std::puts(std::format("Error code {} - {}", code, description).c_str());
+		std::fprintf(stderr, "Error code %d - %s", code, description); // NOLINT
 	}
 
 	void Window::DropEventCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]]int count, [[maybe_unused]] const char** paths)
