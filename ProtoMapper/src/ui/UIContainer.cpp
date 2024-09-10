@@ -21,11 +21,10 @@
 #include <array>
 
 #include "ProtoMapper.hpp"
+#include "Config.hpp"
 
 namespace proto
 {	
-	ReferenceCounter<Texture2D>* UIContainer::_texMan = nullptr;
-
 	/*
 		NOTE: If you experience rendering issues while building the ui, consider increasing this buffer size.
 	*/
@@ -39,14 +38,11 @@ namespace proto
 		nk_draw_vertex_layout_element{NK_VERTEX_LAYOUT_END}
 	};
 
-	void UIContainer::SetResourceManager(ReferenceCounter<Texture2D>* ptr) { _texMan = ptr; }
-
-
-	UIContainer::UIContainer(const std::string& assetsDir, Window* win)
+	UIContainer::UIContainer(FontGroup& fonts, Window* win, Renderer* ren)
 		: _ctx(), _configurator(), _cmds(), _verts(), _inds(), _nullTexture(), _window(win)
 	{
-		std::string fontDir =  assetsDir + "/fonts/roboto/";
-		std::filesystem::path imgDir = assetsDir + "/icons/";
+		std::string fontDir = GetAssetDir() + "/fonts/roboto/";
+		std::filesystem::path imgDir = GetAssetDir() + "/icons/";
 
 		if(std::filesystem::exists(imgDir))
 		{
@@ -55,24 +51,24 @@ namespace proto
 				const auto& file = icon.path();
 
 				Image img{file};
-				auto iconImg = _texMan->Load(file.stem().string(), [](Texture2D& tex){ tex.Create(); });
-				iconImg.Get().WriteImage(img);
+				auto iconImg = _icons.insert_or_assign(file.stem().string(), MakeResource<Texture2D>());
+				iconImg.first->second.Get().Create().WriteImage(img);
 			}
 		}
 		
 
-		auto nTexture = _texMan->Get("default");
-		_nullTexture.texture = nk_handle_id(static_cast<int>(nTexture.Get().ID));
+		auto nTexture = ren->GetDefaultTexture();
+		_nullTexture.texture = nk_handle_id(static_cast<int>(nTexture.ID));
 		_nullTexture.uv = nk_vec2(0.0f, 0.0f);
 
 		// Add Fonts to the FontGroup.
 
-		_fonts.Create();
+		fonts.Create();
 
-		_fonts.AddFont(FontStyle::Normal, 16.0f, fontDir + "Roboto-Medium.ttf");
-		_fonts.AddFont(FontStyle::Bold, 16.0f, fontDir + "Roboto-Bold.ttf");
-		_fonts.AddFont(FontStyle::BoldItalic, 16.0f, fontDir + "Roboto-BoldItalic.ttf");
-		_fonts.AddFont(FontStyle::Italic, 16.0f, fontDir + "Roboto-Italic.ttf");
+		fonts.AddFont(FontStyle::Normal, 16.0f, fontDir + "Roboto-Medium.ttf");
+		fonts.AddFont(FontStyle::Bold, 16.0f, fontDir + "Roboto-Bold.ttf");
+		fonts.AddFont(FontStyle::BoldItalic, 16.0f, fontDir + "Roboto-BoldItalic.ttf");
+		fonts.AddFont(FontStyle::Italic, 16.0f, fontDir + "Roboto-Italic.ttf");
 
 		/*
             Because nk_font_atlas_end() frees the img pointer for us, we can't include a Bake function
@@ -82,17 +78,14 @@ namespace proto
         */
 
 		int imgWidth = 0, imgHeight = 0;
-        const void* img = nk_font_atlas_bake(_fonts.GetAtlas(), &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
+	    const void* img = nk_font_atlas_bake(fonts.GetAtlas(), &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 
 		// Create Texture object.
+		_fontTexture.Create().WriteData(img, imgWidth, imgHeight);
 
-		_fontTexture = _texMan->Load("Roboto-Medium", [](Texture2D& tex){ tex.Create(); });
-		_fontTexture.Get().WriteData(img, imgWidth, imgHeight);
+		fonts.Finalize(_fontTexture.GetID());
 
-		_fonts.Finalize(_fontTexture.Get().GetID());
-
-
-		if (nk_init_default(&_ctx, &_fonts.GetFont(FontStyle::Normal)->handle) != 0)
+		if (nk_init_default(&_ctx, &fonts.GetFont(FontStyle::Normal)->handle) != 0)
 		{
 		    return;
 		}
@@ -120,8 +113,6 @@ namespace proto
 	UIContainer::~UIContainer()
 	{
 		nk_free(&_ctx);
-
-		_texMan->Unload("Roboto-Medium");
 	}
 
 	bool UIContainer::IsActive() const { return true; }
@@ -222,7 +213,7 @@ namespace proto
 			if (!result.valid())
 			{
 				sol::error err = result;
-				std::fprintf(stderr, "%s\n%s\n", errorMsg.c_str(), err.what()); // NOLINT
+				std::puts(std::format("{}\n{}\n", errorMsg.c_str(), err.what()).c_str()); // NOLINT
 			}
 		}
 	}
@@ -755,7 +746,8 @@ namespace proto
 		context["StylePushFont"] = [this](sol::optional<FontStyle> style) -> bool {
 				if (style)
 				{
-					return static_cast<bool>(nk_style_push_font(&_ctx, &_fonts.GetFont(*style)->handle));
+					const auto* host = Mapper::GetInstance();
+					return static_cast<bool>(nk_style_push_font(&_ctx, &host->GetFont(*style)->handle));
 				}
 
 				return false;

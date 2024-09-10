@@ -19,15 +19,13 @@
 
 #include "RenderingSystem.hpp"
 #include "UIContainer.hpp"
+#include "Config.hpp"
 
 namespace proto
 {
-	Scene::Scene(const std::unordered_map<std::string, std::string>& data, Renderer* ren, Window* win)
+	Scene::Scene(Renderer* ren, Window* win)
 	{
 		systems.insert_or_assign("render", std::make_shared<RenderingSystem>(ren));
-		auto ui = systems.insert_or_assign("ui", std::make_shared<UIContainer>(data.at("assets_dir"), win));
-
-		static_cast<UIContainer*>(ui.first->second.get())->SetDefinitions(data.at("user_interface_dir"));
 	}
 
 

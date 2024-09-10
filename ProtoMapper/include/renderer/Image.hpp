@@ -40,7 +40,6 @@ namespace proto
 
 		// Copy image data from an existing memory buffer.
 		// This will erase any data already contained in the Image buffer.
-		// Passing null pointer will zero-initialize the image buffer to requested size.
 		void LoadCopy(uint32_t w, uint32_t h, std::span<uint8_t> dataIn);
 
 		[[nodiscard]] constexpr auto Data(this auto&& self) { return std::span<uint8_t>(self._data.begin(), self._data.end()); }

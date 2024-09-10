@@ -36,7 +36,7 @@ namespace proto
 	class Scene
 	{
 	public:
-		Scene(const std::unordered_map<std::string, std::string>& data, Renderer* ren, Window* win);
+		Scene(Renderer* ren, Window* win);
 
 		bool Init();
 		void Update([[maybe_unused]]float dt);

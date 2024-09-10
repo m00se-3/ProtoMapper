@@ -19,33 +19,32 @@
 
 namespace proto
 {
-    FontGroup::FontGroup()
-    : _atlas()
+    FontAtlas::FontAtlas()
     {
-        nk_font_atlas_init_default(&_atlas);
+        nk_font_atlas_init_default(_atlas.get());
     }
 
-    FontGroup::~FontGroup()
+    FontAtlas::~FontAtlas()
     {
-        nk_font_atlas_cleanup(&_atlas);
-	nk_font_atlas_clear(&_atlas);
+        nk_font_atlas_cleanup(_atlas.get());
+	nk_font_atlas_clear(_atlas.get());
     }
 
     void FontGroup::Create()
     {
-        nk_font_atlas_begin(&_atlas);
+        nk_font_atlas_begin(_atlas.Get());
     }
 
     void FontGroup::Finalize(unsigned int id)
     {
-        nk_font_atlas_end(&_atlas, nk_handle_id((int)id), nullptr);
+        nk_font_atlas_end(_atlas.Get(), nk_handle_id((int)id), nullptr);
     }
     
     void FontGroup::AddFont(FontStyle styleMask, float size, const std::filesystem::path& filename)
     {
         if(!_fonts.contains(styleMask))
         {
-            struct nk_font* temp = nk_font_atlas_add_from_file(&_atlas, filename.string().c_str(), size, nullptr);
+            struct nk_font* temp = nk_font_atlas_add_from_file(_atlas.Get(), filename.string().c_str(), size, nullptr);
             if(temp != nullptr) 
             {
                 _fonts.insert_or_assign(styleMask, temp);
@@ -73,7 +72,4 @@ namespace proto
         return nullptr;
     }
 
-    [[nodiscard]]nk_font_atlas* FontGroup::GetAtlas() { return &_atlas; }
-
-    [[nodiscard]]const nk_font_atlas* FontGroup::GetAtlas() const { return &_atlas; }
 }

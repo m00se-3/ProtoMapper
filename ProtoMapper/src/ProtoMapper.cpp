@@ -16,23 +16,23 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "ProtoMapper.hpp"
+#include "Config.hpp"
 #include <GLFW/glfw3.h>
+
 namespace proto 
 {
 	constexpr const size_t InitialTextBufferSize = 8z * 1024z;	// Allocate 8 KB for the text memory buffer. Can change later if needed.
 
 	Mapper* Mapper::_self = nullptr;
 
-	Mapper* Mapper::GetInstance() { return _self; }
-
-	void Mapper::KeyboardEventCallback([[maybe_unused]] GLFWwindow* window, int keyn, int scancode, int action, int mods)
+	void Mapper::KeyboardEventCallback([[maybe_unused]] GLFWwindow* window, int keyn, [[maybe_unused]] int scancode, int action, int mods)
 	{
 		auto* self = Mapper::GetInstance();
 		int key = Mapper::GLFWKeytoNKKey(keyn, mods);
 
 		if (key > -1)
 		{
-			nk_input_key(self->UI()->Context(), (nk_keys)key, (action == GLFW_PRESS || action == GLFW_REPEAT));
+			nk_input_key(self->UI()->Context(), (nk_keys)key, nk_bool(action == GLFW_PRESS || action == GLFW_REPEAT));
 		}
 	}
 
@@ -53,11 +53,11 @@ namespace proto
 
 		if (result > -1)
 		{
-			nk_input_button(self->UI()->Context(), (nk_buttons)result, std::lround(mx), std::lround(my), (action == GLFW_PRESS));
+			nk_input_button(self->UI()->Context(), (nk_buttons)result, std::lround(mx), std::lround(my), nk_bool(action == GLFW_PRESS));
 		}
 	}
 
-	void Mapper::MouseMotionEventCallback([[maybe_unused]]GLFWwindow*, double x, double y)
+	void Mapper::MouseMotionEventCallback([[maybe_unused]]GLFWwindow* window, double x, double y)
 	{
 		auto* self = Mapper::GetInstance();
 
@@ -83,10 +83,7 @@ namespace proto
 		_scene.reset(nullptr);
 		
 		_renderer.reset(nullptr);
-		_resources.reset(nullptr);
 	}
-
-	bool Mapper::IsFullscreen() const { return _fullscreen; }
 
 	bool Mapper::Configure()
 	{
@@ -127,31 +124,6 @@ namespace proto
 		}
 
 		/*
-			Read and set the map of data file directories. This will be used to reference all configuration files
-			and assets.
-		*/
-
-		std::list<CSimpleIniA::Entry> preloadDirectoryKeys;
-		if (!_configData.GetAllKeys("preload_directories", preloadDirectoryKeys))
-		{
-			return false;
-		}
-
-		auto tmpRoot = _rootDir.string();
-
-		for (auto& key : preloadDirectoryKeys)
-		{
-			const auto* item = _configData.GetValue("preload_directories", key.pItem);
-
-			if (item != nullptr)
-			{
-				_dataTextFields.insert_or_assign(key.pItem, (tmpRoot + item).c_str());
-			}
-		}
-
-		preloadDirectoryKeys.clear();
-
-		/*
 			Read and set the window dimensions.
 		*/
 
@@ -171,16 +143,6 @@ namespace proto
 			_window.SetSize(width, height);
 			_fullscreen = false;
 		}
-
-		/*
-			Setup the ResourceManager.
-		*/
-
-		_stringMemoryBuffer = std::make_unique<uint8_t[]>(InitialTextBufferSize);
-
-		_resources = std::make_unique<ResourceManager>(std::span<uint8_t>{_stringMemoryBuffer.get(), InitialTextBufferSize});
-		Renderer::SetResourceManager(_resources.get());
-		UIContainer::SetResourceManager(_resources->Textures());
 
 		return true;
 	}
@@ -210,7 +172,7 @@ namespace proto
 		glfwSetCursorPosCallback(_window.GetPtr(), Mapper::MouseMotionEventCallback);
 		glfwSetScrollCallback(_window.GetPtr(), Mapper::MouseScrollEventCallback);
 
-		_scene = std::make_unique<Scene>(_dataTextFields, _renderer.get(), &_window);
+		_scene = std::make_unique<Scene>(_renderer.get(), &_window);
 		_scene->Init();
 
 		/*
@@ -218,7 +180,7 @@ namespace proto
 		*/
 
 		// Text files
-		std::filesystem::path textDir = _dataTextFields.at("text_dir");
+		std::filesystem::path textDir = GetTextDir();
 
 		for(const auto& entry : std::filesystem::recursive_directory_iterator(textDir))
 		{
@@ -228,9 +190,6 @@ namespace proto
 			}
 		}
 
-		
-
-		
 		/*
 			Show main window and start main loop.
 		*/
@@ -344,6 +303,3 @@ namespace proto
 		}
 	}
 }
-
-
-

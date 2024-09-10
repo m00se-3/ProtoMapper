@@ -20,8 +20,8 @@
 
 #include <filesystem>
 #include <memory>
-#include <unordered_map>
 
+#include "Font.hpp"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "SimpleIni.h"
@@ -29,7 +29,6 @@
 #include "UIContainer.hpp"
 #include "Scene.hpp"
 #include "Renderer.hpp"
-#include "ResourceManager.hpp"
 #include "Window.hpp"
 
 namespace proto
@@ -45,8 +44,8 @@ namespace proto
 	    Mapper& operator=(const Mapper&) = delete;
 	    Mapper& operator=(Mapper&&) = delete;
 
-	    [[nodiscard]] static Mapper* GetInstance();
-	    [[nodiscard]] bool IsFullscreen() const;
+	    [[nodiscard]] static Mapper* GetInstance() { return _self; }
+	    [[nodiscard]] constexpr bool IsFullscreen() const { return _fullscreen; }
 	    [[nodiscard]] bool Configure();
 	    [[nodiscard]] int Run();
 	    void SetContextSize(int w, int h);
@@ -55,6 +54,7 @@ namespace proto
 	    [[nodiscard]] Window& GetWin();
 	    [[nodiscard]] Renderer* GetRenderer();
 	    [[nodiscard]] UIContainer* UI() { return _ui.get(); }
+	    [[nodiscard]] auto* GetFont(this auto&& self, FontStyle style) { return self._fonts.GetFont(style); }
 
 	    // GLFW input event callbacks.
 	    
@@ -72,19 +72,14 @@ namespace proto
 	    std::filesystem::path _rootDir;
 	    bool _appRunning = true, _fullscreen = true, _configUpdate = false;
 
-	    std::unique_ptr<uint8_t[]> _stringMemoryBuffer;
-
 	    std::unique_ptr<Scene> _scene;
 	    std::unique_ptr<UIContainer> _ui;
 	    std::unique_ptr<Renderer> _renderer;
-	    std::unique_ptr<ResourceManager> _resources;
 
 	    std::filesystem::path _configFile;
 	    CSimpleIniA _configData;
 	    Window _window;
-
-	    // Text directories as defined in config.ini section [preload_directories].
-	    std::unordered_map<std::string, std::string> _dataTextFields;
+	    FontGroup _fonts;
 
 	    static Mapper* _self;
 

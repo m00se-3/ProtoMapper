@@ -47,21 +47,23 @@ namespace proto
 	class UIContainer : public System
 	{
 	public:
-		UIContainer(const std::string& assetsDir, Window* win);
-		~UIContainer() override;
+          UIContainer(const UIContainer&) = delete;
+          UIContainer(UIContainer&&) = delete;
+          UIContainer& operator=(const UIContainer&) = delete;
+          UIContainer& operator=(UIContainer&&) = delete;
+          UIContainer(FontGroup& fonts, Window *win, Renderer *ren);
+          ~UIContainer() override;
 
-		// Defines each UI function for the application to use.
-		[[nodiscard]]bool SetDefinitions(const std::filesystem::path& filepath);
+          // Defines each UI function for the application to use.
+          [[nodiscard]] bool SetDefinitions(const std::filesystem::path &filepath);
 
-		[[nodiscard]]nk_context* Context();
-		[[nodiscard]] bool IsActive() const override;
+          [[nodiscard]] nk_context *Context();
+          [[nodiscard]] bool IsActive() const override;
 
-		// Calls each UI Lua function and reports any errors.
-		void Update(entt::registry& registry, [[maybe_unused]] float dt) override;
+          // Calls each UI Lua function and reports any errors.
+          void Update(entt::registry &registry, [[maybe_unused]] float dt) override;
 
-		[[nodiscard]]std::span<DrawCall> Compile();
-
-		static void SetResourceManager(ReferenceCounter<Texture2D>* ptr);
+          [[nodiscard]] std::span<DrawCall> Compile();
 
 	private:
 
@@ -72,6 +74,7 @@ namespace proto
 		sol::table _dimensions;
 
 		std::map<std::string, std::string> _luaFunctions;
+		std::map<std::string, SharedResource<Texture2D>> _icons;
 		std::vector<DrawCall> _drawCalls;
 		
 		/*
@@ -82,8 +85,7 @@ namespace proto
 		struct nk_convert_config _configurator;
 		struct nk_buffer _cmds, _verts, _inds;
 		struct nk_draw_null_texture _nullTexture;
-		GPUResource<Texture2D> _fontTexture;
-		FontGroup _fonts;
+		Texture2D _fontTexture;
 		
 		Buffer<Vertex2D> _nkBuffer;
 
@@ -95,8 +97,6 @@ namespace proto
 		*/
 
 		Window* _window = nullptr;
-		static ReferenceCounter<Texture2D>* _texMan;
-
 	};
 
 }

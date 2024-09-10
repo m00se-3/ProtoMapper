@@ -28,7 +28,6 @@
 
 #include "Texture.hpp"
 #include "Shader.hpp"
-#include "ResourceManager.hpp"
 
 namespace proto
 {
@@ -53,8 +52,6 @@ namespace proto
 
 		Renderer(const std::string& dir);
 
-		static void SetResourceManager(ResourceManager* ptr);
-
 		[[nodiscard]] mode GetRenderMode() const;
 
 		bool Init(mode newMode);
@@ -64,10 +61,11 @@ namespace proto
 		static void SetBackgroundColor(const glm::vec4& col);
 		void SetRenderSize(int w, int h);
 		void RefreshProjection();
-		[[nodiscard]] int GetRenderWidth() const;
-		[[nodiscard]] int GetRenderHeight() const;
-		[[nodiscard]] int GetRenderX() const;
-		[[nodiscard]] int GetRenderY() const;
+		[[nodiscard]] constexpr auto GetRenderWidth(this auto&& self) { return self._vWidth; }
+		[[nodiscard]] constexpr auto GetRenderHeight(this auto&& self) { return self._vHeight; }
+		[[nodiscard]] constexpr auto GetRenderX(this auto&& self) { return self._vX; }
+		[[nodiscard]] constexpr auto GetRenderY(this auto&& self) { return self._vY; }
+		[[nodiscard]] constexpr auto GetDefaultTexture(this auto&& self) { return self._defaultTexture; }
 
 		void SetUniforms(const std::function<void()>& uniforms);
 		void SetViewport(int x, int y, int w, int h);
@@ -125,8 +123,6 @@ namespace proto
 
 		std::function<void()> _uniforms = []() {};
 		std::queue<DrawCall> _drawQueue;
-
-		static ResourceManager* _resources;
 	};
 
 }

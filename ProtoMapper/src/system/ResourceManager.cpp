@@ -19,21 +19,6 @@
 
 namespace proto
 {
-    template<> ReferenceCounter<Shader>* GPUResource<Shader>::_manager = nullptr;
-    template<> ReferenceCounter<Texture2D>* GPUResource<Texture2D>::_manager = nullptr;
-	
-	ResourceManager::ResourceManager(const std::span<uint8_t>& resource)
-        : _upstream(resource.data(), resource.size()), _textAllocator(&_upstream), 
-        _textures(std::make_unique<ReferenceCounter<Texture2D>>()), _shaders(std::make_unique<ReferenceCounter<Shader>>())
-    {
-        GPUResource<Texture2D>::SetManager(_textures.get());
-        GPUResource<Shader>::SetManager(_shaders.get());
-    }
-
-    ReferenceCounter<Texture2D>* ResourceManager::Textures() { return _textures.get(); }
-
-    ReferenceCounter<Shader>* ResourceManager::Shaders() { return _shaders.get(); }
-
     void ResourceManager::LoadStringRes(const std::string& name, const std::string& content)
     {
         auto str = _stringMap.emplace(

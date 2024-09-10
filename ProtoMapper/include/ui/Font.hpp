@@ -47,24 +47,36 @@ namespace proto
         BolItalicUnderlined = Bold | Italic | Underlined,
         ItalicUnderlined = Italic | Underlined,
     };
-    
+
+    class FontAtlas 
+    {
+    public:
+        FontAtlas();
+        FontAtlas(const FontAtlas &) = default;
+        FontAtlas(FontAtlas &&) = delete;
+        FontAtlas &operator=(const FontAtlas &) = default;
+        FontAtlas &operator=(FontAtlas &&) = delete;
+        ~FontAtlas();
+
+        [[nodiscard]] struct nk_font_atlas* Get() const { return _atlas.get(); }
+
+    private:
+        std::shared_ptr<struct nk_font_atlas> _atlas;
+    };
+        
     class FontGroup
     {
     public:
-        FontGroup();
-        ~FontGroup();
-
         void Create();
         void Finalize(unsigned int id);
         void AddFont(FontStyle styleMask, float size, const std::filesystem::path& filename);
 
-        [[nodiscard]]nk_font* GetFont(FontStyle mask);
-        [[nodiscard]]const nk_font* GetFont(FontStyle mask) const;
-        [[nodiscard]]nk_font_atlas* GetAtlas();
-        [[nodiscard]]const nk_font_atlas* GetAtlas() const;
+        [[nodiscard]] nk_font* GetFont(FontStyle mask);
+        [[nodiscard]] const nk_font* GetFont(FontStyle mask) const;
+        [[nodiscard]] auto* GetAtlas(this auto&& self) { return self._atlas.Get(); }
 
     private:
-	struct nk_font_atlas _atlas;
+        FontAtlas _atlas;
         std::unordered_map<FontStyle, struct nk_font*> _fonts;
     };
 }

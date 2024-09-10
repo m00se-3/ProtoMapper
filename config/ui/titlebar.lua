@@ -13,7 +13,7 @@ function CustomTitleBar()
     if width < 200 then
         titleLabelWidth = width - titleButtonsWidth - 10.0
     end
-    
+
     if Ctx:Begin("ProtoMapper", new_rect(0.0, 0.0, width, 30.0), PanelFlag.NoScrollbar) then
         
         Ctx:SpaceRowBegin(Layout.Static, 20.0, 4)

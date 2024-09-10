@@ -13,9 +13,13 @@ namespace proto
 
 	public:
 		System() = default;
+		System(const System&) = default;
+		System(System&&) = default;
+		System& operator=(const System&) = default;
+		System& operator=(System&&) = default;
 		virtual ~System() = default;
 
-		[[nodiscard]] virtual bool IsActive() const = 0;
+        [[nodiscard]] virtual bool IsActive() const = 0;
 		virtual void Update(entt::registry& registry, [[maybe_unused]] float dt) = 0;
 	};
 

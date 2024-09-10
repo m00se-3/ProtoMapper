@@ -43,7 +43,8 @@ namespace proto
 			uint8_t* ptr = stbi_load(filename.string().c_str(), &w, &h, &c, 0);
 
 			const auto size = size_t(w) * size_t(h);
-			_data.assign_range(std::span<uint8_t>{ ptr, size });
+			auto sp = std::span<uint8_t>{ ptr, size };
+			_data.assign(sp.begin(), sp.end());
 		}
 	}
 
@@ -56,7 +57,7 @@ namespace proto
 
 		if (!dataIn.empty())
 		{
-			_data.assign_range(dataIn);
+			_data.assign(dataIn.begin(), dataIn.end());
 		}
 	}
 

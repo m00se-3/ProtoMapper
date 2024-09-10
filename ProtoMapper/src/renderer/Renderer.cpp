@@ -26,10 +26,6 @@
 
 namespace proto
 {
-
-	ResourceManager* Renderer::_resources = nullptr;
-
-	void Renderer::SetResourceManager(ResourceManager* ptr) { _resources = ptr; }
 	
 	Renderer::Renderer(const std::string& dir)
 		: _model(glm::mat4(1.f)), _view(glm::mat4(1.f)), _projection(glm::mat4(1.f)),
@@ -91,8 +87,6 @@ namespace proto
 			auto objs = _defaultShader.CreateBasic(vsSrc.c_str(), fsSrc.c_str());
 			_defaultShader.Link(objs);
 
-			_resources->Textures()->LoadCopy("default", _defaultTexture);
-			_resources->Shaders()->LoadCopy("default", _defaultShader);
 		}
 	}
 
@@ -106,14 +100,6 @@ namespace proto
 
 		return true;
 	}
-
-	int Renderer::GetRenderWidth() const { return _vWidth; }
-
-	int Renderer::GetRenderHeight() const { return _vHeight; }
-
-	int Renderer::GetRenderX() const { return _vX; }
-
-	int Renderer::GetRenderY() const { return _vY; }
 
 	void Renderer::Begin()
 	{	

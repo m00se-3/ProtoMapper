@@ -20,225 +20,185 @@
 
 #include <memory_resource>
 #include <map>
-#include <unordered_map>
 #include <span>
-#include <functional>
 
-#include "Texture.hpp"
-#include "Shader.hpp"
+#include "gsl/gsl-lite.hpp"
 
 namespace proto
 {
     template<typename T>
-	concept IdentifiedExternal = requires(T t, T o)
-	{
-		std::default_initializable<T>;
-		std::copy_constructible<T>;
-		std::copyable<T>;
-		{ t == o } -> std::same_as<bool>;
-		{ t.Valid() } -> std::same_as<bool>;
-		{ t.GetID() } -> std::unsigned_integral;
-		{ t.Destroy() } -> std::same_as<void>;
-	};
-	
-	template<IdentifiedExternal Resource>
-	class ReferenceCounter;
+    concept IdentifiedExternal = requires(T t, T o)
+    {
+	    std::default_initializable<T>;
+	    std::copy_constructible<T>;
+	    std::copyable<T>;
+	    { t == o } -> std::same_as<bool>;
+	    { t.GetID() } -> std::unsigned_integral;
+	    { t.Destroy() } -> std::same_as<void>;
+    };
+    
+    class RC;
 
+
+    /*
+	The ResouceManager is in charge of storing shaders, textures, and other external data resources.
+	It also keeps a reference count of shaders and textures.
+    */
+    class ResourceManager
+    {
+    public:
+	ResourceManager(const std::span<uint8_t>& resource);
+
+	void LoadStringRes(const std::string& name, const std::string& content);
+	std::string_view GetString(const std::string_view& name);
+	void UnloadString(const std::string_view& name);
+
+    private:
+	std::pmr::monotonic_buffer_resource _upstream;
+	std::pmr::synchronized_pool_resource _textAllocator;
+
+	// String storage map.
+	std::pmr::map<std::pmr::string, std::pmr::string> _stringMap;
+    };
+
+    template<IdentifiedExternal Resource>
+    class WeakResource;
+
+    class RC
+    {
+    public:
+
+	[[nodiscard]] auto GetCount(this auto&& self) { return self._count; }
+	
+	// Increments the reference.
+	constexpr void Add()
+	{
+	    ++_count;
+	}
 
 	/*
-		The ResouceManager is in charge of storing shaders, textures, and other external data resources.
-		It also keeps a reference count of shaders and textures.
+	    Returns the number of references remaining.
 	*/
-	class ResourceManager
+	constexpr size_t Sub()
 	{
-	public:
-		ResourceManager(const std::span<uint8_t>& resource);
-		
-		ReferenceCounter<Texture2D>* Textures();
-		ReferenceCounter<Shader>* Shaders();
+	    --_count;
+	    return _count;
+	}
 
-		void LoadStringRes(const std::string& name, const std::string& content);
-		std::string_view GetString(const std::string_view& name);
-		void UnloadString(const std::string_view& name);
+    private:
+	size_t _count;
+    };
 
-	private:
-		std::pmr::monotonic_buffer_resource _upstream;
-		std::pmr::synchronized_pool_resource _textAllocator;
+    template<IdentifiedExternal Resource>
+    class SharedResource
+    {
+    public:
+	SharedResource() = default;
 
-		// String storage map.
-		std::pmr::map<std::pmr::string, std::pmr::string> _stringMap;
-
-		std::unique_ptr<ReferenceCounter<Texture2D>> _textures;
-		std::unique_ptr<ReferenceCounter<Shader>> _shaders;
-
-	};
-
-	template<IdentifiedExternal Resource>
-	class GPUResource
+	SharedResource(const SharedResource& other)
+	: _object(other.Get()), _manager(other.GetRC())
 	{
-	public:
-		GPUResource()
-			: _object()
-		{
-			_manager->AddReference(_object.GetID());
-		}
+	    _manager->Add();
+	}
+	
+	SharedResource(WeakResource<Resource>&& ptr)
+	: _object(ptr.GetID()), _manager(ptr.GetReferenceCounter())
+	{}
 
-		GPUResource(GPUResource& other)
-			: _object(other.Get())
-		{
-			_manager->AddReference(_object.GetID());
-		}
+	SharedResource(SharedResource&& other) noexcept : _object(other.Get()), _manager(other.GetRC()) {}
 
-		template<typename... Args>
-		GPUResource(Args&&... args)
-			: _object(std::forward<Args>(args)...)
-		{
-			_manager->AddReference(_object.GetID());
-		}
-
-		~GPUResource()
-		{
-			if (_manager->SubReference(_object.GetID()) == 0u) _object.Destroy();
-		}
-
-		GPUResource& operator=(const GPUResource& other)
-		{
-			if (!_object.Valid() && !_manager->SubReference(_object.GetID())) _object.Destroy();
-
-			_object = other.Get();
-			_manager->AddReference(_object.GetID());
-
-			return *this;
-		}
-
-		bool operator==(const GPUResource& rhs) { return (_object == rhs.Get()); }
-
-		Resource& Get() { return _object; }
-
-		[[nodiscard]] const Resource& Get() const { return _object; }
-
-		static void SetManager(ReferenceCounter<Resource>* ptr) { _manager = ptr; }
-
-	private:
-		Resource _object;
-
-		static ReferenceCounter<Resource>* _manager;
-	};
-
-	template<IdentifiedExternal Resource>
-	class ReferenceCounter
+	SharedResource& operator=(SharedResource&& other) noexcept
 	{
-	public:
-		using IDType = unsigned int;
+	    if (_manager->Sub() == 0u)
+	    {
+		_object.Destroy();
+		delete _manager;
+	    }
 
-		ReferenceCounter() = default;
-		~ReferenceCounter() = default;
-		ReferenceCounter(const ReferenceCounter&) = delete;
-		ReferenceCounter(ReferenceCounter&&) = delete;
-		ReferenceCounter& operator=(const ReferenceCounter&) = default;
-		ReferenceCounter& operator=(ReferenceCounter&&);
+	    _object = other.Get();
+	    _manager = gsl::owner<RC*>{other.GetRC()};
+	    _manager->Add();
 
-		GPUResource<Resource> Load(const std::string_view& name, const std::function<void(Resource&)>& onLoad = [](Resource&){})
-		{
-			if (_storage.contains(name.data()))
-			{
-				auto& res = _storage.at(std::string{ name.data(), name.size() });
+	    return *this;
+	}
 
-				return res;
-			}
+	template<typename... Args>
+	SharedResource(Args&&... args)
+	: _object(std::forward<Args>(args)...), _manager(gsl::owner<RC*>{new RC{}})
+	{
+	    _manager->Add();
+	}
 
-			_storage.emplace(std::string{ name.data(), name.size() }, Resource{});
-			auto& result = _storage.at(std::string{ name.data(), name.size() });
+	~SharedResource()
+	{
+	    if (_manager->Sub() == 0u)
+	    {
+		_object.Destroy();
+		delete _manager;
+	    }
+	}
 
-			onLoad(result.Get());
+	SharedResource& operator=(const SharedResource& other)
+	{
+	    if (_manager->Sub() == 0u)
+	    {
+		_object.Destroy();
+		delete _manager;
+	    }
 
-			return result;
-		}
+	    _object = other.Get();
+	    _manager = gsl::owner<RC*>{other.GetRC()};
+	    _manager->Add();
 
-		void LoadCopy(const std::string_view& name, Resource& cpy)
-		{
-			if (!_storage.contains(name.data()))
-			{
-				auto result = _storage.emplace(std::string{ name.data(), name.size() }, cpy);
+	    return *this;
+	}
 
-				AddReference(result.first->second.Get().GetID());		// Make sure our reference count is correct, since we are copying.
-			}
-		}
+	bool operator==(const SharedResource& rhs) { return (_object == rhs.Get()); }
+	gsl::owner<RC*> GetRC() { return _manager; }
 
-		GPUResource<Resource> Get(const std::string_view& name)
-		{
-			if (_storage.contains(name.data()))
-			{
-				return _storage.at(std::string{ name.data(), name.size() });
-			}
+	[[nodiscard]] auto Get(this auto&& self) { return self._object; }
+	[[nodiscard]] auto GetID(this auto&& self) { return self._object.GetID(); }
 
-			return GPUResource<Resource>{};
-		}
-
-		void Unload(const std::string_view& name)
-		{
-			/*
-				When we unload a resource, we flag it for removal until the
-				last reference to it is destroyed.
-			*/
-			if (_storage.contains(name.data()))
-			{
-				auto& res = _storage.at(std::string{ name.data(), name.size() });
-
-				auto& reference = _references.at(res.Get().GetID());
-				reference.first = true;
-
-				_storage.erase(std::string{ name.data(), name.size() });
-			}
-
-		}
-
-		/*
-			Reference counting.
-		*/
-
-		// Increments the reference count for the resource identified by id.
-		void AddReference(IDType id)
-		{
-			if (!_references.contains(id))
-			{
-				_references.insert_or_assign(id, std::make_pair(false, 1u));
-			}
-			else
-			{
-				auto& count = _references.at(id);
-				++count.second;
-			}
-		}
-
-		/*
-			Decrements the reference count of the resource identified by id.
-
-			Returns the number of references remaining.
-		*/
-		size_t SubReference(IDType id)
-		{
-			size_t result = 0u;
-
-			if (_references.contains(id))
-			{
-				auto& count = _references.at(id);
-				--count.second;
-
-				result = count.second;
-			}
-
-			return result;
-		}
-
-	private:
-		std::unordered_map<std::string, GPUResource<Resource>> _storage;
-		std::unordered_map<IDType, std::pair<bool, uint16_t>> _references;
-	};
-
-	template<> ReferenceCounter<Texture2D>* GPUResource<Texture2D>::_manager;
-	template<> ReferenceCounter<Shader>* GPUResource<Shader>::_manager;
+    private:
+	Resource _object;
+	gsl::owner<RC*> _manager;
+    };
     
+    template<IdentifiedExternal Resource, typename... Args>
+    [[nodiscard]] constexpr auto MakeResource(Args&&... args)
+    {
+	return SharedResource<Resource>{ std::forward<Args>(args)... };
+    }
+
+    template<IdentifiedExternal Resource>
+    [[nodiscard]] constexpr auto MakeResource(SharedResource<Resource>&& other)
+    {
+	return SharedResource<Resource>{ other };
+    }
+
+    template<IdentifiedExternal Resource>
+    [[nodiscard]] constexpr auto MakeResource()
+    {
+	return SharedResource<Resource>{ };
+    }
+
+    template<IdentifiedExternal Resource>
+    class WeakResource
+    {
+    public:
+	WeakResource(const SharedResource<Resource>& owner)
+	: _manager(owner.GetRC()), ID(owner.GetID())
+	{}
+    
+	[[nodiscard]] bool Valid(this auto&& self) { return self._manager->GetCount(); }
+	[[nodiscard]] auto Lock(this auto&& self) { return SharedResource{std::forward<WeakResource<Resource>>(self)}; }
+	[[nodiscard]] auto GetID(this auto&& self) { return self.ID; }
+
+    private:
+	RC* _manager;
+	Resource::IDType ID;
+    };
+
 }
 
 #endif
