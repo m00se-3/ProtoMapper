@@ -19,7 +19,7 @@
           "PROGRAM_DESCRIPTION": "A prototyping tool for level design, map generation, and pathfinding algorithms.",
           "PROGRAM_URL": "https://github.com/m00se-3/ProtoMapper",
           "CMAKE_BUILD_PARALLEL_LEVEL": "12",
-          "ROOT_FOLDER": "${sourceDir}"
+          "ROOT_DIR": "${sourceDir}"
 
         }
       },

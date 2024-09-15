@@ -139,7 +139,7 @@ namespace proto
 		/*
 			If one of the dimensions is zero, it's safe to assume the native display resolution is being used.
 		*/
-		if (width != 0 && height != 0)
+		if (width == 0 || height == 0)
 		{
 			_window.SetSize(width, height);
 			_fullscreen = false;
