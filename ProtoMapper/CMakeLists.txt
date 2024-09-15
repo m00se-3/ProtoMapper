@@ -8,6 +8,15 @@ target_compile_options(ProtoMapper PRIVATE ${ProtoCompilerFlags})
 #		NOMINMAX		- To prevent windows.h from defining a 'ma' macro that interferes with entt.
 
 target_compile_definitions(ProtoMapper PUBLIC ROOT_DIR="$ENV{ROOT_FOLDER}" NOMINMAX="1")
+target_compile_definitions(
+	ProtoMapper 
+	PUBLIC 
+	ASSETS_DIR="$ENV{ROOT_DIR}/assets"
+	CONFIG_DIR="$ENV{ROOT_DIR}/config"
+	UI_DIR="$ENV{ROOT_DIR}/config/ui"
+	TEXT_DIR="$ENV{ROOT_DIR}/config/ui/text"
+	PROFILE_DIR="$ENV{ROOT_DIR}/config/profile"
+	)
 
 if(${CMAKE_BUILD_TYPE} MATCHES Debug)
 	target_compile_definitions(ProtoMapper PUBLIC _DEBUG_)

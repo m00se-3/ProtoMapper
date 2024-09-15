@@ -39,7 +39,7 @@ namespace proto
 	};
 
 	UIContainer::UIContainer(FontGroup& fonts, Window* win, Renderer* ren)
-		: _ctx(), _configurator(), _cmds(), _verts(), _inds(), _nullTexture(), _window(win)
+		: _ctx(new nk_context, CtxDeleter{}), _configurator(), _cmds(), _verts(), _inds(), _nullTexture(), _window(win)
 	{
 		std::string fontDir = GetAssetDir() + "/fonts/roboto/";
 		std::filesystem::path imgDir = GetAssetDir() + "/icons/";
@@ -77,7 +77,7 @@ namespace proto
 			As a result, it's just easier to handle baking this way.
         */
 
-		int imgWidth = 0, imgHeight = 0;
+		int imgWidth, imgHeight;
 	    const void* img = nk_font_atlas_bake(fonts.GetAtlas(), &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 
 		// Create Texture object.
@@ -85,7 +85,7 @@ namespace proto
 
 		fonts.Finalize(_fontTexture.GetID());
 
-		if (nk_init_default(&_ctx, &fonts.GetFont(FontStyle::Normal)->handle) != 0)
+		if (nk_init_default(_ctx.get(), &fonts.GetFont(FontStyle::Normal)->handle) != 0)
 		{
 		    return;
 		}
@@ -104,22 +104,13 @@ namespace proto
 
 		nk_buffer_init_default(&_cmds);
 
-		InitLua();
-
 		_nkBuffer.Generate(MaxVertexBuffer, MaxVertexBuffer);
 		
 	}
 
-	UIContainer::~UIContainer()
-	{
-		nk_free(&_ctx);
-	}
-
-	bool UIContainer::IsActive() const { return true; }
-
 	bool UIContainer::SetDefinitions(const std::filesystem::path& filepath)
 	{
-		if(std::filesystem::exists(filepath))
+		if(IsLua() && std::filesystem::exists(filepath))
 		{
 			_interfaceDir = filepath;
 
@@ -129,7 +120,7 @@ namespace proto
 
 				if (file.extension() == ".lua")
 				{
-					sol::protected_function_result result = _lua.script_file(file.string());
+					sol::protected_function_result result = _lua->script_file(file.string());
 
 					if (result.valid())
 					{
@@ -145,8 +136,6 @@ namespace proto
 		return false;
 	}
 
-	nk_context* UIContainer::Context() { return &_ctx; }
-
 	std::span<DrawCall> UIContainer::Compile()
 	{
 		_drawCalls.clear();
@@ -160,7 +149,7 @@ namespace proto
 		nk_buffer_init_fixed(&_verts, verts, MaxVertexBuffer);
 		nk_buffer_init_fixed(&_inds, inds, MaxVertexBuffer);
 
-		nk_convert(&_ctx, &_cmds, &_verts, &_inds, &_configurator);
+		nk_convert(_ctx.get(), &_cmds, &_verts, &_inds, &_configurator);
 
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 		glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
@@ -178,7 +167,7 @@ namespace proto
 		const nk_draw_command* cmd = nullptr;
 		uint32_t offset = 0u;
 
-		nk_draw_foreach(cmd, &_ctx, &_cmds)
+		nk_draw_foreach(cmd, _ctx.get(), &_cmds)
 		{
 			if (cmd->elem_count == 0u) 
 			{
@@ -197,18 +186,19 @@ namespace proto
 		}
 
 		nk_buffer_clear(&_cmds);
-		nk_clear(&_ctx);
+		nk_clear(_ctx.get());
 
 		return std::span<DrawCall> { _drawCalls.begin(), _drawCalls.size() };
 	}
 
-	void UIContainer::Update(entt::registry& registry, [[maybe_unused]] float dt)
+	void UIContainer::Update([[maybe_unused]] float dt)
 	{
+		if(!IsLua()) { return; }
 		_dimensions.set("wWidth", _window->GetWidth(), "wHeight", _window->GetHeight());
 		
 		for (auto& [name, errorMsg] : _luaFunctions)
 		{
-			sol::safe_function_result result = _lua[name]();
+			sol::safe_function_result result = (*_lua)[name]();
 
 			if (!result.valid())
 			{
@@ -218,60 +208,62 @@ namespace proto
 		}
 	}
 
-	void UIContainer::InitLua()
+	void UIContainer::InitLua(sol::state* ptr)
 	{
-		_lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::math);
+		_lua = ptr;	
+	
+		_lua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::math);
 
 		// Create a reference table for the nuklear functions.
-		_dimensions = _lua.create_named_table("Host");
+		_dimensions = _lua->create_named_table("Host");
 		
 		// Useful types
 		{
 
-			auto vec2 = _lua.new_usertype<struct nk_vec2>("vec2", sol::no_constructor);
+			auto vec2 = _lua->new_usertype<struct nk_vec2>("vec2", sol::no_constructor);
 			vec2["x"] = &nk_vec2::x;
 			vec2["y"] = &nk_vec2::y;
-			_lua["new_vec2"] = nk_vec2;
+			(*_lua)["new_vec2"] = nk_vec2;
 
-			auto vec2i = _lua.new_usertype<struct nk_vec2i>("vec2i", sol::no_constructor);
+			auto vec2i = _lua->new_usertype<struct nk_vec2i>("vec2i", sol::no_constructor);
 			vec2i["x"] = &nk_vec2i::x;
 			vec2i["y"] = &nk_vec2i::y;
-			_lua["new_vec2i"] = nk_vec2i;
+			(*_lua)["new_vec2i"] = nk_vec2i;
 
-			auto rect = _lua.new_usertype<struct nk_rect>("rect", sol::no_constructor);
+			auto rect = _lua->new_usertype<struct nk_rect>("rect", sol::no_constructor);
 			rect["x"] = &nk_rect::x;
 			rect["y"] = &nk_rect::y;
 			rect["w"] = &nk_rect::w;
 			rect["h"] = &nk_rect::h;
-			_lua["new_rect"] = nk_rect;
+			(*_lua)["new_rect"] = nk_rect;
 
-			auto recti = _lua.new_usertype<struct nk_recti>("recti", sol::no_constructor);
+			auto recti = _lua->new_usertype<struct nk_recti>("recti", sol::no_constructor);
 			recti["x"] = &nk_recti::x;
 			recti["y"] = &nk_recti::y;
 			recti["w"] = &nk_recti::w;
 			recti["h"] = &nk_recti::h;
-			_lua["new_recti"] = nk_recti;
+			(*_lua)["new_recti"] = nk_recti;
 
-			auto color = _lua.new_usertype<struct nk_color>("color", sol::no_constructor);
+			auto color = _lua->new_usertype<struct nk_color>("color", sol::no_constructor);
 			color["r"] = &nk_color::r;
 			color["g"] = &nk_color::g;
 			color["b"] = &nk_color::b;
 			color["a"] = &nk_color::a;
-			_lua["rgba"] = nk_rgba;
+			(*_lua)["rgba"] = nk_rgba;
 
-			auto colorf = _lua.new_usertype<struct nk_colorf>("colorf", sol::no_constructor);
+			auto colorf = _lua->new_usertype<struct nk_colorf>("colorf", sol::no_constructor);
 			colorf["r"] = &nk_colorf::r;
 			colorf["g"] = &nk_colorf::g;
 			colorf["b"] = &nk_colorf::b;
 			colorf["a"] = &nk_colorf::a;
-			_lua["rgba_f"] = nk_rgba_f;
+			(*_lua)["rgba_f"] = nk_rgba_f;
 
-			auto scroll = _lua.new_usertype<struct nk_scroll>("scroll", sol::no_constructor);
+			auto scroll = _lua->new_usertype<struct nk_scroll>("scroll", sol::no_constructor);
 			scroll["x"] = &nk_scroll::x;
 			scroll["y"] = &nk_scroll::y;
 
 
-			_lua.new_enum<FontStyle>( "FontStyle",
+			_lua->new_enum<FontStyle>( "FontStyle",
 				{
 					std::make_pair("Normal", FontStyle::Normal),
 					std::make_pair("Bold", FontStyle::Bold),
@@ -284,8 +276,7 @@ namespace proto
 				}
 			);
 
-
-			_lua.new_enum<nk_flags>( "TextAlign",
+			_lua->new_enum<nk_flags>( "TextAlign",
 				{
 					std::make_pair("Left", NK_TEXT_LEFT),
 					std::make_pair("Center", NK_TEXT_CENTERED),
@@ -294,8 +285,7 @@ namespace proto
 				
 			);
 
-
-			_lua.new_enum<nk_panel_flags>( "PanelFlag",
+			_lua->new_enum<nk_panel_flags>( "PanelFlag",
 				{
 					std::make_pair("Border", NK_WINDOW_BORDER),
 					std::make_pair("Movable", NK_WINDOW_MOVABLE),
@@ -312,21 +302,21 @@ namespace proto
 			);
 
 
-			_lua.new_enum<nk_layout_format>("Layout",
+			_lua->new_enum<nk_layout_format>("Layout",
 				{
 					std::make_pair("Dynamic", NK_DYNAMIC),
 					std::make_pair("Static", NK_STATIC)
 				}
 			);
 
-			_lua.new_enum<nk_color_format>("ColorFmt",
+			_lua->new_enum<nk_color_format>("ColorFmt",
 				{
 					std::make_pair("RGB", NK_RGB),
 					std::make_pair("RGBA", NK_RGBA)
 				}
 			);
 
-			_lua.new_enum<nk_symbol_type>("Symbol",
+			_lua->new_enum<nk_symbol_type>("Symbol",
 				{
 					std::make_pair("None", NK_SYMBOL_NONE),
 					std::make_pair("X", NK_SYMBOL_X),
@@ -345,7 +335,7 @@ namespace proto
 				}
 			);
 
-			_lua.new_enum<nk_popup_type>("Popup",
+			_lua->new_enum<nk_popup_type>("Popup",
 				{
 					std::make_pair("Static", NK_POPUP_STATIC),
 					std::make_pair("Dynamic", NK_POPUP_DYNAMIC),
@@ -357,8 +347,8 @@ namespace proto
 
 		// Access to the nuklear context.
 
-		auto context = _lua.new_usertype<struct nk_context>("Context");
-		_lua["Ctx"] = &_ctx;
+		auto context = _lua->new_usertype<struct nk_context>("Context");
+		(*_lua)["Ctx"] = _ctx.get();
 
 		/*
 			Define nuklear functions.
@@ -366,7 +356,7 @@ namespace proto
 
 		// Windows
 
-		_lua.new_usertype<struct nk_window>("Window");
+		_lua->new_usertype<struct nk_window>("Window");
 
 		context["Begin"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<struct nk_rect> size, sol::optional<nk_panel_flags> flags) -> bool
@@ -747,7 +737,7 @@ namespace proto
 				if (style)
 				{
 					const auto* host = Mapper::GetInstance();
-					return static_cast<bool>(nk_style_push_font(&_ctx, &host->GetFont(*style)->handle));
+					return static_cast<bool>(nk_style_push_font(_ctx.get(), &host->GetFont(*style)->handle));
 				}
 
 				return false;

@@ -43,9 +43,6 @@ namespace proto
 
 		if (ren->IsActive() && ui->IsActive())
 		{
-			ui->Update(registry, dt);
-			static_cast<RenderingSystem*>(ren.get())->SetUIDrawCalls(static_cast<UIContainer*>(ui.get())->Compile());
-			ren->Update(registry, dt);
 		}
 	}
 

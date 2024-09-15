@@ -5,10 +5,10 @@
 
 namespace proto
 {
-    [[nodiscard]] constexpr std::string GetTextDir() { return "/config/data/text"; }
-    [[nodiscard]] constexpr std::string GetProfileDir() { return "/config/profile/"; }
-    [[nodiscard]] constexpr std::string GetUIDir() { return "/config/ui/"; }
-    [[nodiscard]] constexpr std::string GetAssetDir() { return "/assets"; }
+    [[nodiscard]] constexpr std::string GetTextDir() { return TEXT_DIR; }
+    [[nodiscard]] constexpr std::string GetProfileDir() { return PROFILE_DIR; }
+    [[nodiscard]] constexpr std::string GetUIDir() { return UI_DIR; }
+    [[nodiscard]] constexpr std::string GetAssetDir() { return ASSETS_DIR; }
 }
 
 #endif // !PROTOMAPPER_CONFIG_HPP

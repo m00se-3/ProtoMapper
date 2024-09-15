@@ -76,6 +76,7 @@ namespace proto
 	    std::unique_ptr<UIContainer> _ui;
 	    std::unique_ptr<Renderer> _renderer;
 
+	    sol::state _lua;
 	    std::filesystem::path _configFile;
 	    CSimpleIniA _configData;
 	    Window _window;

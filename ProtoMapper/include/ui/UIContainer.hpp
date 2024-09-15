@@ -40,37 +40,35 @@
 #include "Font.hpp"
 #include "Vertex.hpp"
 #include "Window.hpp"
-#include "System.hpp"
 
 namespace proto
 {
-	class UIContainer : public System
+	class UIContainer
 	{
 	public:
-          UIContainer(const UIContainer&) = delete;
-          UIContainer(UIContainer&&) = delete;
-          UIContainer& operator=(const UIContainer&) = delete;
-          UIContainer& operator=(UIContainer&&) = delete;
-          UIContainer(FontGroup& fonts, Window *win, Renderer *ren);
-          ~UIContainer() override;
+		UIContainer(FontGroup& fonts, Window *win, Renderer *ren);
 
-          // Defines each UI function for the application to use.
-          [[nodiscard]] bool SetDefinitions(const std::filesystem::path &filepath);
+		// Defines each UI function for the application to use.
+		[[nodiscard]] bool SetDefinitions(const std::filesystem::path &filepath);
+		void InitLua(sol::state* ptr);
+		[[nodiscard]] constexpr bool IsLua(this auto&& self) { return (self._lua != nullptr); }
 
-          [[nodiscard]] nk_context *Context();
-          [[nodiscard]] bool IsActive() const override;
+		[[nodiscard]] nk_context *Context() { return _ctx.get(); }
+		[[nodiscard]] bool IsActive() const { return true; }
 
-          // Calls each UI Lua function and reports any errors.
-          void Update(entt::registry &registry, [[maybe_unused]] float dt) override;
+		// Calls each UI Lua function and reports any errors.
+		void Update([[maybe_unused]] float dt);
 
-          [[nodiscard]] std::span<DrawCall> Compile();
+		[[nodiscard]] std::span<DrawCall> Compile();
 
 	private:
-
-		void InitLua();
+		struct CtxDeleter
+		{
+		    void operator()(struct nk_context* ctx) { nk_free(ctx); }
+		};
 
 		std::filesystem::path _interfaceDir;
-		sol::state _lua;
+		sol::state* _lua = nullptr;
 		sol::table _dimensions;
 
 		std::map<std::string, std::string> _luaFunctions;
@@ -81,7 +79,7 @@ namespace proto
 			All things below are necessary for nuklear to work and are, mostly, taken from the documentation.
 		*/
 
-		struct nk_context _ctx;
+		std::unique_ptr<struct nk_context, CtxDeleter> _ctx;
 		struct nk_convert_config _configurator;
 		struct nk_buffer _cmds, _verts, _inds;
 		struct nk_draw_null_texture _nullTexture;

@@ -20,6 +20,7 @@
 namespace proto
 {
     FontAtlas::FontAtlas()
+    : _atlas(std::make_shared<struct nk_font_atlas>())
     {
         nk_font_atlas_init_default(_atlas.get());
     }

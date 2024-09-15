@@ -18,6 +18,7 @@
 #include "ProtoMapper.hpp"
 #include "Config.hpp"
 #include <GLFW/glfw3.h>
+#include <cstdlib>
 
 namespace proto 
 {
@@ -165,6 +166,14 @@ namespace proto
 		_renderer->SetRenderSize(_window.GetWidth(), _window.GetHeight());
 		_renderer->SetViewport(0, 0, _window.GetWidth(), _window.GetHeight());
 		_renderer->Init(Renderer::mode::Two);
+
+		_ui = std::make_unique<UIContainer>(_fonts, &_window, _renderer.get());
+		_ui->InitLua(&_lua);
+
+		if(!_ui->SetDefinitions(GetUIDir()))
+		{
+			return EXIT_FAILURE;
+		}
 
 		glfwSetKeyCallback(_window.GetPtr(), Mapper::KeyboardEventCallback);
 		glfwSetCharCallback(_window.GetPtr(), Mapper::TextEventCallback);
