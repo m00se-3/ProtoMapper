@@ -70,7 +70,7 @@ namespace proto
 	private:
 	    const std::string _title = "ProtoMapper";
 	    std::filesystem::path _rootDir;
-	    bool _appRunning = true, _fullscreen = true, _configUpdate = false;
+	    bool _appRunning = true, _fullscreen = false, _configUpdate = false;
 
 	    std::unique_ptr<Scene> _scene;
 	    std::unique_ptr<UIContainer> _ui;

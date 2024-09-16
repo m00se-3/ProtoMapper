@@ -179,7 +179,7 @@ namespace proto
     template<IdentifiedExternal Resource>
     [[nodiscard]] constexpr auto MakeResource()
     {
-	return SharedResource<Resource>{ };
+		return SharedResource<Resource>{ Resource{} };
     }
 
     template<IdentifiedExternal Resource>

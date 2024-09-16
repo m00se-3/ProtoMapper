@@ -38,12 +38,6 @@ namespace proto
 
 	void Scene::Update(float dt)
 	{
-		auto& ren = systems.at("render");
-		auto& ui = systems.at("ui");
-
-		if (ren->IsActive() && ui->IsActive())
-		{
-		}
 	}
 
 	void Scene::Cleanup()

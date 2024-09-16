@@ -14,7 +14,7 @@ target_compile_definitions(
 	ASSETS_DIR="$ENV{ROOT_DIR}/assets"
 	CONFIG_DIR="$ENV{ROOT_DIR}/config"
 	UI_DIR="$ENV{ROOT_DIR}/config/ui"
-	TEXT_DIR="$ENV{ROOT_DIR}/config/ui/text"
+	TEXT_DIR="$ENV{ROOT_DIR}/config/data/text"
 	PROFILE_DIR="$ENV{ROOT_DIR}/config/profile"
 	)
 

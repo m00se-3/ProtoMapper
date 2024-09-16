@@ -142,7 +142,7 @@ namespace proto
 		if (width == 0 || height == 0)
 		{
 			_window.SetSize(width, height);
-			_fullscreen = false;
+			_fullscreen = true;
 		}
 
 		return true;
