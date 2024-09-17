@@ -18,7 +18,6 @@
 #ifndef PROTO_RESOURCE_MANAGER_HPP
 #define PROTO_RESOURCE_MANAGER_HPP
 
-#include <memory_resource>
 #include <map>
 #include <span>
 
@@ -38,28 +37,6 @@ namespace proto
     };
     
     class RC;
-
-
-    /*
-	The ResouceManager is in charge of storing shaders, textures, and other external data resources.
-	It also keeps a reference count of shaders and textures.
-    */
-    class ResourceManager
-    {
-    public:
-	ResourceManager(const std::span<uint8_t>& resource);
-
-	void LoadStringRes(const std::string& name, const std::string& content);
-	std::string_view GetString(const std::string_view& name);
-	void UnloadString(const std::string_view& name);
-
-    private:
-	std::pmr::monotonic_buffer_resource _upstream;
-	std::pmr::synchronized_pool_resource _textAllocator;
-
-	// String storage map.
-	std::pmr::map<std::pmr::string, std::pmr::string> _stringMap;
-    };
 
     template<IdentifiedExternal Resource>
     class WeakResource;

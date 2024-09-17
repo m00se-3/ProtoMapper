@@ -16,9 +16,9 @@ namespace proto
 	public:
 		RenderingSystem(Renderer* ren);
 
-		[[nodiscard]] bool IsActive() const override;
-		void Update(entt::registry& registry, [[maybe_unused]]float dt) override;
-		void SetUIDrawCalls(const std::span<DrawCall>& calls);
+		[[nodiscard]] bool IsActive() const override { return _renderer != nullptr; }
+		void Update(float dt) override;
+		void SetUIDrawCalls(std::span<DrawCall> calls);
 
 	private:
 

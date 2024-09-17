@@ -17,10 +17,12 @@
 */
 #include "Shader.hpp"
 
-#include <format>
+#include <array>
 
 namespace proto
 {	
+	static constexpr size_t readBufferLength = 100z;
+
 	std::pair<Shader::IDType, Shader::IDType> Shader::CreateBasic(const char* srcVert, const char* srcFrag)
 	{
 		ID = glCreateProgram();
@@ -44,17 +46,16 @@ namespace proto
 
 #ifdef _DEBUG_
 
-		int test, length;
+		int test{}, length{};
 
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &test);
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
-
-		if (!test)
+		if (test == 0)
 		{
-			char buffer[100u];
+			std::array<char, readBufferLength> buffer{};
 
-			glGetShaderInfoLog(shader, 100u, &length, buffer);
+			glGetShaderInfoLog(shader, readBufferLength, &length, buffer.data());
 
 			std::puts("Vertex shader failed to compile.\n");
 
@@ -81,17 +82,17 @@ namespace proto
 #ifdef _DEBUG_
 		glValidateProgram(ID);
 
-		int result;
+		int result{};
 		glGetProgramiv(ID, GL_VALIDATE_STATUS, &result);
 
-		if (!result)
+		if (result == 0)
 		{
-			int length;
+			int length{};
 			glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &length);
 
-			char buffer[100u];
+			std::array<char, readBufferLength> buffer{};
 
-			glGetProgramInfoLog(ID, 100u, &length, buffer);
+			glGetProgramInfoLog(ID, readBufferLength, &length, buffer.data());
 
 			std::puts("Could not link shader program.\n");
 		}

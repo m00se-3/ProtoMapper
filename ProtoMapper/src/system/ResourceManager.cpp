@@ -19,30 +19,4 @@
 
 namespace proto
 {
-    void ResourceManager::LoadStringRes(const std::string& name, const std::string& content)
-    {
-        auto str = _stringMap.emplace(
-            std::pmr::string{ name, &_textAllocator },
-            std::pmr::string{ content, &_textAllocator }
-        );
-    }
-
-    std::string_view ResourceManager::GetString(const std::string_view& name)
-    {
-        if (_stringMap.contains(name.data()))
-        {
-            auto& result = _stringMap.at(std::pmr::string{ name.data(), name.size(), &_textAllocator });
-
-            std::string_view view{ result.c_str(), result.size() };
-
-            return view;
-        }
-
-        return std::string_view{};
-    }
-
-    void ResourceManager::UnloadString(const std::string_view& name)
-    {
-        _stringMap.erase(std::pmr::string{ name.data(), name.size(), &_textAllocator });
-    }
 }

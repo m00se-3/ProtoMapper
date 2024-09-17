@@ -49,7 +49,7 @@ namespace proto
 		auto* self = Mapper::GetInstance();
 		int result = Mapper::GLFWButtontoNKButton(button);
 
-		double mx = 0.0, my = 0.0;
+		double mx, my;
 		glfwGetCursorPos(window, &mx, &my);
 
 		if (result > -1)
@@ -167,8 +167,8 @@ namespace proto
 		_renderer->SetViewport(0, 0, _window.GetWidth(), _window.GetHeight());
 		_renderer->Init(Renderer::mode::Two);
 
-		_ui = std::make_unique<UIContainer>(_fonts, &_window, _renderer.get());
-		_ui->InitLua(&_lua);
+		_ui = std::make_shared<UIContainer>(_fonts, &_window, _renderer.get());
+		_ui->InitLua(gsl::make_not_null(&_lua));
 
 		if(!_ui->SetDefinitions(GetUIDir()))
 		{
@@ -181,23 +181,7 @@ namespace proto
 		glfwSetCursorPosCallback(_window.GetPtr(), Mapper::MouseMotionEventCallback);
 		glfwSetScrollCallback(_window.GetPtr(), Mapper::MouseScrollEventCallback);
 
-		_scene = std::make_unique<Scene>(_renderer.get(), &_window);
-		_scene->Init();
-
-		/*
-			TODO: Load all assets on multiple threads.
-		*/
-
-		// Text files
-		std::filesystem::path textDir = GetTextDir();
-
-		for(const auto& entry : std::filesystem::recursive_directory_iterator(textDir))
-		{
-			if(entry.is_regular_file())
-			{
-
-			}
-		}
+		_scene = std::make_unique<Scene>(_renderer.get(), _ui);
 
 		/*
 			Show main window and start main loop.

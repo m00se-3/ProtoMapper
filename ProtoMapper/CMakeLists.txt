@@ -50,6 +50,9 @@ target_link_libraries(
 	EnTT::EnTT	
 	tinyxml2::tinyxml2
 	nuklear
+	gsl::gsl-lite
+	gsl::gsl-lite-v0
+	gsl::gsl-lite-v1
 	sol2
 	${LUA_LIBRARIES}
 )
@@ -99,7 +102,6 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/system/Logger.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/LuaEngine.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/RenderingSystem.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/system/ResourceManager.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/System.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/Window.cpp
 

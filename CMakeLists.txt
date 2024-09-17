@@ -69,6 +69,7 @@ find_package(EnTT CONFIG REQUIRED)
 find_package(Lua REQUIRED)
 find_package(tinyxml2 CONFIG REQUIRED)
 find_package(unofficial-nuklear CONFIG REQUIRED)
+find_package(gsl-lite CONFIG REQUIRED)
 find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 
 CPMAddPackage("gh:m00se-3/sol2#fix-clang_18")

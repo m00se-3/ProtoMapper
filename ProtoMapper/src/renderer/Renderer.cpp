@@ -70,18 +70,20 @@ namespace proto
 				Read each shader file line by line until the end.
 			*/
 
-			std::array<char, 50u> buffer = { 0 };
+			static constexpr size_t readBufferSize = 50z;
+
+			std::array<char, readBufferSize> buffer = { 0 };
 
 			while (std::feof(vsHandle.get()) == 0)
 			{
-				vsSrc += std::fgets(buffer.data(), 50, vsHandle.get());
+				vsSrc += std::fgets(buffer.data(), readBufferSize, vsHandle.get());
 			}
 
-			std::memset(buffer.data(), 0, 50u);	// Reset the buffer memory to ensure no garbage data is present.
+			std::memset(buffer.data(), 0, readBufferSize);	// Reset the buffer memory to ensure no garbage data is present.
 
 			while (std::feof(fsHandle.get()) == 0)
 			{
-				fsSrc += std::fgets(buffer.data(), 50, fsHandle.get());
+				fsSrc += std::fgets(buffer.data(), readBufferSize, fsHandle.get());
 			}
 
 			auto objs = _defaultShader.CreateBasic(vsSrc.c_str(), fsSrc.c_str());
@@ -133,7 +135,7 @@ namespace proto
 
 	void Renderer::SetBackgroundColor(const glm::vec4& col)
 	{
-		glClearColor(col.r, col.g, col.b, col.a);
+		glClearColor(col.r, col.g, col.b, col.a); // NOLINT: union access is unavoidable
 	}
 
 	Renderer::mode Renderer::GetRenderMode() const { return _currentMode; }

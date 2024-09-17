@@ -85,12 +85,11 @@ namespace proto
 
 		fonts.Finalize(_fontTexture.GetID());
 
-		if (nk_init_default(_ctx.get(), &fonts.GetFont(FontStyle::Normal)->handle) != 0)
+		if (nk_init_default(_ctx.get(), &fonts.GetFont(FontStyle::Normal)->handle) == 0)
 		{
 		    return;
 		}
 
-		memset(&_configurator, 0, sizeof(_configurator));
 		_configurator.shape_AA = NK_ANTI_ALIASING_ON;
 		_configurator.line_AA = NK_ANTI_ALIASING_ON;
 		_configurator.vertex_layout = vertex_layout.data();
@@ -208,7 +207,7 @@ namespace proto
 		}
 	}
 
-	void UIContainer::InitLua(sol::state* ptr)
+	void UIContainer::InitLua(gsl::not_null<sol::state*> ptr)
 	{
 		_lua = ptr;	
 	

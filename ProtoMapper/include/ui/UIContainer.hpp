@@ -40,24 +40,25 @@
 #include "Font.hpp"
 #include "Vertex.hpp"
 #include "Window.hpp"
+#include "System.hpp"
 
 namespace proto
 {
-	class UIContainer
+	class UIContainer : public System
 	{
 	public:
 		UIContainer(FontGroup& fonts, Window *win, Renderer *ren);
 
 		// Defines each UI function for the application to use.
 		[[nodiscard]] bool SetDefinitions(const std::filesystem::path &filepath);
-		void InitLua(sol::state* ptr);
+		void InitLua(gsl::not_null<sol::state*> ptr);
 		[[nodiscard]] constexpr bool IsLua(this auto&& self) { return (self._lua != nullptr); }
 
 		[[nodiscard]] nk_context *Context() { return _ctx.get(); }
-		[[nodiscard]] bool IsActive() const { return true; }
+		[[nodiscard]] bool IsActive() const override { return true; }
 
 		// Calls each UI Lua function and reports any errors.
-		void Update([[maybe_unused]] float dt);
+		void Update([[maybe_unused]] float dt) override;
 
 		[[nodiscard]] std::span<DrawCall> Compile();
 

@@ -1,8 +1,6 @@
 #ifndef PROTO_SYSTEM_HPP
 #define PROTO_SYSTEM_HPP
 
-#include "entt/entt.hpp"
-
 namespace proto
 {
 	/*
@@ -19,8 +17,8 @@ namespace proto
 		System& operator=(System&&) = default;
 		virtual ~System() = default;
 
-        [[nodiscard]] virtual bool IsActive() const = 0;
-		virtual void Update(entt::registry& registry, [[maybe_unused]] float dt) = 0;
+		[[nodiscard]] virtual bool IsActive() const = 0;
+		virtual void Update(float dt) = 0;
 	};
 
 }

@@ -1,4 +1,5 @@
 #include "RenderingSystem.hpp"
+#include "Renderer.hpp"
 
 
 namespace proto
@@ -8,17 +9,13 @@ namespace proto
 	{
 	}
 	
-	bool RenderingSystem::IsActive() const
-	{
-		return _renderer != nullptr;
-	}
-
-	void RenderingSystem::Update(entt::registry& registry, float dt)
+	void RenderingSystem::Update(float dt)
 	{
 		_renderer->PushDrawCallRange(_uiDrawCalls);
+		_uiDrawCalls = std::span<DrawCall>{};
 	}
 
-	void RenderingSystem::SetUIDrawCalls(const std::span<DrawCall>& calls)
+	void RenderingSystem::SetUIDrawCalls(std::span<DrawCall> calls)
 	{
 		_uiDrawCalls = calls;
 	}

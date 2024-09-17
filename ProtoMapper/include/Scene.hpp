@@ -20,33 +20,27 @@
 
 #include <unordered_map>
 #include <memory>
-#include <string>
 #include <span>
 
-#include "entt/entt.hpp"
-
-#include "Renderer.hpp"
+#include "UIContainer.hpp"
 
 namespace proto
 {
 
 	class System;
-	class Window;
 	
 	class Scene
 	{
 	public:
-		Scene(Renderer* ren, Window* win);
+		Scene(Renderer* ren, std::shared_ptr<UIContainer> ui);
 
-		bool Init();
-		void Update([[maybe_unused]]float dt);
+		void Update(float dt);
 		void Cleanup();
 		void Render();
 
 	private:
 		std::span<DrawCall> _uiDrawCalls;
-		entt::registry registry;
-		std::unordered_map<std::string, std::shared_ptr<System>> systems;
+		std::unordered_map<int, std::shared_ptr<System>> _systems;
 	};
 }
 

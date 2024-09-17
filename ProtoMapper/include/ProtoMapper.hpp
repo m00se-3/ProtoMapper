@@ -73,7 +73,7 @@ namespace proto
 	    bool _appRunning = true, _fullscreen = false, _configUpdate = false;
 
 	    std::unique_ptr<Scene> _scene;
-	    std::unique_ptr<UIContainer> _ui;
+	    std::shared_ptr<UIContainer> _ui;
 	    std::unique_ptr<Renderer> _renderer;
 
 	    sol::state _lua;

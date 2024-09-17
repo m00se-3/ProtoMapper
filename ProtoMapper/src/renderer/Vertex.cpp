@@ -22,7 +22,7 @@ namespace proto
 	void Vertex2D::Attributes()
 	{
 		// Vertex positions
-		glVertexAttribPointer(0u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), 0);
+		glVertexAttribPointer(0u, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), nullptr);
 		glEnableVertexAttribArray(0);
 
 		// Texture coordinates
