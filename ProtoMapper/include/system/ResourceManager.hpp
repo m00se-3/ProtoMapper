@@ -25,7 +25,15 @@
 
 namespace proto
 {
-    template<typename T>
+    /*
+		This concept is used along side the SharedResource class. Essentially, it
+		requires that you provide a structure that allows the template to access the 
+		resource's ID as well as a Destroy function for deallocating the resource.
+
+		This Concept is written, primarily, with textures in mind. However, it could be
+		adapted to be more generic.
+	*/	
+	template<typename T>
     concept IdentifiedExternal = requires(T t, T o)
     {
 	    std::default_initializable<T>;
@@ -36,121 +44,166 @@ namespace proto
 	    { t.Destroy() } -> std::same_as<void>;
     };
     
-    class RC;
+    class RC
+	{
+	public:
+
+		[[nodiscard]] constexpr auto GetShared(this auto&& self) { return self._shared; }
+		[[nodiscard]] constexpr auto GetWeak(this auto&& self) { return self._weak; }
+		
+		// Increments the owners.
+		constexpr void AddShared()
+		{
+			++_shared;
+		}
+
+		/*
+			Returns the number of owners remaining.
+		*/
+		constexpr size_t SubShared()
+		{
+			--_shared;
+			return _shared;
+		}
+
+		// Increments the references.
+		constexpr void AddWeak()
+		{
+			++_weak;
+		}
+
+		/*
+			Returns the number of references remaining.
+		*/
+		constexpr size_t SubWeak()
+		{
+			--_weak;
+			return _weak;
+		}
+
+	private:
+		size_t _shared, _weak;
+	};
 
     template<IdentifiedExternal Resource>
     class WeakResource;
-
-    class RC
-    {
-    public:
-
-	[[nodiscard]] auto GetCount(this auto&& self) { return self._count; }
-	
-	// Increments the reference.
-	constexpr void Add()
-	{
-	    ++_count;
-	}
-
-	/*
-	    Returns the number of references remaining.
-	*/
-	constexpr size_t Sub()
-	{
-	    --_count;
-	    return _count;
-	}
-
-    private:
-	size_t _count;
-    };
 
     template<IdentifiedExternal Resource>
     class SharedResource
     {
     public:
-	SharedResource() = default;
+		constexpr SharedResource() = default;
 
-	SharedResource(const SharedResource& other)
-	: _object(other.Get()), _manager(other.GetRC())
-	{
-	    _manager->Add();
-	}
-	
-	SharedResource(WeakResource<Resource>&& ptr)
-	: _object(ptr.GetID()), _manager(ptr.GetReferenceCounter())
-	{}
+		friend class SharedResource<Resource>;
+		friend class WeakResource<Resource>;
 
-	SharedResource(SharedResource&& other) noexcept : _object(other.Get()), _manager(other.GetRC()) {}
+		constexpr SharedResource(const SharedResource& other)
+		:  _manager(other._manager), _object(other._object), _empty(false)
+		{
+			_manager->AddShared();
+		}
+		
+		constexpr SharedResource(const WeakResource<Resource>& ptr)
+		:  _manager(ptr._manager), _object(ptr.GetID()), _empty(false)
+		{
+			_manager->AddShared();
+		}
 
-	SharedResource& operator=(SharedResource&& other) noexcept
-	{
-	    if (_manager->Sub() == 0u)
-	    {
-		_object.Destroy();
-		delete _manager;
-	    }
+		constexpr SharedResource(SharedResource&& other) noexcept : _manager(other._manager), _object(other._object), _empty(false)
+		{
+			other.Nullify();
+		}
 
-	    _object = other.Get();
-	    _manager = gsl::owner<RC*>{other.GetRC()};
-	    _manager->Add();
+		constexpr SharedResource& operator=(SharedResource&& other) noexcept
+		{
+			if (!_empty && _manager->SubShared() == 0z)
+			{
+				_object.Destroy();
 
-	    return *this;
-	}
+				if(_manager->GetWeak() == 0z)
+				{
+					delete _manager;
+				}
+			}
 
-	template<typename... Args>
-	SharedResource(Args&&... args)
-	: _object(std::forward<Args>(args)...), _manager(gsl::owner<RC*>{new RC{}})
-	{
-	    _manager->Add();
-	}
+			_empty = false;
+			_object = other.Get();
+			_manager = gsl::owner<RC*>{other._manager};
+			_manager->AddShared();
 
-	~SharedResource()
-	{
-	    if (_manager->Sub() == 0u)
-	    {
-		_object.Destroy();
-		delete _manager;
-	    }
-	}
+			other.Nullify();
 
-	SharedResource& operator=(const SharedResource& other)
-	{
-	    if (_manager->Sub() == 0u)
-	    {
-		_object.Destroy();
-		delete _manager;
-	    }
+			return *this;
+		}
 
-	    _object = other.Get();
-	    _manager = gsl::owner<RC*>{other.GetRC()};
-	    _manager->Add();
+		template<typename... Args>
+		constexpr SharedResource(Args&&... args)
+		: _manager(gsl::owner<RC*>{new RC{}}), _object(std::forward<Args>(args)...), _empty(false)
+		{
+			_manager->AddShared();
+		}
 
-	    return *this;
-	}
+		constexpr ~SharedResource()
+		{
+			if (!_empty && _manager->SubShared() == 0z)
+			{
+				_object.Destroy();
 
-	bool operator==(const SharedResource& rhs) { return (_object == rhs.Get()); }
-	gsl::owner<RC*> GetRC() { return _manager; }
+				if(_manager->GetWeak() == 0z)
+				{
+					delete _manager;
+				}
+			}
+		}
 
-	[[nodiscard]] auto Get(this auto&& self) { return self._object; }
-	[[nodiscard]] auto GetID(this auto&& self) { return self._object.GetID(); }
+		constexpr SharedResource& operator=(const SharedResource& other)
+		{
+			if (!_empty && _manager->SubShared() == 0z)
+			{
+				_object.Destroy();
+				
+				if(_manager->GetWeak() == 0z)
+				{
+					delete _manager;
+				}
+			}
+
+			_empty = false;
+			_object = other.Get();
+			_manager = gsl::owner<RC*>{other._manager};
+			_manager->AddShared();
+
+			return *this;
+		}
+
+		constexpr bool operator==(const SharedResource& rhs) const { return (_object == rhs.Get()); }
+
+		[[nodiscard]] constexpr auto Get(this auto&& self) { return self._object; }
+		[[nodiscard]] constexpr auto GetID(this auto&& self) { return self._object.GetID(); }
+		[[nodiscard]] constexpr auto GetOwners(this auto&& self) { return (!self._empty) ? self._manager->GetShared() : 0z; }
 
     private:
-	Resource _object;
-	gsl::owner<RC*> _manager;
+		constexpr void Nullify(this auto&& self)
+		{
+			self._manager = nullptr;
+			self._empty = true;
+		}
+
+		gsl::owner<RC*> _manager = nullptr;
+		Resource _object;
+		bool _empty = true;
     };
     
     template<IdentifiedExternal Resource, typename... Args>
     [[nodiscard]] constexpr auto MakeResource(Args&&... args)
     {
-	return SharedResource<Resource>{ std::forward<Args>(args)... };
+		return SharedResource<Resource>{ std::forward<Args>(args)... };
     }
 
     template<IdentifiedExternal Resource>
-    [[nodiscard]] constexpr auto MakeResource(SharedResource<Resource>&& other)
+    [[nodiscard]] constexpr auto MakeResource(const SharedResource<Resource>& other)
     {
-	return SharedResource<Resource>{ other };
+		return SharedResource<Resource>{ other };
     }
 
     template<IdentifiedExternal Resource>
@@ -162,18 +215,55 @@ namespace proto
     template<IdentifiedExternal Resource>
     class WeakResource
     {
-    public:
-	WeakResource(const SharedResource<Resource>& owner)
-	: _manager(owner.GetRC()), ID(owner.GetID())
-	{}
+		friend SharedResource<Resource>;
+		friend WeakResource<Resource>;
+    public:		
+		constexpr WeakResource(const SharedResource<Resource>& owner)
+		: _manager(owner._manager), ID(owner.ID)
+		{
+			_manager->AddWeak();
+		}
+
+		constexpr WeakResource(const WeakResource& other)
+		: _manager(other._manager), ID(other.ID)
+		{
+			_manager->AddWeak();
+		}
+
+		constexpr WeakResource& operator=(const WeakResource& other)
+		{
+			if(_manager->SubWeak() == 0z && _manager->GetShared() == 0z)
+			{
+				delete _manager;
+			}
+
+			_manager = gsl::owner<RC*>{other._manager};
+			ID = other.ID;
+			_manager->AddWeak();
+
+			return *this;
+		}
+
+		WeakResource(WeakResource&&) = delete;
+		WeakResource& operator=(WeakResource&&) = delete;
+
+		constexpr bool operator==(const WeakResource& other) const { return ID == other.ID; }
+
+		constexpr ~WeakResource()
+		{
+			if(_manager->SubWeak() == 0z && _manager->GetShared() == 0z)
+			{
+				delete _manager;
+			}
+		}
     
-	[[nodiscard]] bool Valid(this auto&& self) { return self._manager->GetCount(); }
-	[[nodiscard]] auto Lock(this auto&& self) { return SharedResource{std::forward<WeakResource<Resource>>(self)}; }
-	[[nodiscard]] auto GetID(this auto&& self) { return self.ID; }
+		[[nodiscard]] constexpr auto GetOwners(this auto&& self) { return self._manager->GetShared(); }
+		[[nodiscard]] constexpr bool Expired(this auto&& self) { return self.GetOwners() == 0z; }
+		[[nodiscard]] constexpr auto&& Lock(this auto&& self) { return (!self.Expired()) ? SharedResource{std::forward<WeakResource<Resource>>(self)} : SharedResource<Resource>{}; }
 
     private:
-	RC* _manager;
-	Resource::IDType ID;
+		gsl::owner<RC*> _manager = nullptr;
+		Resource::IDType ID;
     };
 
 }

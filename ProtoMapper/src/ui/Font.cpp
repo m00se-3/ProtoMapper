@@ -28,7 +28,7 @@ namespace proto
     FontAtlas::~FontAtlas()
     {
         nk_font_atlas_cleanup(_atlas.get());
-	nk_font_atlas_clear(_atlas.get());
+	    nk_font_atlas_clear(_atlas.get());
     }
 
     void FontGroup::Create()

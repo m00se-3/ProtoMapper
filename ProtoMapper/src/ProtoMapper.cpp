@@ -29,7 +29,7 @@ namespace proto
 	void Mapper::KeyboardEventCallback([[maybe_unused]] GLFWwindow* window, int keyn, [[maybe_unused]] int scancode, int action, int mods)
 	{
 		auto* self = Mapper::GetInstance();
-		int key = Mapper::GLFWKeytoNKKey(keyn, mods);
+		const int key = Mapper::GLFWKeytoNKKey(keyn, mods);
 
 		if (key > -1)
 		{
@@ -47,9 +47,9 @@ namespace proto
 	void Mapper::MouseButtonEventCallback([[maybe_unused]] GLFWwindow* window, int button, int action, int mods)
 	{
 		auto* self = Mapper::GetInstance();
-		int result = Mapper::GLFWButtontoNKButton(button);
+		const int result = Mapper::GLFWButtontoNKButton(button);
 
-		double mx, my;
+		double mx{}, my{};
 		glfwGetCursorPos(window, &mx, &my);
 
 		if (result > -1)
@@ -194,8 +194,8 @@ namespace proto
 
 		while (glfwWindowShouldClose(_window.GetPtr()) == GLFW_FALSE && _appRunning)
 		{
-			time::time_point current = time::now();
-			float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
+			const time::time_point current = time::now();
+			const float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
 
 			_scene->Update(microseconds * 1000000.f);
 

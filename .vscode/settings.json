@@ -17,5 +17,9 @@
         "Host"
     ],
     "Lua.completion.showWord": "Enable",
-    "Lua.completion.workspaceWord": true
+    "Lua.completion.workspaceWord": true,
+    "C_Cpp.codeAnalysis.runAutomatically": false,
+    "C_Cpp.codeAnalysis.clangTidy.codeAction.formatFixes": false,
+    "C_Cpp.default.cppStandard": "c++23",
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }
