@@ -41,8 +41,8 @@ namespace proto
 	UIContainer::UIContainer(FontGroup& fonts, Window* win, Renderer* ren)
 		: _ctx(new nk_context, CtxDeleter{}), _configurator(), _cmds(), _verts(), _inds(), _nullTexture(), _window(win)
 	{
-		std::string fontDir = GetAssetDir() + "/fonts/roboto/";
-		std::filesystem::path imgDir = GetAssetDir() + "/icons/";
+		const std::string fontDir = GetAssetDir() + "/fonts/roboto/";
+		const std::filesystem::path imgDir = GetAssetDir() + "/icons/";
 
 		if(std::filesystem::exists(imgDir))
 		{
@@ -51,8 +51,8 @@ namespace proto
 				const auto& file = icon.path();
 
 				Image img{file};
-				auto iconImg = _icons.insert_or_assign(file.stem().string(), MakeResource<Texture2D>());
-				iconImg.first->second.Get().Create().WriteImage(img);
+				auto iconImg = _icons.insert_or_assign(file.stem().string(), make_res<Texture2D>([](Texture2D& tex){ tex.Destroy(); }));
+				iconImg.first->second.get().Create().WriteImage(img);
 			}
 		}
 		
@@ -77,7 +77,7 @@ namespace proto
 			As a result, it's just easier to handle baking this way.
         */
 
-		int imgWidth, imgHeight;
+		int imgWidth{}, imgHeight{};
 	    const void* img = nk_font_atlas_bake(fonts.GetAtlas(), &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 
 		// Create Texture object.
@@ -119,11 +119,11 @@ namespace proto
 
 				if (file.extension() == ".lua")
 				{
-					sol::protected_function_result result = _lua->script_file(file.string());
+					const sol::protected_function_result result = _lua->script_file(file.string());
 
 					if (result.valid())
 					{
-						std::pair<std::string, std::string> stuff = result;
+						const std::pair<std::string, std::string> stuff = result;
 						_luaFunctions.insert_or_assign(stuff.first, stuff.second);
 					}
 				}
@@ -197,11 +197,11 @@ namespace proto
 		
 		for (auto& [name, errorMsg] : _luaFunctions)
 		{
-			sol::safe_function_result result = (*_lua)[name]();
+			const sol::safe_function_result result = (*_lua)[name]();
 
 			if (!result.valid())
 			{
-				sol::error err = result;
+				const sol::error err = result;
 				std::puts(std::format("{}\n{}\n", errorMsg.c_str(), err.what()).c_str()); // NOLINT
 			}
 		}
@@ -553,7 +553,7 @@ namespace proto
 			{
 				const auto& str = text.value();
 
-				return static_cast<unsigned int>(nk_check_flags_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return nk_check_flags_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *value);
 			};
 
 		context["CheckboxLbl"] = 

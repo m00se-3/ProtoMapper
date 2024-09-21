@@ -34,6 +34,7 @@ target_include_directories(
 	${CMAKE_CURRENT_LIST_DIR}/include/system
 	${CMAKE_CURRENT_LIST_DIR}/include/ui
 	${CMAKE_CURRENT_LIST_DIR}/include/renderer
+	${CMAKE_CURRENT_LIST_DIR}/include/stl
 	${SIMPLEINI_INCLUDE_DIRS}
 	${stb_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
@@ -79,9 +80,10 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/include/system/Logger.hpp
 	${CMAKE_CURRENT_LIST_DIR}/include/system/LuaEngine.hpp
 	${CMAKE_CURRENT_LIST_DIR}/include/system/RenderingSystem.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/system/ResourceManager.hpp
 	${CMAKE_CURRENT_LIST_DIR}/include/system/System.hpp
 	${CMAKE_CURRENT_LIST_DIR}/include/system/Window.hpp
+
+	${CMAKE_CURRENT_LIST_DIR}/include/stl/resource.hpp
 
 	PRIVATE 
 	

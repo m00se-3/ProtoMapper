@@ -36,7 +36,7 @@
 
 #include "Texture.hpp"
 #include "Renderer.hpp"
-#include "ResourceManager.hpp"
+#include "resource.hpp"
 #include "Font.hpp"
 #include "Vertex.hpp"
 #include "Window.hpp"
@@ -73,7 +73,7 @@ namespace proto
 		sol::table _dimensions;
 
 		std::map<std::string, std::string> _luaFunctions;
-		std::map<std::string, SharedResource<Texture2D>> _icons;
+		std::map<std::string, shared_res<Texture2D>> _icons;
 		std::vector<DrawCall> _drawCalls;
 		
 		/*
