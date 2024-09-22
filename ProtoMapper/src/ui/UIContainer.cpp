@@ -202,7 +202,7 @@ namespace proto
 			if (!result.valid())
 			{
 				const sol::error err = result;
-				std::puts(std::format("{}\n{}\n", errorMsg.c_str(), err.what()).c_str()); // NOLINT
+				std::fprintf(stderr, "%s\n%s\n", errorMsg.c_str(), err.what());
 			}
 		}
 	}

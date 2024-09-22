@@ -167,7 +167,7 @@ namespace proto
 		constexpr bool operator==(const shared_res& rhs) const { return (_object == rhs.get_ptr()); }
 
 		[[nodiscard]] constexpr auto& get(this auto&& self) { return *self._object; }
-		[[nodiscard]] constexpr auto get_ptr(this auto&& self) { return self._object.get(); }
+		[[nodiscard]] constexpr auto get_ptr(this auto&& self) { return self._object; }
 		[[nodiscard]] constexpr auto get_owners(this auto&& self) { return (self._manager != nullptr && self._object != nullptr) ? self._manager->get_shared() : 0z; }
 
     private:

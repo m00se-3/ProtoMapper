@@ -1,5 +1,11 @@
 ﻿add_executable (ProtoMapper)
 
+if(${CMAKE_CXX_COMPILER_ID} MATCHES MSVC)
+	include("../cmake/MSVCOptions.cmake")
+else()
+	include("../cmake/GNUOptions.cmake")
+endif()
+
 target_compile_options(ProtoMapper PRIVATE ${ProtoCompilerFlags})
 
 ####	Meaning of the macros defined below.

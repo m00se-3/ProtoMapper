@@ -17,48 +17,6 @@ if(CLANG_TIDY_LOC)
   set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_LOC} -p ${CMAKE_BINARY_DIR})
 endif()
 
-# A few quick checks to ensure the compiler ProtoCompilerFlags match the compiler being used.
-
-if(${CMAKE_CXX_COMPILIER_ID} MATCHES MSVC)
-
-set(ADDSanitize "")
-
-if(${USE_ADDR_SANITIZER})
-set(ADDSanitize "/fsanitize=address")
-endif()
-
-list(
-	APPEND ProtoCompilerFlags 
-
-	"/Wall"
-	"/permissive-"
-	"/analyze"
-	${ADDSanitize}
-)
-
-elseif((${CMAKE_CXX_COMPILIER_ID} MATCHES CLANG) OR (${CMAKE_CXX_COMPILIER_ID} MATCHES GNU))
-
-set(ADDSanitize "")
-
-if(${USE_ADDR_SANITIZER})
-set(ADDSanitize "-fsanitize=address")
-endif()
-
-list(
-	APPEND ProtoCompilerFlags 
-
-	"-Wall" 
-	"-Wextra" 
-	"-Wpedantic" 
-	"-Wno-newline-eof" 
-	"-Wno-c++98-compat" 
-	"-Wno-c++98-compat-pedantic"
-	"-Wconversion"
-	${ADDSanitize}
-)
-
-endif()
-
 include("CPM.cmake")
 
 find_package(glm CONFIG REQUIRED)

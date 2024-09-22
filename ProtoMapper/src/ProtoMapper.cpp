@@ -22,8 +22,6 @@
 
 namespace proto 
 {
-	constexpr const size_t InitialTextBufferSize = 8z * 1024z;	// Allocate 8 KB for the text memory buffer. Can change later if needed.
-
 	Mapper* Mapper::_self = nullptr;
 
 	void Mapper::KeyboardEventCallback([[maybe_unused]] GLFWwindow* window, int keyn, [[maybe_unused]] int scancode, int action, int mods)
@@ -190,7 +188,7 @@ namespace proto
 		glfwShowWindow(_window.GetPtr());
 		_renderer->SetBackgroundColor(glm::vec4{ 0.3f, 0.3f, 0.3f, 1.f });
 
-		time::time_point last = time::now();
+		const time::time_point last = time::now();
 
 		while (glfwWindowShouldClose(_window.GetPtr()) == GLFW_FALSE && _appRunning)
 		{

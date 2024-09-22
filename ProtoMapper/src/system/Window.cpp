@@ -59,12 +59,19 @@ namespace proto
 			glfwSetWindowPos(_window, 100, 100);
 		}
 
-		if (_window)
+		if (_window != nullptr)
 		{
+			auto getProcAddress = [](const char* proc) -> void*{
+				return glfwGetProcAddress(proc);
+			};
+			
 			glfwMakeContextCurrent(_window);
 			glfwSwapInterval(1);
 
-			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return false;
+			if (gladLoadGLLoader(getProcAddress) == 0)
+			{
+				return false;
+			}
 
 			glDebugMessageCallback((GLDEBUGPROC)Window::DebugOpenGL, nullptr);
 
@@ -122,15 +129,15 @@ namespace proto
 		
 		auto* self = Mapper::GetInstance();
 
-		int oW = self->GetWin().GetWidth(),
+		const int oW = self->GetWin().GetWidth(),
 			oH = self->GetWin().GetHeight(),
 			rX = self->GetRenderer()->GetRenderX(),
 			rY = self->GetRenderer()->GetRenderY(),
 			rW = self->GetRenderer()->GetRenderWidth(),
 			rH = self->GetRenderer()->GetRenderHeight();
 
-		float sW = ((float)width / (float)oW);
-		float sH = ((float)height / (float)oH);
+		const float sW = ((float)width / (float)oW);
+		const float sH = ((float)height / (float)oH);
 
 		self->SetContextSize(width, height);
 		self->GetRenderer()->RefreshProjection();

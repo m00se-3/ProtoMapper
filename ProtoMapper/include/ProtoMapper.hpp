@@ -61,7 +61,7 @@ namespace proto
 	    static void KeyboardEventCallback(GLFWwindow* window, int keyn, int scancode, int action, int mods);
 	    static void TextEventCallback(GLFWwindow* window, unsigned int codepoint);
 	    static void MouseButtonEventCallback(GLFWwindow* window, int button, int action, int mods);
-	    static void MouseMotionEventCallback(GLFWwindow*, double x, double y);
+	    static void MouseMotionEventCallback(GLFWwindow* window, double x, double y);
 	    static void MouseScrollEventCallback(GLFWwindow* window, double offX, double offY);
 
 	    static int GLFWKeytoNKKey(int key, int mods);
