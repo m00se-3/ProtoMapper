@@ -1,11 +1,12 @@
 ﻿add_executable (ProtoMapper)
-add_executable(ResourceHandle ${CMAKE_CURRENT_LIST_DIR}/tests/shared_res_test.cpp)
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES MSVC)
 	include("../cmake/MSVCOptions.cmake")
 else()
 	include("../cmake/GNUOptions.cmake")
 endif()
+
+include("../cmake/UnitTests.cmake")
 
 target_compile_options(ProtoMapper PRIVATE ${ProtoCompilerFlags})
 
@@ -65,22 +66,6 @@ target_link_libraries(
 	sol2
 	${LUA_LIBRARIES}
 )
-
-target_include_directories(ResourceHandle PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/stl ${catch2_SOURCE_DIR})
-target_compile_options(ResourceHandle PRIVATE ${ProtoCompilerFlags})
-target_compile_definitions(ResourceHandle PUBLIC TEST_DIR="$ENV{ROOT_DIR}/ProtoMapper/tests")
-target_link_libraries(
-	ResourceHandle
-
-	PUBLIC 
-
-	Catch2::Catch2WithMain
-	gsl::gsl-lite
-	gsl::gsl-lite-v0
-	gsl::gsl-lite-v1
-)
-
-add_test(NAME shared_res_test COMMAND ResourceHandle)
 
 target_sources(
 	ProtoMapper

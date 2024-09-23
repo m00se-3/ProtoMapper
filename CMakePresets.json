@@ -11,8 +11,7 @@
           "CMAKE_C_COMPILER": "clang",
           "CMAKE_CXX_COMPILER": "clang++",
           "CMAKE_CXX_STANDARD": "23",
-          "CMAKE_EXPORT_COMPILE_COMMANDS":  true,
-          "USE_ADDR_SANITIZER": false
+          "CMAKE_EXPORT_COMPILE_COMMANDS":  true
         },
         "environment": {
           "PROGRAM_VERSION": "0.1.0",

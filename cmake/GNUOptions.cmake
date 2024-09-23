@@ -92,7 +92,7 @@ if(${USE_ADDR_SANITIZER} MATCHES ON)
     )
 endif()
 
-if(${USE_THREAD_SANITIZER} MATCHES ON)
+if((${USE_THREAD_SANITIZER} MATCHES ON) AND NOT ${CMAKE_HOST_WIN32})
     list(
         APPEND ProtoCompilerFlags
 
@@ -100,7 +100,7 @@ if(${USE_THREAD_SANITIZER} MATCHES ON)
     )
 endif()
 
-if(${USE_LEAK_SANITIZER} MATCHES ON)
+if((${USE_LEAK_SANITIZER} MATCHES ON) AND NOT ${CMAKE_HOST_WIN32})
     list(
         APPEND ProtoCompilerFlags
 
