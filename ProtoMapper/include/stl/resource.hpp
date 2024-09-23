@@ -18,18 +18,23 @@
 #ifndef PROTOSTL_RESOURCE_HPP
 #define PROTOSTL_RESOURCE_HPP
 
-#include <functional>
 #include <gsl/gsl-lite.hpp>
+#include <type_traits>
 
 namespace proto
 {
+
+	inline constexpr auto shared_res_default_destructor = [](auto&){};
     
 	template<typename Resource>
     class RC
 	{
 	public:
 		template<typename... Args>
-		RC(std::function<void(Resource&)>&& dest, Args&&... args) : _object(std::forward<Args>(args)...), _destructor(std::move(dest)) {}
+		RC(void(*dest)(Resource&), Args&&... args): _object(std::forward<Args>(args)...), _destructor_ref(dest) {}
+
+		template<typename... Args>
+		RC(void(*dest)(Resource), Args&&... args) : _object(std::forward<Args>(args)...), _destructor_ptr(dest) {}
 
 		[[nodiscard]] constexpr auto get_shared(this auto&& self) { return self._shared; }
 		[[nodiscard]] constexpr auto get_weak(this auto&& self) { return self._weak; }
@@ -66,13 +71,16 @@ namespace proto
 			return _weak;
 		}
 
-		void destroy_object() { _destructor(_object); }
+		void destroy_object() requires (!std::is_pointer_v<Resource>) { _destructor_ref(_object); }
+
+		void destroy_object() requires std::is_pointer_v<Resource> { _destructor_ptr(_object); }
 
 	private:
 
 		uint32_t _shared{}, _weak{};
-		Resource _object;
-		std::function<void(Resource&)> _destructor;
+		Resource _object{};
+		void(*_destructor_ref)(Resource&) = nullptr;
+		void(*_destructor_ptr)(Resource) = nullptr;
 	};
 
     template<typename Resource>
@@ -88,18 +96,24 @@ namespace proto
 		friend class weak_res<Resource>;
 
 		constexpr shared_res(const shared_res& other)
-		:  _manager(other._manager), _object(other.get_ptr())
+		:  _manager(gsl::owner<RC<Resource>*>{other._manager}), _object(other.get_ptr())
+		{
+			_manager->add_shared();
+		}
+
+		constexpr shared_res(shared_res& other)
+		:  _manager(gsl::owner<RC<Resource>*>{other._manager}), _object(other.get_ptr())
 		{
 			_manager->add_shared();
 		}
 		
 		constexpr shared_res(const weak_res<Resource>& ptr)
-		:  _manager(ptr._manager), _object(ptr.get_ptr())
+		:  _manager(gsl::owner<RC<Resource>*>{ptr._manager}), _object(ptr.get_ptr())
 		{
 			_manager->add_shared();
 		}
 
-		constexpr shared_res(shared_res&& other) noexcept : _manager(other._manager), _object(other._object)
+		constexpr shared_res(shared_res&& other) noexcept : _manager(gsl::owner<RC<Resource>*>{other._manager}), _object(other._object)
 		{
 			other.nullify();
 		}
@@ -125,6 +139,25 @@ namespace proto
 			return *this;
 		}
 
+		constexpr shared_res& operator=(const shared_res& other)
+		{
+			if (_object != nullptr && _manager->sub_shared() == 0z)
+			{
+				destroy_object();
+
+				if(_manager->get_weak() == 0z)
+				{
+					delete _manager;
+				}
+			}
+
+			_object = other.get_ptr();
+			_manager = gsl::owner<RC<Resource>*>{other._manager};
+			_manager->add_shared();
+
+			return *this;
+		}
+
 		template<typename... Args>
 		constexpr shared_res(Args&&... args)
 		: _manager(gsl::owner<RC<Resource>*>{new RC<Resource>{std::forward<Args>(args)...}}), _object(_manager->get_ptr())
@@ -143,25 +176,6 @@ namespace proto
 					delete _manager;
 				}
 			}
-		}
-
-		constexpr shared_res& operator=(const shared_res& other)
-		{
-			if (_object != nullptr && _manager->sub_shared() == 0z)
-			{
-				destroy_object();
-
-				if(_manager->get_weak() == 0z)
-				{
-					delete _manager;
-				}
-			}
-
-			_object = other.get_ptr();
-			_manager = gsl::owner<RC<Resource>*>{other._manager};
-			_manager->add_shared();
-
-			return *this;
 		}
 
 		constexpr bool operator==(const shared_res& rhs) const { return (_object == rhs.get_ptr()); }
@@ -188,19 +202,19 @@ namespace proto
     };
     
     template<typename Resource, typename... Args>
-    [[nodiscard]] constexpr auto make_res(Args&&... args)
+    [[nodiscard]] constexpr auto make_shared_res(Args&&... args)
     {
 		return shared_res<Resource>{ std::forward<Args>(args)... };
     }
 
     template<typename Resource>
-    [[nodiscard]] constexpr auto make_res(const shared_res<Resource>& other)
+    [[nodiscard]] constexpr auto make_shared_res(const shared_res<Resource>& other)
     {
 		return shared_res<Resource>{ other };
     }
 
     template<typename Resource>
-    [[nodiscard]] constexpr auto make_res()
+    [[nodiscard]] constexpr auto make_shared_res()
     {
 		return shared_res<Resource>{ Resource{} };
     }

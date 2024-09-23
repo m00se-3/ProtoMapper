@@ -42,7 +42,7 @@ namespace proto
 		nk_input_unicode(self->UI()->Context(), codepoint);
 	}
 
-	void Mapper::MouseButtonEventCallback([[maybe_unused]] GLFWwindow* window, int button, int action, int mods)
+	void Mapper::MouseButtonEventCallback(GLFWwindow* window, int button, int action, [[maybe_unused]] int mods)
 	{
 		auto* self = Mapper::GetInstance();
 		const int result = Mapper::GLFWButtontoNKButton(button);
@@ -82,6 +82,7 @@ namespace proto
 		_scene.reset(nullptr);
 		
 		_renderer.reset(nullptr);
+		glfwTerminate();
 	}
 
 	bool Mapper::Configure()
@@ -195,7 +196,7 @@ namespace proto
 			const time::time_point current = time::now();
 			const float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
 
-			_scene->Update(microseconds * 1000000.f);
+			_scene->Update(microseconds * 1'000'000.f);
 
 			_renderer->Begin();
 

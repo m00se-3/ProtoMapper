@@ -1,7 +1,4 @@
-﻿# CMakeList.txt : Top-level CMake project file, do global configuration
-# and include sub-projects here.
-#
-cmake_minimum_required (VERSION 3.25)
+﻿cmake_minimum_required (VERSION 3.25)
 
 project ("ProtoMapper" 
 VERSION "$ENV{PROGRAM_VERSION}"
@@ -18,6 +15,7 @@ if(CLANG_TIDY_LOC)
 endif()
 
 include("CPM.cmake")
+include(CTest)
 
 find_package(glm CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
@@ -29,6 +27,7 @@ find_package(tinyxml2 CONFIG REQUIRED)
 find_package(unofficial-nuklear CONFIG REQUIRED)
 find_package(gsl-lite CONFIG REQUIRED)
 find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
+find_package(Catch2 CONFIG REQUIRED)
 
 CPMAddPackage("gh:m00se-3/sol2#fix-clang_18")
 

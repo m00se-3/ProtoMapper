@@ -30,7 +30,6 @@ namespace proto
     Window::~Window()
     {
         glfwDestroyWindow(_window);
-	glfwTerminate();
     }
 
     bool Window::Construct(const std::string& title, bool fullscreen)

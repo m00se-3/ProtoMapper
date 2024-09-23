@@ -72,7 +72,7 @@ namespace proto
 
 			static constexpr size_t readBufferSize = 50z;
 
-			std::array<char, readBufferSize> buffer = { 0 };
+			std::array<char, readBufferSize> buffer = {  };
 
 			while (std::feof(vsHandle.get()) == 0)
 			{

@@ -12,6 +12,7 @@
     "lua",
     "tinyxml2",
     "nuklear",
-    "gsl-lite"
+    "gsl-lite",
+    "catch2"
   ]
 }

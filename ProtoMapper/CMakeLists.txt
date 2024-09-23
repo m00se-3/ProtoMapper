@@ -1,4 +1,5 @@
 ﻿add_executable (ProtoMapper)
+add_executable(ResourceHandle ${CMAKE_CURRENT_LIST_DIR}/tests/shared_res_test.cpp)
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES MSVC)
 	include("../cmake/MSVCOptions.cmake")
@@ -10,10 +11,11 @@ target_compile_options(ProtoMapper PRIVATE ${ProtoCompilerFlags})
 
 ####	Meaning of the macros defined below.
 #		
-#		ROOT_DIR		- The location of the root folder, where fonts, images, shaders, data files, etc are lovated.
+#		ROOT_DIR		- The location of the root folder where fonts, images, shaders, data files, etc are relative to.
 #		NOMINMAX		- To prevent windows.h from defining a 'ma' macro that interferes with entt.
 
 target_compile_definitions(ProtoMapper PUBLIC ROOT_DIR="$ENV{ROOT_DIR}" NOMINMAX="1")
+
 target_compile_definitions(
 	ProtoMapper 
 	PUBLIC 
@@ -29,7 +31,7 @@ if(${CMAKE_BUILD_TYPE} MATCHES Debug)
 elseif(${CMAKE_BUILD_TYPE} MATCHES Release)
 	target_compile_definitions(ProtoMapper PUBLIC _RELEASE_)
 elseif(${CMAKE_BUILD_TYPE} MATCHES RelWithDebInfo)
-target_compile_definitions(ProtoMapper PUBLIC _RELWDEBUGSYM_)
+	target_compile_definitions(ProtoMapper PUBLIC _RELWDEBUGSYM_)
 endif()
 
 target_include_directories(
@@ -63,6 +65,22 @@ target_link_libraries(
 	sol2
 	${LUA_LIBRARIES}
 )
+
+target_include_directories(ResourceHandle PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/stl ${catch2_SOURCE_DIR})
+target_compile_options(ResourceHandle PRIVATE ${ProtoCompilerFlags})
+target_compile_definitions(ResourceHandle PUBLIC TEST_DIR="$ENV{ROOT_DIR}/ProtoMapper/tests")
+target_link_libraries(
+	ResourceHandle
+
+	PUBLIC 
+
+	Catch2::Catch2WithMain
+	gsl::gsl-lite
+	gsl::gsl-lite-v0
+	gsl::gsl-lite-v1
+)
+
+add_test(NAME shared_res_test COMMAND ResourceHandle)
 
 target_sources(
 	ProtoMapper

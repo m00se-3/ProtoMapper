@@ -29,7 +29,7 @@ namespace proto
 		NOTE: If you experience rendering issues while building the ui, consider increasing this buffer size.
 	*/
 
-	static constexpr uint64_t MaxVertexBuffer = 32ull * 1024ull;
+	static constexpr uint64_t MaxVertexBuffer = 32z * 1024z;
 
 	static constexpr std::array<struct nk_draw_vertex_layout_element, 4z> vertex_layout = {
 		nk_draw_vertex_layout_element{NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(Vertex2D, pos)},
@@ -51,7 +51,7 @@ namespace proto
 				const auto& file = icon.path();
 
 				Image img{file};
-				auto iconImg = _icons.insert_or_assign(file.stem().string(), make_res<Texture2D>([](Texture2D& tex){ tex.Destroy(); }));
+				auto iconImg = _icons.insert_or_assign(file.stem().string(), make_shared_res<Texture2D>([](Texture2D tex){ tex.Destroy(); }));
 				iconImg.first->second.get().Create().WriteImage(img);
 			}
 		}
@@ -65,14 +65,16 @@ namespace proto
 
 		fonts.Create();
 
+		// We leave these magic numbers in, for now. They will be replaced with a more intelligent solution later.
+
 		fonts.AddFont(FontStyle::Normal, 16.0f, fontDir + "Roboto-Medium.ttf");
 		fonts.AddFont(FontStyle::Bold, 16.0f, fontDir + "Roboto-Bold.ttf");
 		fonts.AddFont(FontStyle::BoldItalic, 16.0f, fontDir + "Roboto-BoldItalic.ttf");
 		fonts.AddFont(FontStyle::Italic, 16.0f, fontDir + "Roboto-Italic.ttf");
 
 		/*
-            Because nk_font_atlas_end() frees the img pointer for us, we can't include a Bake function
-			in the FontGroup class that returns an Image.
+            Because the pointer returned by nk_font_atlas_bake() is a 'reference' pointer, not an owning pointer, we can't
+			include a Bake function in the FontGroup class that returns an Image.
 
 			As a result, it's just easier to handle baking this way.
         */
@@ -90,14 +92,16 @@ namespace proto
 		    return;
 		}
 
+		static constexpr int segmentsPerCurve = 20;
+
 		_configurator.shape_AA = NK_ANTI_ALIASING_ON;
 		_configurator.line_AA = NK_ANTI_ALIASING_ON;
 		_configurator.vertex_layout = vertex_layout.data();
 		_configurator.vertex_alignment = NK_ALIGNOF(Vertex2D);
 		_configurator.vertex_size = sizeof(Vertex2D);
-		_configurator.circle_segment_count = 20;
-		_configurator.curve_segment_count = 20;
-		_configurator.arc_segment_count = 20;
+		_configurator.circle_segment_count = segmentsPerCurve;
+		_configurator.curve_segment_count = segmentsPerCurve;
+		_configurator.arc_segment_count = segmentsPerCurve;
 		_configurator.global_alpha = 1.0f;
 		_configurator.null = _nullTexture;
 
@@ -202,7 +206,7 @@ namespace proto
 			if (!result.valid())
 			{
 				const sol::error err = result;
-				std::fprintf(stderr, "%s\n%s\n", errorMsg.c_str(), err.what());
+				std::puts(std::string{errorMsg + err.what()}.c_str());
 			}
 		}
 	}

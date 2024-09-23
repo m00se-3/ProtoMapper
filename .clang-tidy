@@ -2,6 +2,7 @@ Checks: '-*, cppcoreguidelines-*,clang-analyzer-*,
   modernize-*, -modernize-use-trailing-return-type, 
   bugprone-*, -bugprone-easily-swappable-parameters, 
   cert-*, misc-*, -misc-include-cleaner, -misc-non-private-member-variables-in-classes, 
-  performace-*, readability-*,-readability-uppercase-literal-suffix, 
-  -readability-identifier-length, -readability-isolate-declaration'
+  performance-*, readability-*,-readability-uppercase-literal-suffix, 
+  -readability-identifier-length, -readability-isolate-declaration, 
+  -performance-unnecessary-value-param'
 HeaderFilterRegex: '.*'
