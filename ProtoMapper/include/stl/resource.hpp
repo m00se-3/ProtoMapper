@@ -120,15 +120,7 @@ namespace proto
 
 		constexpr shared_res& operator=(shared_res&& other) noexcept
 		{
-			if (_object != nullptr && _manager->sub_shared() == 0z)
-			{
-				destroy_object();
-
-				if(_manager->get_weak() == 0z)
-				{
-					delete _manager;
-				}
-			}
+			reset();
 
 			_object = other.get_ptr();
 			_manager = gsl::owner<RC<Resource>*>{other._manager};
@@ -141,15 +133,7 @@ namespace proto
 
 		constexpr shared_res& operator=(const shared_res& other)
 		{
-			if (_object != nullptr && _manager->sub_shared() == 0z)
-			{
-				destroy_object();
-
-				if(_manager->get_weak() == 0z)
-				{
-					delete _manager;
-				}
-			}
+			reset();
 
 			_object = other.get_ptr();
 			_manager = gsl::owner<RC<Resource>*>{other._manager};
@@ -167,6 +151,11 @@ namespace proto
 
 		constexpr ~shared_res()
 		{
+			reset();
+		}
+
+		constexpr void reset()
+		{
 			if (_object != nullptr && _manager->sub_shared() == 0z)
 			{
 				destroy_object();
@@ -178,11 +167,21 @@ namespace proto
 			}
 		}
 
+		constexpr void reset(const shared_res& other)
+		{
+			reset();
+
+			_object = other.get_ptr();
+			_manager = gsl::owner<RC<Resource>*>{other._manager};
+			_manager->add_shared();
+		}
+
 		constexpr bool operator==(const shared_res& rhs) const { return (_object == rhs.get_ptr()); }
 
 		[[nodiscard]] constexpr auto& get(this auto&& self) { return *self._object; }
 		[[nodiscard]] constexpr auto get_ptr(this auto&& self) { return self._object; }
 		[[nodiscard]] constexpr auto get_owners(this auto&& self) { return (self._manager != nullptr && self._object != nullptr) ? self._manager->get_shared() : 0z; }
+		[[nodiscard]] constexpr auto get_refs(this auto&& self) { return (self._manager != nullptr && self._object != nullptr) ? self._manager->get_refs() : 0z; }
 
     private:
 		constexpr void nullify(this auto&& self)
@@ -264,6 +263,7 @@ namespace proto
 		}
     
 		[[nodiscard]] constexpr auto get_owners(this auto&& self) { return self._manager->get_shared(); }
+		[[nodiscard]] constexpr auto get_refs(this auto&& self) { return self._manager->get_weak(); }
 		[[nodiscard]] constexpr bool expired(this auto&& self) { return self.get_owners() == 0z; }
 		[[nodiscard]] constexpr auto&& lock(this auto&& self) { return (!self.expired()) ? shared_res{std::forward<weak_res<Resource>>(self)} : shared_res<Resource>{}; }
 

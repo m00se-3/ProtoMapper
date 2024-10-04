@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_session.hpp>
 
 #include <resource.hpp>
 #include <cstdio>
@@ -38,4 +39,17 @@ TEST_CASE("shared_res with a file stream", "[shared_res]")
     }
 
     REQUIRE(file.get_owners() == 1z);
+}
+
+TEST_CASE("use shared_res with weak_res", "[shared_res][weak_res]")
+{
+    const std::string testDir = TEST_DIR;
+    
+    auto file = proto::make_shared_res<std::fstream>(proto::shared_res_default_destructor, (testDir + "/resource_test_file.txt").c_str(), std::ios_base::in);
+    auto refer = proto::weak_res<std::fstream>(file);
+
+    file.reset();
+
+    REQUIRE(refer.expired());
+    REQUIRE(refer.get_refs() == 1z);
 }

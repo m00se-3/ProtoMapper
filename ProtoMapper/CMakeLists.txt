@@ -1,5 +1,4 @@
 ﻿add_executable (ProtoMapper)
-add_executable(ResourceHandle ${CMAKE_CURRENT_LIST_DIR}/tests/shared_res_test.cpp)
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES MSVC)
 	include("../cmake/MSVCOptions.cmake")
@@ -9,6 +8,8 @@ endif()
 
 target_compile_options(ProtoMapper PRIVATE ${CompilerFlags})
 target_link_options(ProtoMapper PRIVATE ${LinkerFlags})
+
+include("../cmake/UnitTests.cmake")
 
 ####	Meaning of the macros defined below.
 #		
@@ -41,7 +42,6 @@ if(CLANG_TIDY_LOC)
   
   message("-- Enabling clang-tidy.\n")
   set_property(TARGET ProtoMapper PROPERTY CXX_CLANG_TIDY ${CLANG_TIDY_LOC} -p ${CMAKE_BINARY_DIR})
-  set_property(TARGET ResourceHandle PROPERTY CXX_CLANG_TIDY ${CLANG_TIDY_LOC} -p ${CMAKE_BINARY_DIR})
 endif()
 
 target_include_directories(
@@ -75,23 +75,6 @@ target_link_libraries(
 	sol2
 	${LUA_LIBRARIES}
 )
-
-target_include_directories(ResourceHandle PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/stl ${catch2_SOURCE_DIR})
-target_compile_options(ResourceHandle PRIVATE ${CompilerFlags})
-target_link_options(ResourceHandle PRIVATE ${LinkerFlags})
-target_compile_definitions(ResourceHandle PUBLIC TEST_DIR="$ENV{ROOT_DIR}/ProtoMapper/tests")
-target_link_libraries(
-	ResourceHandle
-
-	PUBLIC 
-
-	Catch2::Catch2WithMain
-	gsl::gsl-lite
-	gsl::gsl-lite-v0
-	gsl::gsl-lite-v1
-)
-
-add_test(NAME shared_res_test COMMAND ResourceHandle)
 
 target_sources(
 	ProtoMapper
