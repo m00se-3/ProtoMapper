@@ -1,13 +1,13 @@
 # Enable compiler flags for certain build configurations
 if(${CMAKE_BUILD_TYPE} MATCHES Debug)
     list(
-        APPEND ProtoCompilerFlags 
+        APPEND CompilerFlags 
         "-g"
         "-D_GLIBCXX_ASSERTIONS"
     )
 elseif(${CMAKE_BUILD_TYPE} MATCHES RelWithDebInfo)
     list(
-        APPEND ProtoCompilerFlags 
+        APPEND CompilerFlags 
         "-g"
         "-02"
         "-U_FORTIFY_SOURCE"
@@ -16,7 +16,7 @@ elseif(${CMAKE_BUILD_TYPE} MATCHES RelWithDebInfo)
     )
 else()
     list(
-        APPEND ProtoCompilerFlags 
+        APPEND CompilerFlags 
         "-02"
         "-U_FORTIFY_SOURCE"
         "-D_FORTIFY_SOURCE=2"
@@ -26,7 +26,7 @@ endif()
 # Enable special flags when using GCC
 if(${CMAKE_CXX_COMPILIER_ID} MATCHES GNU)
     list(
-        APPEND ProtoCompilerFlags 
+        APPEND CompilerFlags 
 
         "-fhardened"
         "-Wbidi-chars=any"
@@ -38,18 +38,23 @@ endif()
 #Exclude unsupported flags on Windows
 if(NOT ${CMAKE_HOST_WIN32})
     list(
-        APPEND ProtoCompilerFlags
+        APPEND CompilerFlags
+
+        "-mbranch-protection=standard"
+    )
+
+    list(
+        APPEND LinkerFlags
 
         "-fPIC"
         "-fPIE"
-        "-mbranch-protection=standard"
     )
 endif()
 
 
 # Enable flags for all builds
 list(
-	APPEND ProtoCompilerFlags 
+	APPEND CompilerFlags 
 
 	"-Wall" 
 	"-Wextra" 
@@ -69,24 +74,29 @@ list(
 
     "-fstrict-flex-arrays=3"
     "-fcf-protection=full"
-    "-Wl,-z,nodlopen"
-    "-Wl,-z,noexecstack"
-    "-Wl,-z,relro"
-    "-pie"
-    "-shared"
     "-fno-strict-overflow"
     "-fno-strict-aliasing"
     "-ftrivial-auto-var-init=zero"
     "-fexceptions"
+)
+
+list(
+    APPEND LinkerOptions
+
+    "-Wl,-z,nodlopen"
+    "-Wl,-z,noexecstack"
+    "-Wl,-z,relro"
     "-Wl,--as-needed"
     "-Wl,--no-copy-dt-needed-entries"
+    "-pie"
+    "-shared"
 )
 
 # Enable sanitizers if chosen
 
 if(${USE_ADDR_SANITIZER} MATCHES ON)
     list(
-        APPEND ProtoCompilerFlags
+        APPEND CompilerFlags
 
         "-fsanitize=address"
     )
@@ -94,7 +104,7 @@ endif()
 
 if(${USE_THREAD_SANITIZER} MATCHES ON)
     list(
-        APPEND ProtoCompilerFlags
+        APPEND CompilerFlags
 
         "-fsanitize=thread"
     )
@@ -102,7 +112,7 @@ endif()
 
 if(${USE_LEAK_SANITIZER} MATCHES ON)
     list(
-        APPEND ProtoCompilerFlags
+        APPEND CompilerFlags
 
         "-fsanitize=leak"
     )
@@ -110,7 +120,7 @@ endif()
 
 if(${USE_UND_SANITIZER} MATCHES ON)
     list(
-        APPEND ProtoCompilerFlags
+        APPEND CompilerFlags
 
         "-fsanitize=undefined"
     )

@@ -6,14 +6,6 @@ DESCRIPTION "$ENV{PROGRAM_DESCRIPTION}"
 HOMEPAGE_URL "$ENV{PROGRAM_URL}"
 LANGUAGES CXX C)
 
-find_program(CLANG_TIDY_LOC clang-tidy)
-
-if(CLANG_TIDY_LOC)
-  
-  message("-- Enabling clang-tidy.\n")
-  set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_LOC} -p ${CMAKE_BINARY_DIR})
-endif()
-
 include("CPM.cmake")
 include(CTest)
 

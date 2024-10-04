@@ -7,7 +7,8 @@ else()
 	include("../cmake/GNUOptions.cmake")
 endif()
 
-target_compile_options(ProtoMapper PRIVATE ${ProtoCompilerFlags})
+target_compile_options(ProtoMapper PRIVATE ${CompilerFlags})
+target_link_options(ProtoMapper PRIVATE ${LinkerFlags})
 
 ####	Meaning of the macros defined below.
 #		
@@ -32,6 +33,15 @@ elseif(${CMAKE_BUILD_TYPE} MATCHES Release)
 	target_compile_definitions(ProtoMapper PUBLIC _RELEASE_)
 elseif(${CMAKE_BUILD_TYPE} MATCHES RelWithDebInfo)
 	target_compile_definitions(ProtoMapper PUBLIC _RELWDEBUGSYM_)
+endif()
+
+find_program(CLANG_TIDY_LOC clang-tidy)
+
+if(CLANG_TIDY_LOC)
+  
+  message("-- Enabling clang-tidy.\n")
+  set_property(TARGET ProtoMapper PROPERTY CXX_CLANG_TIDY ${CLANG_TIDY_LOC} -p ${CMAKE_BINARY_DIR})
+  set_property(TARGET ResourceHandle PROPERTY CXX_CLANG_TIDY ${CLANG_TIDY_LOC} -p ${CMAKE_BINARY_DIR})
 endif()
 
 target_include_directories(
@@ -67,7 +77,8 @@ target_link_libraries(
 )
 
 target_include_directories(ResourceHandle PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/stl ${catch2_SOURCE_DIR})
-target_compile_options(ResourceHandle PRIVATE ${ProtoCompilerFlags})
+target_compile_options(ResourceHandle PRIVATE ${CompilerFlags})
+target_link_options(ResourceHandle PRIVATE ${LinkerFlags})
 target_compile_definitions(ResourceHandle PUBLIC TEST_DIR="$ENV{ROOT_DIR}/ProtoMapper/tests")
 target_link_libraries(
 	ResourceHandle
