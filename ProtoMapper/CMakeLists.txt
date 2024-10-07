@@ -9,6 +9,8 @@ endif()
 target_compile_options(ProtoMapper PRIVATE ${CompilerFlags})
 target_link_options(ProtoMapper PRIVATE ${LinkerFlags})
 
+find_program(CLANG_TIDY_LOC clang-tidy)
+
 include("../cmake/UnitTests.cmake")
 
 ####	Meaning of the macros defined below.
@@ -36,12 +38,10 @@ elseif(${CMAKE_BUILD_TYPE} MATCHES RelWithDebInfo)
 	target_compile_definitions(ProtoMapper PUBLIC _RELWDEBUGSYM_)
 endif()
 
-find_program(CLANG_TIDY_LOC clang-tidy)
-
 if(CLANG_TIDY_LOC)
   
   message("-- Enabling clang-tidy.\n")
-  set_property(TARGET ProtoMapper PROPERTY CXX_CLANG_TIDY ${CLANG_TIDY_LOC} -p ${CMAKE_BINARY_DIR})
+  set_property(TARGET ProtoMapper PROPERTY CXX_CLANG_TIDY ${CLANG_TIDY_LOC})
 endif()
 
 target_include_directories(

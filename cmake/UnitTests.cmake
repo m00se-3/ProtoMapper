@@ -4,7 +4,7 @@ set(ProtoMapper_Root_Dir ${CMAKE_CURRENT_LIST_DIR}/../ProtoMapper)
 add_executable(shared_res_test_exe ${ProtoMapper_Root_Dir}/tests/shared_res_test.cpp)
 
 if(CLANG_TIDY_LOC)
-	set_property(TARGET shared_res_test_exe PROPERTY CXX_CLANG_TIDY ${CLANG_TIDY_LOC} -p ${CMAKE_BINARY_DIR})
+	set_property(TARGET shared_res_test_exe PROPERTY CXX_CLANG_TIDY ${CLANG_TIDY_LOC})
 endif()
 
 # Build options and libraries

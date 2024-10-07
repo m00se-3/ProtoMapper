@@ -11,8 +11,6 @@
     "simpleini",
     "lua",
     "tinyxml2",
-    "nuklear",
-    "gsl-lite",
-    "catch2"
+    "nuklear"
   ]
 }
