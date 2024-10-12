@@ -18,7 +18,6 @@
 #ifndef PROTO_SCENE_HPP
 #define PROTO_SCENE_HPP
 
-#include <unordered_map>
 #include <memory>
 #include <span>
 
@@ -32,15 +31,16 @@ namespace proto
 	class Scene
 	{
 	public:
-		Scene(Renderer* ren, std::shared_ptr<UIContainer> ui);
+		Scene(std::shared_ptr<UIContainer> ui);
 
 		void Update(float dt);
 		void Cleanup();
-		void Render();
+
+		[[nodiscard]] constexpr auto GetUIDrawCalls(this auto&& self) { return self._uiDrawCalls; }
 
 	private:
 		std::span<DrawCall> _uiDrawCalls;
-		std::unordered_map<int, std::shared_ptr<System>> _systems;
+		std::weak_ptr<UIContainer> _uiSystem;
 	};
 }
 

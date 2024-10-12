@@ -52,11 +52,11 @@ namespace proto
 
 		Renderer(const std::string& dir);
 
-		[[nodiscard]] mode GetRenderMode() const;
+		[[nodiscard]] constexpr mode GetRenderMode(this auto&& self) { return self._currentMode; }
 
 		bool Init(mode newMode);
 		void Begin();
-		void End();
+		void End(std::span<DrawCall> uiDrawCalls);
 
 		static void SetBackgroundColor(const glm::vec4& col);
 		void SetRenderSize(int w, int h);

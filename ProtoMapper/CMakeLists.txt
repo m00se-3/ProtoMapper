@@ -1,17 +1,7 @@
 ﻿add_executable (ProtoMapper)
 
-if(${CMAKE_CXX_COMPILER_ID} MATCHES MSVC)
-	include("../cmake/MSVCOptions.cmake")
-else()
-	include("../cmake/GNUOptions.cmake")
-endif()
-
 target_compile_options(ProtoMapper PRIVATE ${CompilerFlags})
 target_link_options(ProtoMapper PRIVATE ${LinkerFlags})
-
-find_program(CLANG_TIDY_LOC clang-tidy)
-
-include("../cmake/UnitTests.cmake")
 
 ####	Meaning of the macros defined below.
 #		
@@ -38,10 +28,9 @@ elseif(${CMAKE_BUILD_TYPE} MATCHES RelWithDebInfo)
 	target_compile_definitions(ProtoMapper PUBLIC _RELWDEBUGSYM_)
 endif()
 
-if(CLANG_TIDY_LOC)
-  
+if(clang_tidy_FOUND)
   message("-- Enabling clang-tidy.\n")
-  set_property(TARGET ProtoMapper PROPERTY CXX_CLANG_TIDY ${CLANG_TIDY_LOC})
+  set_property(TARGET ProtoMapper PROPERTY CXX_CLANG_TIDY ${clang_tidy_FOUND})
 endif()
 
 target_include_directories(
@@ -66,7 +55,6 @@ target_link_libraries(
 	glad::glad
 	glm::glm
 	glfw
-	EnTT::EnTT	
 	tinyxml2::tinyxml2
 	nuklear
 	gsl::gsl-lite
@@ -96,8 +84,6 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/include/renderer/Vertex.hpp
 
 	${CMAKE_CURRENT_LIST_DIR}/include/system/Logger.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/system/LuaEngine.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/system/RenderingSystem.hpp
 	${CMAKE_CURRENT_LIST_DIR}/include/system/System.hpp
 	${CMAKE_CURRENT_LIST_DIR}/include/system/Window.hpp
 
@@ -120,8 +106,6 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Image.cpp
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/system/Logger.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/system/LuaEngine.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/system/RenderingSystem.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/System.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/system/Window.cpp
 

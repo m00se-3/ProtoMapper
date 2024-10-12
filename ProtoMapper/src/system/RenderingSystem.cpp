@@ -9,7 +9,12 @@ namespace proto
 	{
 	}
 	
-	void RenderingSystem::Update(float dt)
+	void RenderingSystem::Update()
+	{
+		
+	}
+
+	void RenderingSystem::RenderUIDrawCalls()
 	{
 		_renderer->PushDrawCallRange(_uiDrawCalls);
 		_uiDrawCalls = std::span<DrawCall>{};

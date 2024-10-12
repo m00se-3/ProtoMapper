@@ -194,7 +194,7 @@ namespace proto
 		return std::span<DrawCall> { _drawCalls.begin(), _drawCalls.size() };
 	}
 
-	void UIContainer::Update([[maybe_unused]] float dt)
+	void UIContainer::Update()
 	{
 		if(!IsLua()) { return; }
 		_dimensions.set("wWidth", _window->GetWidth(), "wHeight", _window->GetHeight());

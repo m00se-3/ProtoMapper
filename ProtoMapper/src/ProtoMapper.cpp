@@ -78,10 +78,7 @@ namespace proto
 		}
 
 		_configData.Reset();
-		_scene->Cleanup();
-		_scene.reset(nullptr);
 		
-		_renderer.reset(nullptr);
 		glfwTerminate();
 	}
 
@@ -157,6 +154,8 @@ namespace proto
 			return 2;
 		}
 
+		glfwSetErrorCallback(Window::ContextErrorMessage);
+
 		/*
 			Create internal Renderer, UIContainer, and Scene objects.
 		*/
@@ -180,7 +179,7 @@ namespace proto
 		glfwSetCursorPosCallback(_window.GetPtr(), Mapper::MouseMotionEventCallback);
 		glfwSetScrollCallback(_window.GetPtr(), Mapper::MouseScrollEventCallback);
 
-		_scene = std::make_unique<Scene>(_renderer.get(), _ui);
+		_scene = std::make_unique<Scene>(_ui);
 
 		/*
 			Show main window and start main loop.
@@ -194,15 +193,14 @@ namespace proto
 		while (glfwWindowShouldClose(_window.GetPtr()) == GLFW_FALSE && _appRunning)
 		{
 			const time::time_point current = time::now();
-			const float microseconds = float(std::chrono::duration_cast<std::chrono::microseconds>(current - last).count());
+			const auto seconds = std::chrono::duration<float, std::chrono::seconds::period>(current - last);
 
-			_scene->Update(microseconds * 1'000'000.f);
+			_scene->Update(seconds.count());
 
 			_renderer->Begin();
 
-			_scene->Render();
+			_renderer->End(_scene->GetUIDrawCalls());
 
-			_renderer->End();
 			glfwSwapBuffers(_window.GetPtr());
 
 			/*

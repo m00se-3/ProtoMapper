@@ -33,6 +33,8 @@ namespace proto
         Logger& operator=(const Logger&) = delete;
         Logger& operator=(Logger&&) = delete;
 
+        ~Logger() = default;
+
         static void Init();
         static void Reset();
 

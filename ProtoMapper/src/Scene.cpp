@@ -17,44 +17,29 @@
 */
 #include "Scene.hpp"
 
-#include "RenderingSystem.hpp"
 #include "UIContainer.hpp"
 #include <memory>
 
 namespace proto
 {
-	static constexpr int uiSystemID = 10;
-	static constexpr int renSystemID = 12;
-
-	Scene::Scene(Renderer* ren, std::shared_ptr<UIContainer> ui)
+	Scene::Scene(std::shared_ptr<UIContainer> ui)
+	: _uiSystem(ui)
 	{
-		_systems.insert_or_assign(uiSystemID, ui);
-		_systems.insert_or_assign(renSystemID, std::make_shared<RenderingSystem>(ren));
+		
 	}
 
 	void Scene::Update(float dt)
 	{
-		// This is a conidate for improvement. dynamic_cast should be avoided.
-		auto* ren = dynamic_cast<RenderingSystem*>(_systems.at(renSystemID).get());
-		auto* ui = dynamic_cast<UIContainer*>(_systems.at(uiSystemID).get());
-
-		if(ui->IsActive())
+		if(auto ui = _uiSystem.lock())
 		{
-			ui->Update(dt);
-			auto calls = ui->Compile();
-			ren->SetUIDrawCalls(calls);
+			ui->Update();
+			_uiDrawCalls = ui->Compile();
 		}
 
-		ren->Update(dt);
 	}
 
 	void Scene::Cleanup()
 	{
 		
-	}
-
-	void Scene::Render()
-	{
-
 	}
 }

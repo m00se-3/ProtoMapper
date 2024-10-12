@@ -22,16 +22,6 @@
 namespace proto
 {
 
-    Window::Window()
-    {
-        glfwSetErrorCallback(Window::ContextErrorMessage);
-    }
-
-    Window::~Window()
-    {
-        glfwDestroyWindow(_window);
-    }
-
     bool Window::Construct(const std::string& title, bool fullscreen)
     {
         /*

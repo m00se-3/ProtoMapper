@@ -21,6 +21,7 @@
 #include <array>
 #include <memory>
 #include <cstdio>
+#include <gsl/gsl-lite.h>
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -33,7 +34,7 @@ namespace proto
 	{
 		using FileDeleter = std::function<void(std::FILE*)>;
 
-		auto destructor = [](std::FILE* handle){ if(handle != nullptr) { [[maybe_unused]] auto i = std::fclose(handle); } };
+		auto destructor = [](std::FILE* handle){ if(handle != nullptr) { [[maybe_unused]] auto i = std::fclose(gsl::owner<std::FILE*>{handle}); } };
 
 		_defaultTexture.Create().GenerateBlank(1, 1);
 
@@ -119,8 +120,10 @@ namespace proto
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void Renderer::End()
+	void Renderer::End(std::span<DrawCall> uiDrawCalls)
 	{
+		PushDrawCallRange(uiDrawCalls);
+		
 		while (!_drawQueue.empty())
 		{
 			auto& call = _drawQueue.front();
@@ -137,8 +140,6 @@ namespace proto
 	{
 		glClearColor(col.r, col.g, col.b, col.a); // NOLINT: union access is unavoidable
 	}
-
-	Renderer::mode Renderer::GetRenderMode() const { return _currentMode; }
 
 	void Renderer::SetRenderSize(int w, int h)
 	{

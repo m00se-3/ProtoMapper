@@ -3,22 +3,22 @@
 
 #include <span>
 
-#include "System.hpp"
 #include "Vertex.hpp"
 #include "Renderer.hpp"
 
 namespace proto
 {
 
-	class RenderingSystem : public System
+	class RenderingSystem
 	{
 
 	public:
 		RenderingSystem(Renderer* ren);
 
-		[[nodiscard]] bool IsActive() const override { return _renderer != nullptr; }
-		void Update(float dt) override;
+		[[nodiscard]] bool IsActive() const { return _renderer != nullptr; }
+		void Update();
 		void SetUIDrawCalls(std::span<DrawCall> calls);
+		void RenderUIDrawCalls();
 
 	private:
 

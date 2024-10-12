@@ -18,8 +18,6 @@
 #ifndef PROTO_WINDOW_HPP
 #define PROTO_WINDOW_HPP
 
-#include <filesystem>
-#include <memory>
 #include <string>
 
 #include "glad/glad.h"
@@ -31,13 +29,10 @@ namespace proto
     {
     public:
 
-        Window();
-        ~Window();
-
         [[nodiscard]]GLFWwindow* GetPtr() const;
         [[nodiscard]]bool Construct(const std::string& title, bool fullscreen);
         [[nodiscard]]int GetWidth() const;
-	[[nodiscard]]int GetHeight() const;
+	    [[nodiscard]]int GetHeight() const;
 
         void SetSize(int w, int h);
 
