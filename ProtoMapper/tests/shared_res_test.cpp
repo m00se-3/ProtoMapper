@@ -5,7 +5,7 @@
 #include <fstream>
 #include <string>
 
-TEST_CASE("shared_res with a File*", "[shared_res]")
+TEST_CASE("shared_res with a File* and custom destructor", "[shared_res]")
 {
     const std::string testDir = TEST_DIR;
     

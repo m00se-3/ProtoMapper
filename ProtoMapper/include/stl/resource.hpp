@@ -19,27 +19,23 @@
 #define PROTOSTL_RESOURCE_HPP
 
 #include <gsl/gsl-lite.hpp>
-#include <type_traits>
+#include <functional>
 
 namespace proto
 {
+	inline constexpr auto shared_res_default_destructor = [](auto&) {};
 
-	inline constexpr auto shared_res_default_destructor = [](auto&){};
-    
 	template<typename Resource>
     class RC
 	{
 	public:
-		template<typename... Args> requires (!std::is_pointer_v<Resource>)
-		RC(void(*dest)(Resource&), Args&&... args): _object(std::forward<Args>(args)...), _destructor_ref(dest) {}
-
-		template<typename... Args> requires std::is_pointer_v<Resource>
-		RC(void(*dest)(Resource), Args&&... args) : _object(std::forward<Args>(args)...), _destructor_ptr(dest) {}
+		template<typename... Args>
+		RC(const std::function<void(Resource&)>& dest, Args&&... args): _object(new Resource{std::forward<Args>(args)...}), _destructor(std::move(dest)) {}
 
 		[[nodiscard]] constexpr auto get_shared(this auto&& self) { return self._shared; }
 		[[nodiscard]] constexpr auto get_weak(this auto&& self) { return self._weak; }
-		[[nodiscard]] constexpr auto& get(this auto&& self) { return self._object; }
-		[[nodiscard]] constexpr auto get_ptr(this auto&& self) { return &self._object; }
+		[[nodiscard]] constexpr auto& get(this auto&& self) { return *(self._object); }
+		[[nodiscard]] constexpr auto get_ptr(this auto&& self) { return self._object; }
 		
 		// Increments the owners.
 		constexpr void add_shared()
@@ -71,16 +67,17 @@ namespace proto
 			return _weak;
 		}
 
-		void destroy_object() requires (!std::is_pointer_v<Resource>) { _destructor_ref(_object); }
-
-		void destroy_object() requires std::is_pointer_v<Resource> { _destructor_ptr(_object); }
+		constexpr void destroy_object()
+		{
+			std::invoke(_destructor, std::forward<Resource&>(*_object));
+			delete _object;
+		}
 
 	private:
 
 		uint32_t _shared{}, _weak{};
-		Resource _object{};
-		void(*_destructor_ref)(Resource&) = nullptr;
-		void(*_destructor_ptr)(Resource) = nullptr;
+		Resource* _object = nullptr;
+		std::function<void(Resource&)> _destructor;
 	};
 
     template<typename Resource>
@@ -165,6 +162,8 @@ namespace proto
 					delete _manager;
 				}
 			}
+
+			nullify();
 		}
 
 		constexpr void reset(const shared_res& other)
