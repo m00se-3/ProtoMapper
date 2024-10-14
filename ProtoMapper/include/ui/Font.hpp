@@ -35,7 +35,7 @@
 
 namespace proto
 {
-    enum class FontStyle : uint32_t
+    enum class FontStyle : uint8_t
     {
         None = 0u,
         Normal = 1u,

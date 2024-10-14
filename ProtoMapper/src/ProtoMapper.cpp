@@ -19,6 +19,7 @@
 #include "Config.hpp"
 #include <GLFW/glfw3.h>
 #include <cstdlib>
+#include <sol/stack_core.hpp>
 
 namespace proto 
 {
@@ -140,6 +141,25 @@ namespace proto
 			_window.SetSize(width, height);
 			_fullscreen = true;
 		}
+
+		auto luaExceptionHandler = [](lua_State* L, sol::optional<const std::exception&> exception, sol::string_view description) -> int {
+
+			std::string output = "[Lua Exception]: ";
+
+			if(exception)
+			{
+				output += exception->what();
+				std::puts(output.c_str());
+			} else {
+				output += description.data();
+				std::puts(output.c_str());
+			}
+
+			return sol::stack::push(L, description);
+		};
+
+		_lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::math);
+		_lua.set_exception_handler(luaExceptionHandler);
 
 		return true;
 	}

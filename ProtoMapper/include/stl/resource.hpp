@@ -30,10 +30,10 @@ namespace proto
     class RC
 	{
 	public:
-		template<typename... Args>
+		template<typename... Args> requires (!std::is_pointer_v<Resource>)
 		RC(void(*dest)(Resource&), Args&&... args): _object(std::forward<Args>(args)...), _destructor_ref(dest) {}
 
-		template<typename... Args>
+		template<typename... Args> requires std::is_pointer_v<Resource>
 		RC(void(*dest)(Resource), Args&&... args) : _object(std::forward<Args>(args)...), _destructor_ptr(dest) {}
 
 		[[nodiscard]] constexpr auto get_shared(this auto&& self) { return self._shared; }

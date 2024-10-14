@@ -70,13 +70,13 @@ namespace proto
 	private:
 	    const std::string _title = "ProtoMapper";
 	    std::filesystem::path _rootDir;
+	    sol::state _lua;
 	    bool _appRunning = true, _fullscreen = false, _configUpdate = false;
 
 	    std::unique_ptr<Scene> _scene;
 	    std::shared_ptr<UIContainer> _ui;
 	    std::unique_ptr<Renderer> _renderer;
 
-	    sol::state _lua;
 	    std::filesystem::path _configFile;
 	    CSimpleIniA _configData;
 	    Window _window;

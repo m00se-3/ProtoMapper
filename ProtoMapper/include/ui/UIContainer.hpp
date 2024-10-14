@@ -85,10 +85,7 @@ namespace proto
 		Texture2D _fontTexture;
 		
 		Buffer<Vertex2D> _nkBuffer;
-
-		/*unsigned int _vertexArray = 0u, _vb = 0u, _ib = 0u;
-		void* _vertices = nullptr, * _indices = nullptr;*/
-
+		
 		/*
 			End nuklear buffer variables.
 		*/

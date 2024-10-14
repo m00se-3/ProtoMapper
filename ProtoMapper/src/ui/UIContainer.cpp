@@ -19,6 +19,9 @@
 
 #include <cstdio>
 #include <array>
+#include <sol/forward.hpp>
+#include <sol/protected_function_result.hpp>
+#include <sol/state_handling.hpp>
 
 #include "ProtoMapper.hpp"
 #include "Config.hpp"
@@ -51,7 +54,7 @@ namespace proto
 				const auto& file = icon.path();
 
 				Image img{file};
-				auto iconImg = _icons.insert_or_assign(file.stem().string(), make_shared_res<Texture2D>([](Texture2D tex){ tex.Destroy(); }));
+				auto iconImg = _icons.insert_or_assign(file.stem().string(), make_shared_res<Texture2D>([](Texture2D& tex){ tex.Destroy(); }));
 				iconImg.first->second.get().Create().WriteImage(img);
 			}
 		}
@@ -123,12 +126,18 @@ namespace proto
 
 				if (file.extension() == ".lua")
 				{
-					const sol::protected_function_result result = _lua->script_file(file.string());
-
-					if (result.valid())
+					try
 					{
-						const std::pair<std::string, std::string> stuff = result;
-						_luaFunctions.insert_or_assign(stuff.first, stuff.second);
+						auto result = _lua->safe_script_file(file.string());
+
+						if (result.valid())
+						{
+							const std::pair<std::string, std::string> stuff = result;
+							_luaFunctions.insert_or_assign(stuff.first, stuff.second);
+						}
+					} catch(const sol::error& e)
+					{
+						std::puts(e.what());
 					}
 				}
 			}
@@ -144,10 +153,8 @@ namespace proto
 		_drawCalls.clear();
 		_nkBuffer.Bind();
 
-		void* verts = _nkBuffer.Data(), * inds = _nkBuffer.Indices();
-
-		verts = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-		inds = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+		void* verts = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+		void* inds = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
 
 		nk_buffer_init_fixed(&_verts, verts, MaxVertexBuffer);
 		nk_buffer_init_fixed(&_inds, inds, MaxVertexBuffer);
@@ -195,13 +202,14 @@ namespace proto
 	}
 
 	void UIContainer::Update()
-	{
+	{		
 		if(!IsLua()) { return; }
 		_dimensions.set("wWidth", _window->GetWidth(), "wHeight", _window->GetHeight());
 		
 		for (auto& [name, errorMsg] : _luaFunctions)
 		{
-			const sol::safe_function_result result = (*_lua)[name]();
+			const sol::protected_function func((*_lua)[name]);
+			auto result = func();
 
 			if (!result.valid())
 			{
@@ -214,8 +222,6 @@ namespace proto
 	void UIContainer::InitLua(gsl::not_null<sol::state*> ptr)
 	{
 		_lua = ptr;	
-	
-		_lua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::math);
 
 		// Create a reference table for the nuklear functions.
 		_dimensions = _lua->create_named_table("Host");

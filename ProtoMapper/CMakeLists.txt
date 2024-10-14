@@ -8,7 +8,7 @@ target_link_options(ProtoMapper PRIVATE ${LinkerFlags})
 #		ROOT_DIR		- The location of the root folder where fonts, images, shaders, data files, etc are relative to.
 #		NOMINMAX		- To prevent windows.h from defining a 'ma' macro that interferes with entt.
 
-target_compile_definitions(ProtoMapper PUBLIC ROOT_DIR="$ENV{ROOT_DIR}" NOMINMAX="1")
+target_compile_definitions(ProtoMapper PUBLIC ROOT_DIR="$ENV{ROOT_DIR}" NOMINMAX="1" SOL_ALL_SAFETIES_ON=1)
 
 target_compile_definitions(
 	ProtoMapper 

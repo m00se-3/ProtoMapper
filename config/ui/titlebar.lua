@@ -92,4 +92,4 @@ function CustomTitleBar()
 end
 
 -- The script must return the name of the function and the error message prefix you want to use to identify it.
-return "CustomTitleBar", "TitleBar Error!"
+return "CustomTitleBar", "[Lua: TitleBar] "
