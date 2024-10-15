@@ -39,14 +39,11 @@ namespace proto
         static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
         /*
-                GLFW callback functions
+                GLFW callback functions. Only the ones I intend to use are included, there are more available.
         */
 
         static void ContextErrorMessage(int code, const char* description);
-        static void MonitorCallback(GLFWmonitor* monitor, int event);
-        static void WindowCloseCallback(GLFWwindow* window);
         static void WindowMaximizeCallback(GLFWwindow* window, int maximized);
-        static void WindowMinimizedCallback(GLFWwindow* window, int iconified);
         static void DropEventCallback(GLFWwindow* window, int count, const char** paths);
         static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
 

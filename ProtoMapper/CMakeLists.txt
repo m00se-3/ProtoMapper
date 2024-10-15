@@ -38,9 +38,6 @@ target_include_directories(
 
 	PRIVATE 
 	${CMAKE_CURRENT_LIST_DIR}/include
-	${CMAKE_CURRENT_LIST_DIR}/include/system
-	${CMAKE_CURRENT_LIST_DIR}/include/ui
-	${CMAKE_CURRENT_LIST_DIR}/include/renderer
 	${CMAKE_CURRENT_LIST_DIR}/include/stl
 	${SIMPLEINI_INCLUDE_DIRS}
 	${stb_INCLUDE_DIR}
@@ -73,19 +70,14 @@ target_sources(
 
 	${CMAKE_CURRENT_LIST_DIR}/include/ProtoMapper.hpp
 	${CMAKE_CURRENT_LIST_DIR}/include/Scene.hpp
-	
-	${CMAKE_CURRENT_LIST_DIR}/include/ui/UIContainer.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/ui/Font.hpp
-
-	${CMAKE_CURRENT_LIST_DIR}/include/renderer/Image.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/renderer/Renderer.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/renderer/Shader.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/renderer/Texture.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/renderer/Vertex.hpp
-
-	${CMAKE_CURRENT_LIST_DIR}/include/system/Logger.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/system/System.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/system/Window.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/UIContainer.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Font.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Image.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Renderer.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Shader.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Texture.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Vertex.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Window.hpp
 
 	${CMAKE_CURRENT_LIST_DIR}/include/stl/resource.hpp
 
@@ -95,21 +87,16 @@ target_sources(
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/Scene.cpp
-	
-	${CMAKE_CURRENT_LIST_DIR}/src/ui/UIContainer.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ui/Font.cpp
-	
-	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Texture.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Renderer.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Shader.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Vertex.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/renderer/Image.cpp
-	
-	${CMAKE_CURRENT_LIST_DIR}/src/system/Logger.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/system/System.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/system/Window.cpp
-
+	${CMAKE_CURRENT_LIST_DIR}/src/UIContainer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Font.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Texture.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Renderer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Shader.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Vertex.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Image.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/Window.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
+
 	${CMAKE_CURRENT_LIST_DIR}/src/external/nuklear.cpp
 
 )

@@ -68,18 +68,12 @@ namespace proto
 	{
 		auto* self = Mapper::GetInstance();
 
-		nk_input_scroll(self->UI()->Context(), nk_vec2((float)offX, (float)offY));
+		nk_input_scroll(self->UI()->Context(), nk_vec2(static_cast<float>(offX), static_cast<float>(offY)));
 	}
 
 	Mapper::~Mapper()
 	{
-		if (_configUpdate)
-		{
-			_configData.SaveFile(_configFile.c_str());
-		}
-
 		_configData.Reset();
-		
 		glfwTerminate();
 	}
 
@@ -203,10 +197,34 @@ namespace proto
 
 		/*
 			Show main window and start main loop.
+
+			Note: I decided to go with ints for the color values because it was easy to compensate
+				for erroneous data. Also the only floating-point type for INI is double, which would
+				mean running into precision loss.
 		*/
 
+		static constexpr auto maxColorInt = 255;
+		static constexpr auto maxColorFloat = 255.f;
+
+		auto red = _configData.GetLongValue("startup_display", "bg_red", 0);
+		auto green = _configData.GetLongValue("startup_display", "bg_green", 0);
+		auto blue = _configData.GetLongValue("startup_display", "bg_blue", 0);
+
+		if(red < 0) { red = -red; }
+		if(green < 0) { green = -green; }
+		if(blue < 0) { blue = -blue; }
+
+		if(red > maxColorInt) { red %= (maxColorInt + 1); }
+		if(green > maxColorInt) { green %= (maxColorInt + 1); }
+		if(blue > maxColorInt) { blue %= (maxColorInt + 1); }
+
 		glfwShowWindow(_window.GetPtr());
-		_renderer->SetBackgroundColor(glm::vec4{ 0.3f, 0.3f, 0.3f, 1.f });
+		_renderer->SetBackgroundColor(glm::vec4{ 
+			static_cast<float>(red) / maxColorFloat, 
+			static_cast<float>(green) / maxColorFloat,
+			 static_cast<float>(blue) / maxColorFloat,
+			  1.f 
+			});
 
 		const time::time_point last = time::now();
 
@@ -229,6 +247,11 @@ namespace proto
 			nk_input_begin(_ui->Context());
 			glfwPollEvents();
 			nk_input_end(_ui->Context());
+		}
+
+		if (_configUpdate)
+		{
+			_configData.SaveFile(_configFile.c_str());
 		}
 
 		return EXIT_SUCCESS;

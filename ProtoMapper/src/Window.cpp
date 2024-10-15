@@ -51,7 +51,7 @@ namespace proto
 		if (_window != nullptr)
 		{
 			auto getProcAddress = [](const char* proc) -> void*{
-				return glfwGetProcAddress(proc);
+				return glfwGetProcAddress(proc);	// NOLINT - Unfortunately, you have to do something like this with OpenGL.
 			};
 			
 			glfwMakeContextCurrent(_window);
@@ -66,10 +66,7 @@ namespace proto
 
 			// Set GLFW event callbacks.
 
-			glfwSetMonitorCallback(Window::MonitorCallback);
-			glfwSetWindowCloseCallback(_window, Window::WindowCloseCallback);
 			glfwSetWindowMaximizeCallback(_window, Window::WindowMaximizeCallback);
-			glfwSetWindowIconifyCallback(_window, Window::WindowMinimizedCallback);
 			glfwSetDropCallback(_window, Window::DropEventCallback);
 			glfwSetFramebufferSizeCallback(_window, Window::FrameBufferSizeCallback);
 
@@ -140,30 +137,9 @@ namespace proto
 
 	}
 
-	void Window::MonitorCallback([[maybe_unused]] GLFWmonitor* monitor, [[maybe_unused]] int event)
-	{
-		if (event == GLFW_CONNECTED)
-		{
-
-		}
-		else if (event == GLFW_DISCONNECTED)
-		{
-
-		}
-	}
-
-	void Window::WindowCloseCallback(GLFWwindow* window)
-	{
-		
-	}
-
-	void Window::WindowMaximizeCallback(GLFWwindow* window, int maximized)
+	void Window::WindowMaximizeCallback([[maybe_unused]] GLFWwindow* window, int maximized)
 	{
 		Mapper::GetInstance()->SetFullscreen((bool)maximized);
 	}
 
-	void Window::WindowMinimizedCallback(GLFWwindow* window, int iconified)
-	{
-
-	}
 }
