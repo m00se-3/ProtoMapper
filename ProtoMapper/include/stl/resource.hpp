@@ -24,14 +24,25 @@
 
 namespace proto
 {
-	inline constexpr auto shared_res_default_destructor = [](auto&) {};
+	/**
+	 * @brief Use this as the deleter to a shared_res if the resource can be freed with
+	 * it's own destructor.
+	 * 
+	 */
+	inline constexpr auto shared_res_default_deleter = [](auto&) {};
 
+	/**
+	 * @brief A generic reference-counting class for shared_res. Not to be used on it's own.
+	 * The class contains a type-erased deleter that must be supplied on construction. 
+	 * 
+	 * @tparam Resource The type of the contained resource.
+	 */
 	template<typename Resource>
     class RC
 	{
 	public:
 		template<typename... Args>
-		RC(const std::invocable<Resource&> auto& dest, Args&&... args): _object(new Resource{std::forward<Args>(args)...}), _destructor(std::move(dest)) {}
+		RC(const std::invocable<Resource&> auto& del, Args&&... args): _object(new Resource{std::forward<Args>(args)...}), _deleter(std::move(del)) {}
 
 		[[nodiscard]] constexpr auto get_shared(this auto&& self) { return self._shared; }
 		[[nodiscard]] constexpr auto get_weak(this auto&& self) { return self._weak; }
@@ -70,7 +81,7 @@ namespace proto
 
 		constexpr void destroy_object()
 		{
-			std::invoke(_destructor, std::forward<Resource&>(*_object));
+			std::invoke(_deleter, std::forward<Resource&>(*_object));
 			delete _object;
 		}
 
@@ -78,12 +89,24 @@ namespace proto
 
 		uint32_t _shared{}, _weak{};
 		Resource* _object = nullptr;
-		std::function<void(Resource&)> _destructor;
+		std::function<void(Resource&)> _deleter;
 	};
 
     template<typename Resource>
     class weak_res;
 
+	/**
+	 * @brief A reference-counted external resource that is managed with the deleter you supply it.
+	 * 
+	 * @par Synopsis 
+	 * Some external resources need to be accessed by multiple entities, but the method of deleting
+	 * the resource is not as simple as calling 'delete'. This is typically the case with file handles
+	 * or external resources defined in C libraries. std::shared_ptr is insufficient because the rules
+	 * for custom deleters are unclear, and the code fails to compile a lot of the time. With shared_res,
+	 * we can easily specify a lambda that calls the appropriate functions for freeing the resource.  
+	 * 
+	 * @tparam Resource 
+	 */
     template<typename Resource>
     class shared_res
     {
@@ -156,11 +179,11 @@ namespace proto
 
 		constexpr void reset()
 		{
-			if (_object != nullptr && _manager->sub_shared() == 0z)
+			if (_object != nullptr && _manager->sub_shared() == 0uz)
 			{
 				destroy_object();
 
-				if(_manager->get_weak() == 0z)
+				if(_manager->get_weak() == 0uz)
 				{
 					delete _manager;
 				}
@@ -220,6 +243,12 @@ namespace proto
 		return shared_res<Resource>{ Resource{} };
     }
 
+	/**
+	 * @brief A weak reference to a shared_res. This does not share ownership, but can use
+	 * the resource if it exists.
+	 * 
+	 * @tparam Resource 
+	 */
     template<typename Resource>
     class weak_res
     {
@@ -260,7 +289,7 @@ namespace proto
 
 		constexpr ~weak_res()
 		{
-			if(_manager->sub_weak() == 0z && _manager->get_shared() == 0z)
+			if(_manager->sub_weak() == 0uz && _manager->get_shared() == 0uz)
 			{
 				delete _manager;
 			}
@@ -268,7 +297,7 @@ namespace proto
     
 		[[nodiscard]] constexpr auto get_owners(this auto&& self) { return self._manager->get_shared(); }
 		[[nodiscard]] constexpr auto get_refs(this auto&& self) { return self._manager->get_weak(); }
-		[[nodiscard]] constexpr bool expired(this auto&& self) { return self.get_owners() == 0z; }
+		[[nodiscard]] constexpr bool expired(this auto&& self) { return self.get_owners() == 0uz; }
 		[[nodiscard]] constexpr auto&& lock(this auto&& self) { return (!self.expired()) ? shared_res{std::forward<weak_res<Resource>>(self)} : shared_res<Resource>{}; }
 
     private:
