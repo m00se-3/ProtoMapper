@@ -80,6 +80,7 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/include/Window.hpp
 
 	${CMAKE_CURRENT_LIST_DIR}/include/stl/resource.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/stl/dyn_array.hpp
 
 	PRIVATE 
 	

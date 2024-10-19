@@ -19,6 +19,7 @@
 #define PROTOSTL_RESOURCE_HPP
 
 #include <gsl/gsl-lite.hpp>
+#include <concepts>
 #include <functional>
 
 namespace proto
@@ -30,7 +31,7 @@ namespace proto
 	{
 	public:
 		template<typename... Args>
-		RC(const std::function<void(Resource&)>& dest, Args&&... args): _object(new Resource{std::forward<Args>(args)...}), _destructor(std::move(dest)) {}
+		RC(const std::invocable<Resource&> auto& dest, Args&&... args): _object(new Resource{std::forward<Args>(args)...}), _destructor(std::move(dest)) {}
 
 		[[nodiscard]] constexpr auto get_shared(this auto&& self) { return self._shared; }
 		[[nodiscard]] constexpr auto get_weak(this auto&& self) { return self._weak; }
@@ -130,6 +131,8 @@ namespace proto
 
 		constexpr shared_res& operator=(const shared_res& other)
 		{
+			if(this == &other) { return *this; }
+			
 			reset();
 
 			_object = other.get_ptr();
@@ -140,8 +143,8 @@ namespace proto
 		}
 
 		template<typename... Args>
-		constexpr shared_res(Args&&... args)
-		: _manager(gsl::owner<RC<Resource>*>{new RC<Resource>{std::forward<Args>(args)...}}), _object(_manager->get_ptr())
+		constexpr shared_res(const std::invocable<Resource&> auto& dest, Args&&... args)
+		: _manager(gsl::owner<RC<Resource>*>{new RC<Resource>{dest, std::forward<Args>(args)...}}), _object(_manager->get_ptr())
 		{
 			_manager->add_shared();
 		}
@@ -200,9 +203,9 @@ namespace proto
     };
     
     template<typename Resource, typename... Args>
-    [[nodiscard]] constexpr auto make_shared_res(Args&&... args)
+    [[nodiscard]] constexpr auto make_shared_res(const std::invocable<Resource&> auto& dest, Args&&... args)
     {
-		return shared_res<Resource>{ std::forward<Args>(args)... };
+		return shared_res<Resource>{ dest, std::forward<Args>(args)... };
     }
 
     template<typename Resource>
@@ -237,6 +240,8 @@ namespace proto
 
 		constexpr weak_res& operator=(const weak_res& other)
 		{
+			if(this == &other) { return *this; }
+			
 			if(_manager->sub_weak() == 0z && _manager->get_shared() == 0z)
 			{
 				delete _manager;
