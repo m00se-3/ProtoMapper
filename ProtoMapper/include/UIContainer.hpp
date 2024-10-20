@@ -20,6 +20,7 @@
 
 #include <filesystem>
 #include <map>
+#include <memory>
 
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_STANDARD_IO
@@ -36,10 +37,10 @@
 
 #include "Texture.hpp"
 #include "Renderer.hpp"
-#include "resource.hpp"
 #include "Font.hpp"
 #include "Vertex.hpp"
 #include "Window.hpp"
+#include <gsl/gsl-lite.hpp>
 
 namespace proto
 {
@@ -71,7 +72,7 @@ namespace proto
 		sol::table _dimensions;
 
 		std::map<std::string, std::string> _luaFunctions;
-		std::map<std::string, shared_res<Texture2D>> _icons;
+		std::map<std::string, std::shared_ptr<Texture2D>> _icons;
 		std::vector<DrawCall> _drawCalls;
 		
 		/*

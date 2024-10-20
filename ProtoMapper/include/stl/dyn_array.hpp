@@ -1,12 +1,13 @@
 #ifndef PROTO_DYN_ARRAY_HPP
 #define PROTO_DYN_ARRAY_HPP
 
-#include <gsl/gsl-lite.hpp>
+#include <iterator>
 #include <stdexcept>
+#include <span>
 
 namespace proto
 {
-    
+    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     /**
      * @brief A contiguous container whose capacity is allocated once, at construction, and then never reallocates.
      * 
@@ -22,8 +23,13 @@ namespace proto
         {
         public:
             friend class iterator;
+
+            using difference_type = std::iter_difference_t<T>;
+            using value_type = T;
+
+            constexpr iterator() = default;
             constexpr explicit iterator(T* ptr) : _it(ptr) {}
-            constexpr T* get(this auto&& self) { return self._location; }
+            constexpr T* get(this auto&& self) { return self._it; }
 
             constexpr iterator& operator++() // pre-increment
             {
@@ -31,7 +37,7 @@ namespace proto
                 return *this;
             }
 
-            constexpr iterator operator++(int) // post-increment
+            constexpr iterator operator++(int) // post-increment NOLINT
             {
                 auto temp = _it;
                 ++_it;
@@ -44,14 +50,14 @@ namespace proto
                 return *this;
             }
 
-            constexpr iterator operator--(int) // post-decrement
+            constexpr iterator operator--(int) // post-decrement NOLINT
             {
                 auto temp = _it;
                 --_it;
                 return iterator{temp};
             }
 
-            constexpr T& operator*(this auto&& self) { return *self._location; }
+            constexpr T& operator*(this auto&& self) { return *self._it; }
             constexpr bool operator==(const iterator& other) const { return _it == other._it; }
             constexpr auto operator<=>(const iterator&) const = default;
 
@@ -63,8 +69,13 @@ namespace proto
         {
         public:
             friend class const_iterator;
+
+            using difference_type = std::iter_difference_t<T>;
+            using value_type = T;
+
+            constexpr const_iterator() = default;
             constexpr explicit const_iterator(T* ptr) : _it(ptr) {}
-            constexpr const T* get(this auto&& self) { return self._location; }
+            constexpr const T* get(this auto&& self) { return self._it; }
 
             constexpr const_iterator& operator++() // pre-increment
             {
@@ -72,7 +83,7 @@ namespace proto
                 return *this;
             }
 
-            constexpr const_iterator operator++(int) // post-increment
+            constexpr const_iterator operator++(int) // post-increment NOLINT
             {
                 auto temp = _it;
                 ++_it;
@@ -85,14 +96,14 @@ namespace proto
                 return *this;
             }
 
-            constexpr const_iterator operator--(int) // post-decrement
+            constexpr const_iterator operator--(int) // post-decrement NOLINT
             {
                 auto temp = _it;
                 --_it;
                 return const_iterator{temp};
             }
 
-            constexpr const T& operator*(this auto&& self) { return *self._location; }
+            constexpr const T& operator*(this auto&& self) { return *self._it; }
             constexpr bool operator==(const const_iterator& other) const { return _it == other._it; }
             constexpr auto operator<=>(const const_iterator&) const = default;
 
@@ -104,6 +115,11 @@ namespace proto
         {
         public:
             friend class reverse_iterator;
+            
+            using difference_type = std::iter_difference_t<T>;
+            using value_type = T;
+
+            constexpr reverse_iterator() = default;
             constexpr explicit reverse_iterator(T* ptr) : _it(ptr) {}
             constexpr explicit reverse_iterator(iterator ptr) : _it(ptr) {}
             constexpr T* get(this auto&& self) { return self.it; }
@@ -114,7 +130,7 @@ namespace proto
                 return *this;
             }
 
-            constexpr reverse_iterator operator++(int) // post-increment
+            constexpr reverse_iterator operator++(int) // post-increment NOLINT
             {
                 auto temp = _it;
                 --_it;
@@ -127,14 +143,14 @@ namespace proto
                 return *this;
             }
 
-            constexpr reverse_iterator operator--(int) // post-decrement
+            constexpr reverse_iterator operator--(int) // post-decrement NOLINT
             {
                 auto temp = _it;
                 ++_it;
                 return reverse_iterator{temp};
             }
 
-            constexpr T& operator*(this auto&& self) { return *self.it; }
+            constexpr T& operator*(this auto&& self) { return *self._it; }
             constexpr bool operator==(const reverse_iterator& other) const { return _it == other._it; }
             constexpr auto operator<=>(const reverse_iterator&) const = default;
 
@@ -146,6 +162,11 @@ namespace proto
         {
         public:
             friend class const_reverse_iterator;
+            
+            using difference_type = std::iter_difference_t<T>;
+            using value_type = T;
+
+            constexpr const_reverse_iterator() = default;
             constexpr explicit const_reverse_iterator(T* ptr) : _it(ptr) {}
             constexpr explicit const_reverse_iterator(const_iterator ptr) : _it(ptr) {}
             constexpr const T* get(this auto&& self) { return self._location; }
@@ -156,7 +177,7 @@ namespace proto
                 return *this;
             }
 
-            constexpr const_reverse_iterator operator++(int) // post-increment
+            constexpr const_reverse_iterator operator++(int) // post-increment NOLINT
             {
                 auto temp = _it;
                 --_it;
@@ -169,7 +190,7 @@ namespace proto
                 return *this;
             }
 
-            constexpr const_reverse_iterator operator--(int) // post-decrement
+            constexpr const_reverse_iterator operator--(int) // post-decrement NOLINT
             {
                 auto temp = _it;
                 ++_it;
@@ -190,7 +211,7 @@ namespace proto
          * @param capacity The size the array is to be.
          */
         constexpr explicit dyn_array(size_t capacity)
-        : _data(::operator new(capacity)), _capacity(capacity)
+        : _data((T*)::operator new(capacity * sizeof(T))), _capacity(capacity)
         {
         }
 
@@ -198,15 +219,15 @@ namespace proto
          * @brief Construct a dyn_array with a known capacity. The objects are initialized.
          * 
          * @param capacity The size the array is to be.
-         * @param initVal The value all elements are initialized to.
+         * @param init_val The value all elements are initialized to.
          */
-        constexpr dyn_array(size_t capacity, const auto& initVal)
-        : _data(new T[capacity](initVal)), _size(capacity), _capacity(capacity)
+        constexpr dyn_array(size_t capacity, const auto& init_val)
+        : _data(new T[capacity]{init_val}), _size(capacity), _capacity(capacity)
         {
         }
 
         constexpr dyn_array(const dyn_array& other)
-        : _data(::operator new(other._capacity)), _size(other._size), _capacity(other._capacity)
+        : _data((T*)::operator new(other._capacity * sizeof(T))), _size(other._size), _capacity(other._capacity)
         {
             auto it = iterator{_data};
             
@@ -231,7 +252,7 @@ namespace proto
             if(this == &other) { return *this; }
 
             delete[] _data;
-            _data = gsl::owner<T*>{other._data};
+            _data = other._data;
             _size = other._size;
             _capacity = other._capacity;
 
@@ -242,13 +263,12 @@ namespace proto
 
         constexpr ~dyn_array()
         {
-            clear();
-            ::operator delete(_data);
+            delete[] _data;
         }
 
-        constexpr T& operator[](size_t index) { return _data[index]; }
+        [[nodiscard]] constexpr T& operator[](size_t index) { return _data[index]; }
 
-        constexpr auto& at(this auto&& self, size_t index)
+        [[nodiscard]] constexpr auto& at(this auto&& self, size_t index)
         {
             if(index < self._size)
             {
@@ -258,13 +278,16 @@ namespace proto
             throw std::out_of_range("Index out of range.");
         }
 
+        [[nodiscard]] constexpr T* data(this auto&& self)  { return self._data; }
+        [[nodiscard]] constexpr std::span<T> to_span(this auto&& self)  { return std::span<T>{self._data, self._size}; }
+
         template <typename... Args>
         constexpr T& emplace_back(this auto&& self, Args&&... args)
         {
             if(self._size == self._capacity) { throw std::overflow_error("Unable to fit more items."); }
 
-            ++self._size;
             self._data[self._size] = T{std::forward<Args>(args)...};
+            ++self._size;
 
             return self.back();
         }
@@ -277,28 +300,31 @@ namespace proto
 
         constexpr T& push_back(this auto&& self, const T& item) { return self.emplace_back(item); }
 
-        constexpr iterator begin(this auto&& self) { return self._data; }
-        constexpr iterator end(this auto&& self) { return self._data + self._size; }
-        constexpr const_iterator cbegin(this auto&& self) { return self._data; }
-        constexpr const_iterator cend(this auto&& self) { return self._data + self._size; }
+        [[nodiscard]] constexpr iterator begin(this auto&& self) { return iterator{self._data}; }
+        [[nodiscard]] constexpr iterator end(this auto&& self) { return iterator{self._data + self._size}; }
+        [[nodiscard]] constexpr const_iterator cbegin(this auto&& self) { return const_iterator{self._data}; }
+        [[nodiscard]] constexpr const_iterator cend(this auto&& self) { return const_iterator{self._data + self._size}; }
 
-        constexpr reverse_iterator rbegin(this auto&& self) { return self._data + (self._size - 1uz); }
-        constexpr reverse_iterator rend(this auto&& self) { return self._data - 1uz; }
-        constexpr const_reverse_iterator crbegin(this auto&& self) { return self._data + (self._size - 1uz); }
-        constexpr const_reverse_iterator crend(this auto&& self) { return self._data - 1uz; }
+        [[nodiscard]] constexpr reverse_iterator rbegin(this auto&& self) { return reverse_iterator{self._data + (self._size - 1uz)}; }
+        [[nodiscard]] constexpr reverse_iterator rend(this auto&& self) { return reverse_iterator{self._data - 1uz}; }
+        [[nodiscard]] constexpr const_reverse_iterator crbegin(this auto&& self) { return const_reverse_iterator{self._data + (self._size - 1uz)}; }
+        [[nodiscard]] constexpr const_reverse_iterator crend(this auto&& self) { return const_reverse_iterator{self._data - 1uz}; }
 
-        constexpr T& front(this auto&& self) 
+        [[nodiscard]] constexpr T& front(this auto&& self) 
         {
             if(self._size == 0uz) { throw std::out_of_range("dyn_array contains no items."); }
             return self._data[0uz]; 
         }
-        constexpr T& back(this auto&& self) 
+        [[nodiscard]] constexpr T& back(this auto&& self) 
         {
             if(self._size == 0uz) { throw std::out_of_range("dyn_array contains no items."); }
             return self._data[self._size - 1uz];
         }
 
-        constexpr bool empty(this auto&& self) { return self._size == 0uz; }
+        [[nodiscard]] constexpr bool empty(this auto&& self) { return self._size == 0uz; }
+
+        [[nodiscard]] constexpr size_t size(this auto&& self) { return self._size; }
+        [[nodiscard]] constexpr size_t capacity(this auto&& self) { return self._capacity; }
 
         constexpr void clear()
         {
@@ -307,38 +333,53 @@ namespace proto
 
             while(start != e)
             {
-                start.~T();
+                (*start).~T();
                 ++start;
             }
 
             _size = 0uz;
         }
 
-        constexpr void erase(iterator it)
+        constexpr iterator erase(iterator pos)
         {
-            if(it < begin() || it > end()) { throw std::out_of_range("Iterator does not exist within the container."); }
-            
             const auto e = end();
 
-            while(it != e)
+            while(pos != e)
             {
-                *it.~T();
-                ++it;
+                (*pos).~T();
+                ++pos;
                 --_size;
             }
+
+            return end();
+        }
+
+        constexpr iterator erase(iterator first, iterator last)
+        {
+            if(first == last) { return end(); }
+            
+            while(first != last)
+            {
+                (*first).~T();
+                ++first;
+                --_size;
+            }
+
+            return end();
         }
 
     private:
         constexpr void nullify()
         {
-            _data = gsl::owner<T*>{nullptr};
+            _data = nullptr;
             _size = 0uz;
             _capacity = 0uz;
         }
 
-        gsl::owner<T*> _data = nullptr;
+        T* _data = nullptr;
         size_t _size{}, _capacity{};
     };
+    // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 #endif

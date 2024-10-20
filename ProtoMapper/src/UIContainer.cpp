@@ -54,8 +54,8 @@ namespace proto
 				const auto& file = icon.path();
 
 				Image img{file};
-				auto iconImg = _icons.insert_or_assign(file.stem().string(), make_shared_res<Texture2D>([](Texture2D& tex){ tex.Destroy(); }));
-				iconImg.first->second.get().Create().WriteImage(img);
+				auto iconImg = _icons.insert_or_assign(file.stem().string(), std::shared_ptr<Texture2D>{new Texture2D{}, [](Texture2D* tex){ tex->Destroy(); }});
+				iconImg.first->second->Create().WriteImage(img);
 			}
 		}
 		

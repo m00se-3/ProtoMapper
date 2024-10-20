@@ -44,7 +44,7 @@ namespace proto
 	class Renderer
 	{
 	public:
-		enum class mode
+		enum class mode : uint8_t
 		{
 			Two,
 			Three
