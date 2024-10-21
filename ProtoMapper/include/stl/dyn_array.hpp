@@ -251,7 +251,8 @@ namespace proto
         {
             if(this == &other) { return *this; }
 
-            delete[] _data;
+            clear();
+            ::operator delete(_data);
             _data = other._data;
             _size = other._size;
             _capacity = other._capacity;
@@ -263,7 +264,8 @@ namespace proto
 
         constexpr ~dyn_array()
         {
-            delete[] _data;
+            clear();
+            ::operator delete(_data);
         }
 
         [[nodiscard]] constexpr T& operator[](size_t index) { return _data[index]; }
