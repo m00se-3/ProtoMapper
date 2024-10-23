@@ -18,9 +18,8 @@
 #include "Renderer.hpp"
 
 #include <filesystem>
-#include <array>
-#include <memory>
-#include <cstdio>
+
+#include <fstream>
 #include <gsl/gsl-lite.h>
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -28,63 +27,33 @@
 namespace proto
 {
 	
-	Renderer::Renderer(const std::string& dir)
+	Renderer::Renderer(const std::filesystem::path& dir)
 		: _model(glm::mat4(1.f)), _view(glm::mat4(1.f)), _projection(glm::mat4(1.f)),
 		_currentTexture(std::nullopt), _currentShader(std::nullopt)
 	{
-		using FileDeleter = std::function<void(std::FILE*)>;
-
-		auto destructor = [](std::FILE* handle){ if(handle != nullptr) { [[maybe_unused]] auto i = std::fclose(gsl::owner<std::FILE*>{handle}); } };
-
 		_defaultTexture.Create().GenerateBlank(1, 1);
 
-		/*
-			Open the default shader sources and extract the text.
-		*/
+		const std::filesystem::path vs = dir / "assets/shaders/DefaultVS.glsl",
+			fs = dir / "assets/shaders/DefaultFS.glsl";
 
-		std::filesystem::path vs = dir + "/assets/shaders/DefaultVS.glsl",
-			fs = dir + "/assets/shaders/DefaultFS.glsl";
+		auto streamVS = std::fstream{ vs.string().c_str(), std::ios_base::in };
+		auto streamFS = std::fstream{ fs.string().c_str(), std::ios_base::in };
 
-		// File handles for the shader sources.
-		// Use of unique_ptr to guarantee safe release of file handles.
-
-		auto vsHandle = std::unique_ptr<std::FILE, FileDeleter>(nullptr, destructor);
-		auto fsHandle = std::unique_ptr<std::FILE, FileDeleter>(nullptr, destructor);
-
-		std::FILE* tempVS = nullptr;
-		std::FILE* tempFS = nullptr;
-
-		const auto erVS = fopen_s(&tempVS, vs.string().c_str(), "r");
-		const auto erFS = fopen_s(&tempFS, fs.string().c_str(), "r");
-
-		if (erVS == 0 && erFS == 0)
+		if (streamVS.is_open() && streamFS.is_open())
 		{
-			vsHandle.reset(tempVS);
-			fsHandle.reset(tempFS);
-
-			std::string vsSrc, fsSrc;						// Strings that will hold the source text.
+			std::string vsSrc, fsSrc;
 
 			vsSrc.reserve(std::filesystem::file_size(vs));
 			fsSrc.reserve(std::filesystem::file_size(fs));
 
-			/*
-				Read each shader file line by line until the end.
-			*/
-
-			static constexpr size_t readBufferSize = 50z;
-
-			std::array<char, readBufferSize> buffer = {  };
-
-			while (std::feof(vsHandle.get()) == 0)
+			for(std::string line; std::getline(streamVS, line, '\t');) 
 			{
-				vsSrc += std::fgets(buffer.data(), readBufferSize, vsHandle.get());
+				vsSrc += line;
 			}
 
-			std::memset(buffer.data(), 0, readBufferSize);	// Reset the buffer memory to ensure no garbage data is present.
-
-			while (std::feof(fsHandle.get()) == 0)
+			for(std::string line; std::getline(streamFS, line, '\t');) 
 			{
-				fsSrc += std::fgets(buffer.data(), readBufferSize, fsHandle.get());
+				fsSrc += line;
 			}
 
 			auto objs = _defaultShader.CreateBasic(vsSrc.c_str(), fsSrc.c_str());

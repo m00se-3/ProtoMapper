@@ -24,7 +24,6 @@ namespace proto
 {
 	
 	Image::Image(const std::filesystem::path& filename)
-	: _width(), _height()
 	{
 		Load(filename);
 	}
@@ -34,31 +33,40 @@ namespace proto
 	{
 	}
 
-	void Image::Load(const std::filesystem::path& filename)
+	bool Image::Load(const std::filesystem::path& filename)
 	{
 		// For now, we will require png images.
 		if (std::filesystem::exists(filename) && filename.extension() == ".png")
 		{
-			int w{}, h{}, c{};
+			int w, h, c; // NOLINT(cppcoreguidelines-init-variables) - variables initialized elsewhere
 			uint8_t* ptr = stbi_load(filename.string().c_str(), &w, &h, &c, 0);
+
+			if(ptr == nullptr) { return false; }
 
 			const auto size = size_t(w) * size_t(h);
 			auto sp = std::span<uint8_t>{ ptr, size };
 			_data.assign(sp.begin(), sp.end());
+
+			return true;
 		}
+
+		return false;
 	}
 
-	void Image::LoadCopy(uint32_t w, uint32_t h, std::span<uint8_t> dataIn)
+	bool Image::LoadCopy(uint32_t w, uint32_t h, std::span<uint8_t> dataIn)
 	{
-		_width = w; _height = h;
-		_data.clear();
-
-		_data.reserve(size_t(w) * size_t(h));
-
 		if (!dataIn.empty())
 		{
+			_width = w; _height = h;
+			_data.clear();
+
+			_data.reserve(size_t(w) * size_t(h));
 			_data.assign(dataIn.begin(), dataIn.end());
+
+			return true;
 		}
+
+		return false;
 	}
 
 }

@@ -44,7 +44,7 @@ namespace proto
 	UIContainer::UIContainer(FontGroup& fonts, Window* win, Renderer* ren)
 		: _ctx(new nk_context, CtxDeleter{}), _configurator(), _cmds(), _verts(), _inds(), _nullTexture(), _window(win)
 	{
-		const std::string fontDir = GetAssetDir() + "/fonts/roboto/";
+		const std::filesystem::path fontDir = GetAssetDir() + "/fonts/roboto";
 		const std::filesystem::path imgDir = GetAssetDir() + "/icons/";
 
 		if(std::filesystem::exists(imgDir))
@@ -70,10 +70,10 @@ namespace proto
 
 		// We leave these magic numbers in, for now. They will be replaced with a more intelligent solution later.
 
-		fonts.AddFont(FontStyle::Normal, 16.0f, fontDir + "Roboto-Medium.ttf");
-		fonts.AddFont(FontStyle::Bold, 16.0f, fontDir + "Roboto-Bold.ttf");
-		fonts.AddFont(FontStyle::BoldItalic, 16.0f, fontDir + "Roboto-BoldItalic.ttf");
-		fonts.AddFont(FontStyle::Italic, 16.0f, fontDir + "Roboto-Italic.ttf");
+		fonts.AddFont(FontStyle::Normal, 16.0f, fontDir / "Roboto-Medium.ttf");
+		fonts.AddFont(FontStyle::Bold, 16.0f, fontDir / "Roboto-Bold.ttf");
+		fonts.AddFont(FontStyle::BoldItalic, 16.0f, fontDir / "Roboto-BoldItalic.ttf");
+		fonts.AddFont(FontStyle::Italic, 16.0f, fontDir / "Roboto-Italic.ttf");
 
 		/*
             Because the pointer returned by nk_font_atlas_bake() is a 'reference' pointer, not an owning pointer, we can't

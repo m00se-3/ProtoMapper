@@ -19,7 +19,7 @@
 #define PROTO_RENDERER_HPP
 
 #include <optional>
-#include <string>
+#include <filesystem>
 #include <functional>
 #include <queue>
 
@@ -50,7 +50,7 @@ namespace proto
 			Three
 		};
 
-		Renderer(const std::string& dir);
+		Renderer(const std::filesystem::path& dir);
 
 		[[nodiscard]] constexpr mode GetRenderMode(this auto&& self) { return self._currentMode; }
 

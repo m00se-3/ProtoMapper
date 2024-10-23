@@ -36,11 +36,11 @@ namespace proto
 		Image(uint32_t w, uint32_t h, std::span<uint8_t> dataIn);
 
 		// Load a fresh image from a file.
-		void Load(const std::filesystem::path& filename);
+		[[nodiscard]] bool Load(const std::filesystem::path& filename);
 
 		// Copy image data from an existing memory buffer.
 		// This will erase any data already contained in the Image buffer.
-		void LoadCopy(uint32_t w, uint32_t h, std::span<uint8_t> dataIn);
+		[[nodiscard]] bool LoadCopy(uint32_t w, uint32_t h, std::span<uint8_t> dataIn);
 
 		[[nodiscard]] constexpr auto Data(this auto&& self) { return std::span<uint8_t>(self._data.begin(), self._data.end()); }
 		[[nodiscard]] constexpr auto&& Width(this auto&& self) { return self._width; }
@@ -48,7 +48,7 @@ namespace proto
 		[[nodiscard("The boolean returned from Image::Empty() has been ignored.")]] bool Empty() const { return _data.empty(); }
 
 	private:
-		uint32_t _width, _height;
+		uint32_t _width{}, _height{};
 		std::vector<uint8_t> _data;
 
 	};
