@@ -3,9 +3,11 @@
 #include <array>
 #include <algorithm>
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
+
 TEST_CASE("dyn_array with trivial data", "[dyn_array]")
 {
-    constexpr int size_of_first = 6;
+    constexpr int size_of_first = 6uz;
     auto container = proto::dyn_array<int>{size_t(size_of_first)};
 
     REQUIRE(container.size() == 0uz);
@@ -24,8 +26,7 @@ TEST_CASE("dyn_array with trivial data", "[dyn_array]")
 
 TEST_CASE("test copying and for loops", "[dyn_array]")
 {
-    static constexpr size_t size_of_first = 12uz;
-    auto con1 = proto::dyn_array<int>{size_of_first, 0}; 
+    auto con1 = proto::dyn_array<int>{12uz, 0}; 
     auto con2 = con1;
 
     REQUIRE(con1.size() == 12uz);
@@ -68,3 +69,23 @@ TEST_CASE("test dyn_array with STL algorithms", "[dyn_array]")
 
     REQUIRE(rng.size() == 9uz);
 }
+
+TEST_CASE("dyn_array::iterators with arithmitic", "[dyn_array], [iterators]")
+{
+    auto container = proto::dyn_array<int>{15uz, 0};
+    auto it = container.begin();
+
+    auto some_element = 5uz + it; 
+
+    *some_element = 45;
+    it[3uz] = 42;
+
+    some_element -= 4uz;
+    *some_element = 35;
+
+    REQUIRE(*(it + 5uz) == 45);
+    REQUIRE(*(it + 3uz) == 42);
+    REQUIRE(*(it + 1uz) == 35);
+}
+
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)

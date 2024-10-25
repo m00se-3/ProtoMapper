@@ -19,7 +19,7 @@ namespace proto
     public:
         friend class dyn_array<T>;
 
-        class iterator 
+        class iterator : std::contiguous_iterator_tag
         {
         public:
             friend class iterator;
@@ -57,6 +57,38 @@ namespace proto
                 return iterator{temp};
             }
 
+            constexpr iterator operator+(size_t jmp)
+            {
+                return iterator{_it + jmp};
+            }
+
+            constexpr iterator operator-(size_t jmp)
+            {
+                return iterator{_it - jmp};
+            }
+
+            constexpr iterator& operator+=(size_t jmp)
+            {
+                _it += jmp;
+                return *this;
+            }
+
+            constexpr iterator& operator-=(size_t jmp)
+            {
+                _it -= jmp;
+                return *this;
+            }
+
+            friend constexpr iterator operator+(size_t jmp, iterator& self)
+            {
+                return iterator{self + jmp};
+            }
+
+            constexpr T& operator[](size_t index) 
+            {
+                return *(_it + index);
+            }
+
             constexpr T& operator*(this auto&& self) { return *self._it; }
             constexpr bool operator==(const iterator& other) const { return _it == other._it; }
             constexpr auto operator<=>(const iterator&) const = default;
@@ -65,7 +97,7 @@ namespace proto
             T* _it = nullptr;
         };
 
-        class const_iterator 
+        class const_iterator : std::contiguous_iterator_tag
         {
         public:
             friend class const_iterator;
@@ -75,6 +107,7 @@ namespace proto
 
             constexpr const_iterator() = default;
             constexpr explicit const_iterator(T* ptr) : _it(ptr) {}
+            constexpr explicit const_iterator(iterator it) : _it(it.get()) {}
             constexpr const T* get(this auto&& self) { return self._it; }
 
             constexpr const_iterator& operator++() // pre-increment
@@ -103,6 +136,38 @@ namespace proto
                 return const_iterator{temp};
             }
 
+            constexpr const_iterator operator+(size_t jmp)
+            {
+                return const_iterator{_it + jmp};
+            }
+
+            constexpr const_iterator operator-(size_t jmp)
+            {
+                return const_iterator{_it - jmp};
+            }
+
+            constexpr const_iterator& operator+=(size_t jmp)
+            {
+                _it += jmp;
+                return *this;
+            }
+
+            constexpr const_iterator& operator-=(size_t jmp)
+            {
+                _it -= jmp;
+                return *this;
+            }
+
+            friend constexpr const_iterator operator+(size_t jmp, const_iterator& self)
+            {
+                return const_iterator{self + jmp};
+            }
+
+            constexpr T& operator[](size_t index) 
+            {
+                return *(_it + index);
+            }
+
             constexpr const T& operator*(this auto&& self) { return *self._it; }
             constexpr bool operator==(const const_iterator& other) const { return _it == other._it; }
             constexpr auto operator<=>(const const_iterator&) const = default;
@@ -111,7 +176,7 @@ namespace proto
             const T* _it = nullptr;
         };
 
-        class reverse_iterator 
+        class reverse_iterator : std::contiguous_iterator_tag
         {
         public:
             friend class reverse_iterator;
@@ -150,6 +215,38 @@ namespace proto
                 return reverse_iterator{temp};
             }
 
+            constexpr reverse_iterator operator+(size_t jmp)
+            {
+                return reverse_iterator{_it - jmp};
+            }
+
+            constexpr reverse_iterator operator-(size_t jmp)
+            {
+                return reverse_iterator{_it + jmp};
+            }
+
+            constexpr reverse_iterator& operator+=(size_t jmp)
+            {
+                _it -= jmp;
+                return *this;
+            }
+
+            constexpr reverse_iterator& operator-=(size_t jmp)
+            {
+                _it += jmp;
+                return *this;
+            }
+
+            friend constexpr reverse_iterator operator+(size_t jmp, reverse_iterator& self)
+            {
+                return reverse_iterator{self - jmp};
+            }
+
+            constexpr T& operator[](size_t index) 
+            {
+                return *(_it + index);
+            }
+
             constexpr T& operator*(this auto&& self) { return *self._it; }
             constexpr bool operator==(const reverse_iterator& other) const { return _it == other._it; }
             constexpr auto operator<=>(const reverse_iterator&) const = default;
@@ -158,7 +255,7 @@ namespace proto
             iterator _it = nullptr;
         };
 
-        class const_reverse_iterator 
+        class const_reverse_iterator : std::contiguous_iterator_tag
         {
         public:
             friend class const_reverse_iterator;
@@ -168,7 +265,7 @@ namespace proto
 
             constexpr const_reverse_iterator() = default;
             constexpr explicit const_reverse_iterator(T* ptr) : _it(ptr) {}
-            constexpr explicit const_reverse_iterator(const_iterator ptr) : _it(ptr) {}
+            constexpr explicit const_reverse_iterator(reverse_iterator ptr) : _it(ptr) {}
             constexpr const T* get(this auto&& self) { return self._location; }
 
             constexpr const_reverse_iterator& operator++() // pre-increment
@@ -195,6 +292,38 @@ namespace proto
                 auto temp = _it;
                 ++_it;
                 return const_reverse_iterator{temp};
+            }
+
+            constexpr const_reverse_iterator operator+(size_t jmp)
+            {
+                return const_reverse_iterator{_it - jmp};
+            }
+
+            constexpr const_reverse_iterator operator-(size_t jmp)
+            {
+                return const_reverse_iterator{_it + jmp};
+            }
+
+            constexpr const_reverse_iterator& operator+=(size_t jmp)
+            {
+                _it -= jmp;
+                return *this;
+            }
+
+            constexpr const_reverse_iterator& operator-=(size_t jmp)
+            {
+                _it += jmp;
+                return *this;
+            }
+
+            friend constexpr const_reverse_iterator operator+(size_t jmp, const_reverse_iterator& self)
+            {
+                return const_reverse_iterator{self - jmp};
+            }
+
+            constexpr T& operator[](size_t index) 
+            {
+                return *(_it + index);
             }
 
             constexpr const T& operator*(this auto&& self) { return *self._location; }
