@@ -33,17 +33,6 @@ if(clang_tidy_FOUND)
   set_property(TARGET ProtoMapper PROPERTY CXX_CLANG_TIDY ${clang_tidy_FOUND})
 endif()
 
-target_include_directories(
-	ProtoMapper
-
-	PRIVATE 
-	${CMAKE_CURRENT_LIST_DIR}/include
-	${CMAKE_CURRENT_LIST_DIR}/include/stl
-	${SIMPLEINI_INCLUDE_DIRS}
-	${stb_INCLUDE_DIR}
-	${LUA_INCLUDE_DIR}
-)
-
 target_link_libraries(
 	ProtoMapper
 
@@ -66,23 +55,6 @@ target_sources(
 
 	PUBLIC 
 
-	# Headers
-
-	${CMAKE_CURRENT_LIST_DIR}/include/ProtoMapper.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/Scene.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/UIContainer.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/Font.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/Image.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/Renderer.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/Shader.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/Texture.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/Vertex.hpp
-	${CMAKE_CURRENT_LIST_DIR}/include/Window.hpp
-
-	${CMAKE_CURRENT_LIST_DIR}/include/stl/dyn_array.hpp
-
-	PRIVATE 
-	
 	# Implementations
 	
 	${CMAKE_CURRENT_LIST_DIR}/src/ProtoMapper.cpp
@@ -98,5 +70,34 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
 
 	${CMAKE_CURRENT_LIST_DIR}/src/external/nuklear.cpp
+
+	PUBLIC
+
+	FILE_SET HEADERS 
+
+	BASE_DIRS 
+
+	${CMAKE_CURRENT_LIST_DIR}/include
+	${CMAKE_CURRENT_LIST_DIR}/stl
+	${SIMPLEINI_INCLUDE_DIRS}
+	${stb_INCLUDE_DIR}
+	${LUA_INCLUDE_DIR}
+
+	FILES 
+
+	# Headers
+
+	${CMAKE_CURRENT_LIST_DIR}/include/ProtoMapper.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Scene.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/UIContainer.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Font.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Image.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Renderer.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Shader.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Texture.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Vertex.hpp
+	${CMAKE_CURRENT_LIST_DIR}/include/Window.hpp
+
+	${CMAKE_CURRENT_LIST_DIR}/include/stl/dyn_array.hpp
 
 )

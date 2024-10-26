@@ -19,6 +19,8 @@
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <cmath>
+
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_STANDARD_IO
 
@@ -26,4 +28,11 @@
 #define NK_UINT_DRAW_INDEX
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_FIXED_TYPES
+
+#define NK_SIN sinf
+#define NK_COS cosf
+#define NK_SQRT sqrtf
+#define NK_MEMSET memset
+#define NK_MEMCPY memcpy
+
 #include "nuklear/nuklear.h"

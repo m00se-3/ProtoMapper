@@ -35,10 +35,10 @@ namespace proto
 	static constexpr uint64_t MaxVertexBuffer = 32z * 1024z;
 
 	static constexpr std::array<struct nk_draw_vertex_layout_element, 4z> vertex_layout = {
-		nk_draw_vertex_layout_element{NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(Vertex2D, pos)},
-		nk_draw_vertex_layout_element{NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(Vertex2D, texCoords)},
-		nk_draw_vertex_layout_element{NK_VERTEX_COLOR, NK_FORMAT_R32G32B32A32_FLOAT, NK_OFFSETOF(Vertex2D, color)},
-		nk_draw_vertex_layout_element{NK_VERTEX_LAYOUT_END}
+		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_POSITION, .format=NK_FORMAT_FLOAT, .offset=NK_OFFSETOF(Vertex2D, pos) },
+		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_TEXCOORD,  .format=NK_FORMAT_FLOAT,  .offset=NK_OFFSETOF(Vertex2D, texCoords) },
+		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_COLOR, .format=NK_FORMAT_R32G32B32A32_FLOAT, .offset=NK_OFFSETOF(Vertex2D, color) },
+		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_LAYOUT_END, .format=NK_FORMAT_FLOAT, .offset=0 }
 	};
 
 	UIContainer::UIContainer(FontGroup& fonts, Window* win, Renderer* ren)
@@ -70,10 +70,10 @@ namespace proto
 
 		// We leave these magic numbers in, for now. They will be replaced with a more intelligent solution later.
 
-		fonts.AddFont(FontStyle::Normal, 16.0f, fontDir / "Roboto-Medium.ttf");
-		fonts.AddFont(FontStyle::Bold, 16.0f, fontDir / "Roboto-Bold.ttf");
-		fonts.AddFont(FontStyle::BoldItalic, 16.0f, fontDir / "Roboto-BoldItalic.ttf");
-		fonts.AddFont(FontStyle::Italic, 16.0f, fontDir / "Roboto-Italic.ttf");
+		fonts.AddFont(FontStyle::Normal, 20.0f, fontDir / "Roboto-Medium.ttf");
+		fonts.AddFont(FontStyle::Bold, 20.0f, fontDir / "Roboto-Bold.ttf");
+		fonts.AddFont(FontStyle::BoldItalic, 20.0f, fontDir / "Roboto-BoldItalic.ttf");
+		fonts.AddFont(FontStyle::Italic, 20.0f, fontDir / "Roboto-Italic.ttf");
 
 		/*
             Because the pointer returned by nk_font_atlas_bake() is a 'reference' pointer, not an owning pointer, we can't
@@ -82,7 +82,7 @@ namespace proto
 			As a result, it's just easier to handle baking this way.
         */
 
-		int imgWidth{}, imgHeight{};
+		int imgWidth, imgHeight; // NOLINT(cppcoreguidelines-init-variables) - variables initialized later
 	    const void* img = nk_font_atlas_bake(fonts.GetAtlas(), &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 
 		// Create Texture object.
@@ -95,7 +95,7 @@ namespace proto
 		    return;
 		}
 
-		static constexpr int segmentsPerCurve = 20;
+		static constexpr int segmentsPerCurve = 22;
 
 		_configurator.shape_AA = NK_ANTI_ALIASING_ON;
 		_configurator.line_AA = NK_ANTI_ALIASING_ON;
@@ -184,7 +184,7 @@ namespace proto
 			    continue;
 			}
 
-			DrawCall draw{ _nkBuffer.VAO(), GL_TRIANGLES, offset, static_cast<int>(cmd->elem_count) };
+			DrawCall draw{ .buffer = _nkBuffer.VAO(), .drawMode = GL_TRIANGLES, .offset = offset, .elemCount = static_cast<int>(cmd->elem_count) };
 
 			if (cmd->texture.id != 0 && glIsTexture((unsigned int)cmd->texture.id) == GL_TRUE)
 			{
@@ -372,7 +372,7 @@ namespace proto
 			{
 				// Unfortunately, for now there is no getting around using nk_strlen here.
 
-				return static_cast<bool>(nk_begin(*ctx, text.value().data(), *size, *flags));
+				return static_cast<bool>(nk_begin(*ctx, text.value().data(), *size, *flags)); // NOLINT
 			};
 
 		context["End"] = nk_end;
@@ -382,7 +382,7 @@ namespace proto
 		context["GroupBegin"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
-				return static_cast<bool>(nk_group_begin(*ctx, text.value().data(), *flags));
+				return static_cast<bool>(nk_group_begin(*ctx, text.value().data(), *flags)); // NOLINT
 			};
 
 		context["GroupEnd"] = nk_group_end;
@@ -390,7 +390,7 @@ namespace proto
 		context["GroupBeginScroll"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_scroll*> off, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
-				return static_cast<bool>(nk_group_scrolled_begin(*ctx, *off, text.value().data(), *flags));
+				return static_cast<bool>(nk_group_scrolled_begin(*ctx, *off, text.value().data(), *flags)); // NOLINT
 			};
 
 		context["GroupEndScroll"] = nk_group_scrolled_end;
@@ -400,7 +400,7 @@ namespace proto
 			{
 				uint32_t scrX = 0, scrY = 0;
 
-				nk_group_get_scroll(*ctx, id.value().data(), &scrX, &scrY);
+				nk_group_get_scroll(*ctx, id.value().data(), &scrX, &scrY); // NOLINT
 
 				return std::make_pair(scrX, scrY);
 			};
@@ -408,7 +408,7 @@ namespace proto
 		context["GroupSetScroll"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<uint32_t> offX, sol::optional<uint32_t> offY)
 			{
-				nk_group_set_scroll(*ctx, id.value().data(), *offX, *offY);
+				nk_group_set_scroll(*ctx, id.value().data(), *offX, *offY); // NOLINT
 			};
 
 		// Layouts
@@ -438,7 +438,7 @@ namespace proto
 				/*
 					Fix the magic number in this function before testing.
 				*/
-				return static_cast<bool>(nk_menu_begin_image(*ctx, id.value().data(), nk_image_id(1), *size));
+				return static_cast<bool>(nk_menu_begin_image(*ctx, id.value().data(), nk_image_id(1), *size)); // NOLINT
 			};
 
 		context["MenuBeginImgLbl"] = 
@@ -453,7 +453,7 @@ namespace proto
 		context["MenuBeginSym"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
 			{
-				return static_cast<bool>(nk_menu_begin_symbol(*ctx, id.value().data(), *sym, *size));
+				return static_cast<bool>(nk_menu_begin_symbol(*ctx, id.value().data(), *sym, *size)); // NOLINT
 			}; 
 
 		context["MenuBeginSymLbl"] = 
@@ -680,7 +680,7 @@ namespace proto
 		context["PopupBegin"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_popup_type> type, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<struct nk_rect> bounds) -> bool
 			{
-				return static_cast<bool>(nk_popup_begin(*ctx, *type, text.value().data(), *flags, *bounds));
+				return static_cast<bool>(nk_popup_begin(*ctx, *type, text.value().data(), *flags, *bounds)); // NOLINT
 			};
 
 		context["PopupClose"] = nk_popup_close;
