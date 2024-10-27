@@ -53,6 +53,8 @@ namespace proto
 
 		[[nodiscard]] void* Data() const { return (void*)_vertices.data(); }
 		[[nodiscard]] void* Indices() const { return (void*)_indices.data(); }
+		[[nodiscard]] auto VertexBegin(this auto&& self) { return self._vertices.begin(); }
+		[[nodiscard]] auto IndexBegin(this auto&& self) { return self._indices.begin(); }
 
 		[[nodiscard]] IndType VAO() const { return _vao; }
 
@@ -68,8 +70,8 @@ namespace proto
 				_initialized = true;
 			}
 
-			_vertices.reserve(numVertices);
-			_indices.reserve(numIndices);
+			_vertices.resize(numVertices);
+			_indices.resize(numIndices);
 
 			glBindVertexArray(_vao);
 			glBindBuffer(GL_ARRAY_BUFFER, _vID);

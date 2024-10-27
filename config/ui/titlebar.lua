@@ -53,21 +53,29 @@ function CustomTitleBar()
     if Ctx:Begin("Menubar", new_rect(0.0, 30.0, width, 30.0), 0) then
         Ctx:MenubarBegin()
 
+        local default_len = string.len("Preferences")
+        
+
         -- The menu bar.
         Ctx:StaticRow(20.0, 50, 15)
 
         if Ctx:MenuBeginLbl("File", TextAlign.Left, new_vec2(100, 4 * 30)) then
-            Ctx:StaticRow(20, 90, 1)
+            Ctx:DynamicRow(20, 1)
 
-            Ctx:MenuItemSymLbl(Symbol.RightTriangle, "New", TextAlign.Left)
-            Ctx:MenuItemSymLbl(Symbol.RightTriangle, "Open", TextAlign.Left)
+            local len_n = string.len("New>")
+            local len_o = string.len("Open>")
+            local space_n = string.rep(" ", default_len - len_n)
+            local space_o = string.rep(" ", default_len - len_o)
+
+            Ctx:MenuItemLbl("New" .. space_n .. ">", TextAlign.Left)
+            Ctx:MenuItemLbl("Open"  .. space_o .. ">", TextAlign.Left)
             Ctx:MenuItemLbl("Save", TextAlign.Left)
             Ctx:MenuItemLbl("Close", TextAlign.Left)
             
             Ctx:MenuEnd()
         end
 
-        if Ctx:MenuBeginLbl("Edit", TextAlign.Left, new_vec2(100, 2 * 30)) then
+        if Ctx:MenuBeginLbl("Edit", TextAlign.Left, new_vec2(120, 2 * 30)) then
             Ctx:StaticRow(20, 90, 1)
 
             Ctx:MenuItemLbl("Preferences", TextAlign.Left)

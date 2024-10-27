@@ -19,12 +19,15 @@
 
 #include <cstdio>
 #include <array>
+#include <memory>
 #include <sol/forward.hpp>
 #include <sol/protected_function_result.hpp>
 #include <sol/state_handling.hpp>
+#include <stdexcept>
 
 #include "ProtoMapper.hpp"
 #include "Config.hpp"
+#include "Vertex.hpp"
 
 namespace proto
 {	
@@ -38,7 +41,7 @@ namespace proto
 		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_POSITION, .format=NK_FORMAT_FLOAT, .offset=NK_OFFSETOF(Vertex2D, pos) },
 		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_TEXCOORD,  .format=NK_FORMAT_FLOAT,  .offset=NK_OFFSETOF(Vertex2D, texCoords) },
 		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_COLOR, .format=NK_FORMAT_R32G32B32A32_FLOAT, .offset=NK_OFFSETOF(Vertex2D, color) },
-		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_LAYOUT_END, .format=NK_FORMAT_FLOAT, .offset=0 }
+		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_ATTRIBUTE_COUNT, .format=NK_FORMAT_COUNT, .offset=0 }
 	};
 
 	UIContainer::UIContainer(FontGroup& fonts, Window* win, Renderer* ren)
@@ -175,7 +178,8 @@ namespace proto
 		*/
 
 		const nk_draw_command* cmd = nullptr;
-		uint32_t offset = 0u;
+		auto it = _nkBuffer.IndexBegin();
+		const auto begin = _nkBuffer.IndexBegin();
 
 		nk_draw_foreach(cmd, _ctx.get(), &_cmds)
 		{
@@ -183,8 +187,10 @@ namespace proto
 			{
 			    continue;
 			}
+			
+			const auto offsetLocation = std::distance(begin, it) * static_cast<int64_t>(sizeof(uint32_t));
 
-			DrawCall draw{ .buffer = _nkBuffer.VAO(), .drawMode = GL_TRIANGLES, .offset = offset, .elemCount = static_cast<int>(cmd->elem_count) };
+			DrawCall draw{ .buffer = _nkBuffer.VAO(), .drawMode = GL_TRIANGLES, .elemCount = static_cast<int>(cmd->elem_count), .offset = static_cast<uint32_t>((offsetLocation)) };
 
 			if (cmd->texture.id != 0 && glIsTexture((unsigned int)cmd->texture.id) == GL_TRUE)
 			{
@@ -192,7 +198,7 @@ namespace proto
 			}
 
 			_drawCalls.emplace_back(draw);
-			offset += (cmd->elem_count * sizeof(uint32_t));
+			std::advance(it, static_cast<int64_t>(cmd->elem_count));
 		}
 
 		nk_buffer_clear(&_cmds);
@@ -370,9 +376,17 @@ namespace proto
 		context["Begin"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<struct nk_rect> size, sol::optional<nk_panel_flags> flags) -> bool
 			{
-				// Unfortunately, for now there is no getting around using nk_strlen here.
+				// Unfortunately, for now there is no getting around relying on nk_strlen here.
 
-				return static_cast<bool>(nk_begin(*ctx, text.value().data(), *size, *flags)); // NOLINT
+				if(!text)
+				{
+					throw std::runtime_error{"No identifying string provided."};
+				}
+
+				return static_cast<bool>(nk_begin(
+					*ctx, text.value().data(), // NOLINT
+					 size.value_or(nk_rect(0.0f, 0.0f, 0.0f, 0.0f)),
+					  flags.value_or(NK_WINDOW_BORDER))); // This is the closest to a zero value we can provide.
 			};
 
 		context["End"] = nk_end;
@@ -382,7 +396,12 @@ namespace proto
 		context["GroupBegin"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
-				return static_cast<bool>(nk_group_begin(*ctx, text.value().data(), *flags)); // NOLINT
+				if(!text)
+				{
+					throw std::runtime_error{"No identifying string provided."};
+				}
+				
+				return static_cast<bool>(nk_group_begin(*ctx, text.value().data(), flags.value_or(NK_WINDOW_BORDER))); // NOLINT
 			};
 
 		context["GroupEnd"] = nk_group_end;
@@ -398,7 +417,12 @@ namespace proto
 		context["GroupGetScroll"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id) -> std::pair<uint32_t, uint32_t>
 			{
-				uint32_t scrX = 0, scrY = 0;
+				uint32_t scrX, scrY; // NOLINT(cppcoreguidelines-init-variables)
+
+				if(!id)
+				{
+					throw std::runtime_error{"No identifying string provided."};
+				}
 
 				nk_group_get_scroll(*ctx, id.value().data(), &scrX, &scrY); // NOLINT
 
@@ -408,7 +432,12 @@ namespace proto
 		context["GroupSetScroll"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<uint32_t> offX, sol::optional<uint32_t> offY)
 			{
-				nk_group_set_scroll(*ctx, id.value().data(), *offX, *offY); // NOLINT
+				if(!id)
+				{
+					throw std::runtime_error{"No identifying string provided."};
+				}
+				
+				nk_group_set_scroll(*ctx, id.value().data(), offX.value_or(0u), offY.value_or(0u)); // NOLINT
 			};
 
 		// Layouts
@@ -427,121 +456,146 @@ namespace proto
 		context["MenuBeginLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<struct nk_vec2> size) -> bool
 			{
+				if(!text)
+				{
+					throw std::runtime_error{"No text string provided."};
+				}
+				
 				const auto& str = text.value();
-
 				return static_cast<bool>(nk_menu_begin_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *size));
 			};
 
 		context["MenuBeginImg"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<struct nk_vec2> size) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<int> img, sol::optional<struct nk_vec2> size) -> bool
 			{
-				/*
-					Fix the magic number in this function before testing.
-				*/
-				return static_cast<bool>(nk_menu_begin_image(*ctx, id.value().data(), nk_image_id(1), *size)); // NOLINT
+				if(!id) { throw std::runtime_error{"No identifying string provided."}; }
+				if(!img) { throw std::runtime_error{"No image id provided."}; }
+				
+				return static_cast<bool>(nk_menu_begin_image(*ctx, id.value().data(), nk_image_id(*img), size.value_or(nk_vec2(0.0f, 0.0f)))); // NOLINT
 			};
 
 		context["MenuBeginImgLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<struct nk_image> img, sol::optional<struct nk_vec2> size) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> img, sol::optional<struct nk_vec2> size) -> bool
 			{
-				const auto& str = text.value();
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!img) { throw std::runtime_error{"No image id provided."}; }
 				
-				return static_cast<bool>(nk_menu_begin_image_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *img, *size));
+				const auto& str = text.value();				
+				return static_cast<bool>(nk_menu_begin_image_text(*ctx, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED), nk_image_id(*img), size.value_or(nk_vec2(0.0f, 0.0f))));
 
 			};
 
 		context["MenuBeginSym"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
 			{
-				return static_cast<bool>(nk_menu_begin_symbol(*ctx, id.value().data(), *sym, *size)); // NOLINT
+				if(!id) { throw std::runtime_error{"No identifying string provided."}; }
+				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
+				
+				return static_cast<bool>(nk_menu_begin_symbol(*ctx, id.value().data(), *sym, size.value_or(nk_vec2(0.0f, 0.0f)))); // NOLINT
 			}; 
 
 		context["MenuBeginSymLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
 			{
-				const auto& str = text.value();
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
 				
-				return static_cast<bool>(nk_menu_begin_symbol_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *sym, *size));
+				const auto& str = text.value();				
+				return static_cast<bool>(nk_menu_begin_symbol_text(*ctx, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED), *sym, size.value_or(nk_vec2(0.0f, 0.0f))));
 			};
 
 		context["MenuItemLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_menu_item_text(*ctx, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_menu_item_text(*ctx, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED)));
 			};
 
 		context["MenuItemImgLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<int> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
-				const auto& str = text.value();
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!img) { throw std::runtime_error{"No image id provided."}; }
 
-				return static_cast<bool>(nk_menu_item_image_text(*ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
+				const auto& str = text.value();
+				return static_cast<bool>(nk_menu_item_image_text(*ctx, nk_image_id(*img), str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED)));
 
 			};
 
 		context["MenuItemSymLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_menu_item_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_menu_item_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED)));
 			};
 
 		context["MenuClose"] = nk_menu_close;
 		context["MenuEnd"] = nk_menu_end;
 
 		context["Label"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags)
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags)
 			{
-				const auto& str = text.value();
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				
-				nk_text(*ctx, str.data(), static_cast<int>(str.size()), *flags);
+				const auto& str = text.value();				
+				nk_text(*ctx, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED));
 			};
 
 		context["ButtonLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text) -> bool
 			{
-				const auto& str = text.value();
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
 
+				const auto& str = text.value();
 				return static_cast<bool>(nk_button_text(*ctx, str.data(), static_cast<int>(str.size())));
 			};
 
 		context["ButtonC"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_color> color) -> bool
 			{
-				return static_cast<bool>(nk_button_color(*ctx, *color));
+				constexpr auto def_color = 255u;
+				return static_cast<bool>(nk_button_color(*ctx, color.value_or(nk_color(def_color, def_color, def_color, def_color))));
 			};
 
 		context["ButtonSym"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym) -> bool
 			{
+				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
+				
 				return static_cast<bool>(nk_button_symbol(*ctx, *sym));
 			};
 
 		context["ButtonImg"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<int> img) -> bool
 			{
-				return static_cast<bool>(nk_button_image(*ctx, *img));
+				if(!img) { throw std::runtime_error{"No image id provided."}; }
+				
+				return static_cast<bool>(nk_button_image(*ctx, nk_image_id(*img)));
 			};
 
 		context["ButtonSymLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
-				
-				const auto& str = text.value();
-				
-				return static_cast<bool>(nk_button_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
+
+				const auto& str = text.value();				
+				return static_cast<bool>(nk_button_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED)));
 			};
 
 		context["ButtonImgLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<int> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
-
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!img) { throw std::runtime_error{"No image id provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_button_image_text(*ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_button_image_text(*ctx, nk_image_id(*img), str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED)));
 			};
 
 		//context["ButtonLblSty"] = nk_button_label_styled;
@@ -553,118 +607,148 @@ namespace proto
 		context["CheckLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<bool> active) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_check_text(*ctx, str.data(), static_cast<int>(str.size()), nk_bool{*active}));
+				return static_cast<bool>(nk_check_text(*ctx, str.data(), static_cast<int>(str.size()), nk_bool{active.value_or(0)}));
 			};
 
 		context["CheckFlagLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<unsigned int> flags, sol::optional<unsigned int> value) -> unsigned int
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				
 				const auto& str = text.value();
-
-				return nk_check_flags_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *value);
+				return nk_check_flags_text(*ctx, str.data(), static_cast<int>(str.size()), flags.value_or(0u), value.value_or(0u));
 			};
 
 		context["CheckboxLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<int*> active) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!active) { throw std::runtime_error{"No boolean pointer provided."}; }
+				
 				const auto& str = text.value();
-
 				return static_cast<bool>(nk_checkbox_text(*ctx, str.data(), static_cast<int>(str.size()), *active));
 			};
 
 		context["CheckboxFlagLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<unsigned int*> flags, sol::optional<unsigned int> value) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!flags) { throw std::runtime_error{"No flag pointer provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_checkbox_flags_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_checkbox_flags_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, value.value_or(0u)));
 			};
 
 		context["RadioLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<int*> active) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!active) { throw std::runtime_error{"No boolean pointer provided."}; }
+				
 				const auto& str = text.value();
-
 				return static_cast<bool>(nk_radio_text(*ctx, str.data(), static_cast<int>(str.size()), *active));
 			};
 
 		context["RadioOptLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<int> active) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!active) { throw std::runtime_error{"No boolean pointer provided."}; }
+				
 				const auto& str = text.value();
-
 				return static_cast<bool>(nk_option_text(*ctx, str.data(), static_cast<int>(str.size()), *active));
 			};
 
 		context["SelectableLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
 			{
+				if(!value) { throw std::runtime_error{"Not value pointer provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_selectable_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_selectable_text(*ctx, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED), *value));
 			};
 
 		context["SelectableImgLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<int> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!img) { throw std::runtime_error{"No image id provided."}; }
+				if(!value) { throw std::runtime_error{"Not value pointer provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_selectable_image_text(*ctx, *img, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_selectable_image_text(*ctx, nk_image_id(*img), str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED), *value));
 			};
 
 		context["SelectableSymLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
+				if(!value) { throw std::runtime_error{"Not value pointer provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_selectable_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_selectable_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED), *value));
 			};
 
 		context["SelectLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_select_text(*ctx, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_select_text(*ctx, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED), value.value_or(0)));
 			};
 
 		context["SelectImgLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<bool> value) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!img) { throw std::runtime_error{"No image id provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_select_image_text(*ctx, *img, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_select_image_text(*ctx, *img, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED), nk_bool{value.value_or(0)}));
 			};
 
 		context["SelectSymLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_select_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), *flags, *value));
+				return static_cast<bool>(nk_select_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED), value.value_or(0)));
 			};
 
 		context["SlideF"] = nk_slide_float;
 		context["SlideI"] = nk_slide_int;
 
 		context["SliderF"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<float> min, sol::optional<float*> value, sol::optional<float> max, sol::optional<float> step) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<float*> value, sol::optional<float> min, sol::optional<float> max, sol::optional<float> step) -> bool
 			{
-				return static_cast<bool>(nk_slider_float(*ctx, *min, *value, *max, *step));
+				if(!value) { throw std::runtime_error{"Not value pointer provided."}; }
+
+				constexpr auto def_step = 0.1f;
+				return static_cast<bool>(nk_slider_float(*ctx, min.value_or(0.0f), *value, max.value_or(1.0f), step.value_or(def_step)));
 			};
 
 		context["SliderI"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<int> min, sol::optional<int*> value, sol::optional<int> max, sol::optional<int> step) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<int*> value, sol::optional<int> min, sol::optional<int> max, sol::optional<int> step) -> bool
 			{
-				return static_cast<bool>(nk_slider_int(*ctx, *min, *value, *max, *step));
+				if(!value) { throw std::runtime_error{"Not value pointer provided."}; }
+				
+				constexpr auto def_max = 10;
+				return static_cast<bool>(nk_slider_int(*ctx, min.value_or(0), *value, max.value_or(def_max), step.value_or(1)));
 			};
 
 		context["Progress"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<uintptr_t*> current, sol::optional<uintptr_t> max, sol::optional<bool> mod) -> bool
 			{
-				return static_cast<bool>(nk_progress(*ctx, *current, *max, nk_bool{*mod}));
+				if(!current) { throw std::runtime_error{"No progress value provided."}; }
+				
+				constexpr auto def_max = 100uz;
+				return static_cast<bool>(nk_progress(*ctx, *current, max.value_or(def_max), nk_bool{*mod}));
 			};
 			
 		context["Prog"] = nk_prog;
@@ -674,13 +758,18 @@ namespace proto
 		context["PickColor"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_colorf*> color, sol::optional<nk_color_format> fmt) -> bool
 			{
-				return static_cast<bool>(nk_color_pick(*ctx, *color, *fmt));
+				if(!color) { throw std::runtime_error{"No color provided."}; }
+				
+				return static_cast<bool>(nk_color_pick(*ctx, *color, fmt.value_or(NK_RGBA)));
 			};
 
 		context["PopupBegin"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_popup_type> type, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<struct nk_rect> bounds) -> bool
 			{
-				return static_cast<bool>(nk_popup_begin(*ctx, *type, text.value().data(), *flags, *bounds)); // NOLINT
+				if(!type) { throw std::runtime_error{"No type provided."}; }
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				
+				return static_cast<bool>(nk_popup_begin(*ctx, *type, text.value().data(), flags.value_or(NK_TEXT_CENTERED), bounds.value_or(nk_rect(0.0f, 0.0f, 0.0f, 0.0f)))); // NOLINT
 			};
 
 		context["PopupClose"] = nk_popup_close;
@@ -700,31 +789,37 @@ namespace proto
 		context["ContextBegin"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_flags> flags, sol::optional<struct nk_vec2> size, sol::optional<struct nk_rect> bounds) -> bool
 			{
-				return static_cast<bool>(nk_contextual_begin(*ctx, *flags, *size, *bounds));
+				return static_cast<bool>(nk_contextual_begin(*ctx, flags.value_or(NK_TEXT_CENTERED),
+				 size.value_or(nk_vec2(0.0f, 0.0f)), bounds.value_or(nk_rect(0.0f, 0.0f, 0.0f, 0.0f))));
 			};
 
 		context["ContextItemLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
-				const auto& str = text.value();
-				
-				return static_cast<bool>(nk_contextual_item_text(*ctx, str.data(), static_cast<int>(str.size()), *flags));
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+
+				const auto& str = text.value();				
+				return static_cast<bool>(nk_contextual_item_text(*ctx, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED)));
 			};
 
 		context["ContextItemImgLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<int> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!img) { throw std::runtime_error{"No image id provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_contextual_item_image_text(*ctx, *img, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_contextual_item_image_text(*ctx, nk_image_id(*img), str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED)));
 			};
 
 		context["ContextItemSymLbl"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
+				
 				const auto& str = text.value();
-
-				return static_cast<bool>(nk_contextual_item_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), *flags));
+				return static_cast<bool>(nk_contextual_item_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED)));
 			};
 
 		context["ContextClose"] = nk_contextual_close;
@@ -735,7 +830,7 @@ namespace proto
 		context["TooltipBegin"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<float> width) -> bool
 			{
-				return static_cast<bool>(nk_tooltip_begin(*ctx, *width));
+				return static_cast<bool>(nk_tooltip_begin(*ctx, width.value_or(1.0f)));
 			};
 
 		context["TooltipEnd"] = nk_tooltip_end;

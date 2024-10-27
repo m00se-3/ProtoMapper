@@ -90,11 +90,11 @@ namespace proto
 #if defined(_DEBUG_) || defined(_RELWDEBUGSYM_)
 
 		_rootDir = ROOT_DIR;
-		_configFile = _rootDir.string() + "/config/config.ini";
+		_configFile = _rootDir / "config/config.ini";
 
 #else
 		_rootDir = std::filesystem::current_path();
-		_configFile = _rootDir.string() + "/config/config.ini";
+		_configFile = _rootDir / "config/config.ini";
 
 #endif // _DEBUG_
 
@@ -219,7 +219,7 @@ namespace proto
 		if(blue > maxColorInt) { blue %= (maxColorInt + 1); }
 
 		glfwShowWindow(_window.GetPtr());
-		_renderer->SetBackgroundColor(glm::vec4{ 
+		Renderer::SetBackgroundColor(glm::vec4{ 
 			static_cast<float>(red) / maxColorFloat, 
 			static_cast<float>(green) / maxColorFloat,
 			 static_cast<float>(blue) / maxColorFloat,

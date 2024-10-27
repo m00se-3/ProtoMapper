@@ -36,8 +36,8 @@ namespace proto
 	struct DrawCall
 	{
 		uint32_t buffer = 0u, drawMode = GL_TRIANGLES;
-		uint32_t offset = 0u;
 		int32_t elemCount = 0;
+		uint32_t offset = 0u;
 		std::optional<Texture2D> texture = std::nullopt;
 	};
 	
@@ -104,6 +104,7 @@ namespace proto
 			glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
 			glUniform1i(glGetUniformLocation(shader.ID, "textureData"), 0);
 
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast, performance-no-int-to-ptr) - no other choice.
 			glDrawElements(drawMode, numInds, GLIndexType, (const void*)offset);
 
 			glBindVertexArray(0u);
