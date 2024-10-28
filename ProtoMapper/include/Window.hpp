@@ -35,6 +35,7 @@ namespace proto
 	    [[nodiscard]]int GetHeight() const;
 
         void SetSize(int w, int h);
+        void RefreshSize();
 
         static void DebugOpenGL(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 

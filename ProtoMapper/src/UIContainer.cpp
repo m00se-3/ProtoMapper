@@ -23,7 +23,9 @@
 #include <sol/forward.hpp>
 #include <sol/protected_function_result.hpp>
 #include <sol/state_handling.hpp>
+#include <sol/state_view.hpp>
 #include <stdexcept>
+#include <utility>
 
 #include "ProtoMapper.hpp"
 #include "Config.hpp"
@@ -44,8 +46,8 @@ namespace proto
 		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_ATTRIBUTE_COUNT, .format=NK_FORMAT_COUNT, .offset=0 }
 	};
 
-	UIContainer::UIContainer(FontGroup& fonts, Window* win, Renderer* ren)
-		: _ctx(new nk_context, CtxDeleter{}), _configurator(), _cmds(), _verts(), _inds(), _nullTexture(), _window(win)
+	UIContainer::UIContainer(FontGroup& fonts, const sol::state_view& state, Renderer* ren)
+		: _env(state, sol::create, state.globals()), _ctx(new nk_context, CtxDeleter{}), _configurator(), _cmds(), _verts(), _inds(), _nullTexture()
 	{
 		const std::filesystem::path fontDir = GetAssetDir() + "/fonts/roboto";
 		const std::filesystem::path imgDir = GetAssetDir() + "/icons/";
@@ -117,9 +119,9 @@ namespace proto
 		
 	}
 
-	bool UIContainer::SetDefinitions(const std::filesystem::path& filepath)
+	bool UIContainer::SetDefinitions(const std::filesystem::path& filepath, sol::state_view& state)
 	{
-		if(IsLua() && std::filesystem::exists(filepath))
+		if(std::filesystem::exists(filepath))
 		{
 			_interfaceDir = filepath;
 
@@ -131,7 +133,7 @@ namespace proto
 				{
 					try
 					{
-						auto result = _lua->safe_script_file(file.string());
+						auto result = state.safe_script_file(file.string(), _env);
 
 						if (result.valid())
 						{
@@ -209,12 +211,9 @@ namespace proto
 
 	void UIContainer::Update()
 	{		
-		if(!IsLua()) { return; }
-		_dimensions.set("wWidth", _window->GetWidth(), "wHeight", _window->GetHeight());
-		
 		for (auto& [name, errorMsg] : _luaFunctions)
 		{
-			const sol::protected_function func((*_lua)[name]);
+			const sol::protected_function func(_env[name]);
 			auto result = func();
 
 			if (!result.valid())
@@ -225,153 +224,142 @@ namespace proto
 		}
 	}
 
-	void UIContainer::InitLua(gsl::not_null<sol::state*> ptr)
-	{
-		_lua = ptr;	
-
-		// Create a reference table for the nuklear functions.
-		_dimensions = _lua->create_named_table("Host");
-		
+	void UIContainer::InitLua()
+	{		
 		// Useful types
-		{
 
-			auto vec2 = _lua->new_usertype<struct nk_vec2>("vec2", sol::no_constructor);
-			vec2["x"] = &nk_vec2::x;
-			vec2["y"] = &nk_vec2::y;
-			(*_lua)["new_vec2"] = nk_vec2;
+		auto vec2 = _env.new_usertype<struct nk_vec2>("vec2", sol::no_constructor);
+		vec2["x"] = &nk_vec2::x;
+		vec2["y"] = &nk_vec2::y;
+		_env["new_vec2"] = nk_vec2;
 
-			auto vec2i = _lua->new_usertype<struct nk_vec2i>("vec2i", sol::no_constructor);
-			vec2i["x"] = &nk_vec2i::x;
-			vec2i["y"] = &nk_vec2i::y;
-			(*_lua)["new_vec2i"] = nk_vec2i;
+		auto vec2i = _env.new_usertype<struct nk_vec2i>("vec2i", sol::no_constructor);
+		vec2i["x"] = &nk_vec2i::x;
+		vec2i["y"] = &nk_vec2i::y;
+		_env["new_vec2i"] = nk_vec2i;
 
-			auto rect = _lua->new_usertype<struct nk_rect>("rect", sol::no_constructor);
-			rect["x"] = &nk_rect::x;
-			rect["y"] = &nk_rect::y;
-			rect["w"] = &nk_rect::w;
-			rect["h"] = &nk_rect::h;
-			(*_lua)["new_rect"] = nk_rect;
+		auto rect = _env.new_usertype<struct nk_rect>("rect", sol::no_constructor);
+		rect["x"] = &nk_rect::x;
+		rect["y"] = &nk_rect::y;
+		rect["w"] = &nk_rect::w;
+		rect["h"] = &nk_rect::h;
+		_env["new_rect"] = nk_rect;
 
-			auto recti = _lua->new_usertype<struct nk_recti>("recti", sol::no_constructor);
-			recti["x"] = &nk_recti::x;
-			recti["y"] = &nk_recti::y;
-			recti["w"] = &nk_recti::w;
-			recti["h"] = &nk_recti::h;
-			(*_lua)["new_recti"] = nk_recti;
+		auto recti = _env.new_usertype<struct nk_recti>("recti", sol::no_constructor);
+		recti["x"] = &nk_recti::x;
+		recti["y"] = &nk_recti::y;
+		recti["w"] = &nk_recti::w;
+		recti["h"] = &nk_recti::h;
+		_env["new_recti"] = nk_recti;
 
-			auto color = _lua->new_usertype<struct nk_color>("color", sol::no_constructor);
-			color["r"] = &nk_color::r;
-			color["g"] = &nk_color::g;
-			color["b"] = &nk_color::b;
-			color["a"] = &nk_color::a;
-			(*_lua)["rgba"] = nk_rgba;
+		auto color = _env.new_usertype<struct nk_color>("color", sol::no_constructor);
+		color["r"] = &nk_color::r;
+		color["g"] = &nk_color::g;
+		color["b"] = &nk_color::b;
+		color["a"] = &nk_color::a;
+		_env["rgba"] = nk_rgba;
 
-			auto colorf = _lua->new_usertype<struct nk_colorf>("colorf", sol::no_constructor);
-			colorf["r"] = &nk_colorf::r;
-			colorf["g"] = &nk_colorf::g;
-			colorf["b"] = &nk_colorf::b;
-			colorf["a"] = &nk_colorf::a;
-			(*_lua)["rgba_f"] = nk_rgba_f;
+		auto colorf = _env.new_usertype<struct nk_colorf>("colorf", sol::no_constructor);
+		colorf["r"] = &nk_colorf::r;
+		colorf["g"] = &nk_colorf::g;
+		colorf["b"] = &nk_colorf::b;
+		colorf["a"] = &nk_colorf::a;
+		_env["rgba_f"] = nk_rgba_f;
 
-			auto scroll = _lua->new_usertype<struct nk_scroll>("scroll", sol::no_constructor);
-			scroll["x"] = &nk_scroll::x;
-			scroll["y"] = &nk_scroll::y;
-
-
-			_lua->new_enum<FontStyle>( "FontStyle",
-				{
-					std::make_pair("Normal", FontStyle::Normal),
-					std::make_pair("Bold", FontStyle::Bold),
-					std::make_pair("Italic", FontStyle::Italic),
-					std::make_pair("Underlined", FontStyle::Underlined),
-					std::make_pair("BoldItalic", FontStyle::BoldItalic),
-					std::make_pair("BoldUnderlinded", FontStyle::BoldUnderlinded),
-					std::make_pair("BolItalicUnderlined", FontStyle::BolItalicUnderlined),
-					std::make_pair("ItalicUnderlined", FontStyle::ItalicUnderlined)
-				}
-			);
-
-			_lua->new_enum<nk_flags>( "TextAlign",
-				{
-					std::make_pair("Left", NK_TEXT_LEFT),
-					std::make_pair("Center", NK_TEXT_CENTERED),
-					std::make_pair("Right", NK_TEXT_RIGHT)
-				}
-				
-			);
-
-			_lua->new_enum<nk_panel_flags>( "PanelFlag",
-				{
-					std::make_pair("Border", NK_WINDOW_BORDER),
-					std::make_pair("Movable", NK_WINDOW_MOVABLE),
-					std::make_pair("Scalable", NK_WINDOW_SCALABLE),
-					std::make_pair("Closable", NK_WINDOW_CLOSABLE),
-					std::make_pair("Minimizable", NK_WINDOW_MINIMIZABLE),
-					std::make_pair("NoScrollbar", NK_WINDOW_NO_SCROLLBAR),
-					std::make_pair("Title", NK_WINDOW_TITLE),
-					std::make_pair("ScrollAutoHide", NK_WINDOW_SCROLL_AUTO_HIDE),
-					std::make_pair("Background", NK_WINDOW_BACKGROUND),
-					std::make_pair("ScaleLeft", NK_WINDOW_SCALE_LEFT),
-					std::make_pair("NoInput", NK_WINDOW_NO_INPUT)
-				}
-			);
+		auto scroll = _env.new_usertype<struct nk_scroll>("scroll", sol::no_constructor);
+		scroll["x"] = &nk_scroll::x;
+		scroll["y"] = &nk_scroll::y;
 
 
-			_lua->new_enum<nk_layout_format>("Layout",
-				{
-					std::make_pair("Dynamic", NK_DYNAMIC),
-					std::make_pair("Static", NK_STATIC)
-				}
-			);
+		_env.new_enum<FontStyle>( "FontStyle",
+			{
+				std::make_pair("Normal", FontStyle::Normal),
+				std::make_pair("Bold", FontStyle::Bold),
+				std::make_pair("Italic", FontStyle::Italic),
+				std::make_pair("Underlined", FontStyle::Underlined),
+				std::make_pair("BoldItalic", FontStyle::BoldItalic),
+				std::make_pair("BoldUnderlinded", FontStyle::BoldUnderlinded),
+				std::make_pair("BolItalicUnderlined", FontStyle::BolItalicUnderlined),
+				std::make_pair("ItalicUnderlined", FontStyle::ItalicUnderlined)
+			}
+		);
 
-			_lua->new_enum<nk_color_format>("ColorFmt",
-				{
-					std::make_pair("RGB", NK_RGB),
-					std::make_pair("RGBA", NK_RGBA)
-				}
-			);
+		_env.new_enum<nk_flags>( "TextAlign",
+			{
+				std::make_pair("Left", NK_TEXT_LEFT),
+				std::make_pair("Center", NK_TEXT_CENTERED),
+				std::make_pair("Right", NK_TEXT_RIGHT)
+			}
+			
+		);
 
-			_lua->new_enum<nk_symbol_type>("Symbol",
-				{
-					std::make_pair("None", NK_SYMBOL_NONE),
-					std::make_pair("X", NK_SYMBOL_X),
-					std::make_pair("UnderScore", NK_SYMBOL_UNDERSCORE),
-					std::make_pair("SolidCircle", NK_SYMBOL_CIRCLE_SOLID),
-					std::make_pair("LineCircle", NK_SYMBOL_CIRCLE_OUTLINE),
-					std::make_pair("SolidRect", NK_SYMBOL_RECT_SOLID),
-					std::make_pair("LineRect", NK_SYMBOL_RECT_OUTLINE),
-					std::make_pair("UpTriangle", NK_SYMBOL_TRIANGLE_UP),
-					std::make_pair("DownTriangle", NK_SYMBOL_TRIANGLE_DOWN),
-					std::make_pair("LeftTriangle", NK_SYMBOL_TRIANGLE_LEFT),
-					std::make_pair("RightTriangle", NK_SYMBOL_TRIANGLE_RIGHT),
-					std::make_pair("Plus", NK_SYMBOL_PLUS),
-					std::make_pair("Minus", NK_SYMBOL_MINUS),
-					std::make_pair("Max", NK_SYMBOL_MAX)
-				}
-			);
+		_env.new_enum<nk_panel_flags>( "PanelFlag",
+			{
+				std::make_pair("Border", NK_WINDOW_BORDER),
+				std::make_pair("Movable", NK_WINDOW_MOVABLE),
+				std::make_pair("Scalable", NK_WINDOW_SCALABLE),
+				std::make_pair("Closable", NK_WINDOW_CLOSABLE),
+				std::make_pair("Minimizable", NK_WINDOW_MINIMIZABLE),
+				std::make_pair("NoScrollbar", NK_WINDOW_NO_SCROLLBAR),
+				std::make_pair("Title", NK_WINDOW_TITLE),
+				std::make_pair("ScrollAutoHide", NK_WINDOW_SCROLL_AUTO_HIDE),
+				std::make_pair("Background", NK_WINDOW_BACKGROUND),
+				std::make_pair("ScaleLeft", NK_WINDOW_SCALE_LEFT),
+				std::make_pair("NoInput", NK_WINDOW_NO_INPUT)
+			}
+		);
 
-			_lua->new_enum<nk_popup_type>("Popup",
-				{
-					std::make_pair("Static", NK_POPUP_STATIC),
-					std::make_pair("Dynamic", NK_POPUP_DYNAMIC),
-				}
-			);
 
-		}
+		_env.new_enum<nk_layout_format>("Layout",
+			{
+				std::make_pair("Dynamic", NK_DYNAMIC),
+				std::make_pair("Static", NK_STATIC)
+			}
+		);
+
+		_env.new_enum<nk_color_format>("ColorFmt",
+			{
+				std::make_pair("RGB", NK_RGB),
+				std::make_pair("RGBA", NK_RGBA)
+			}
+		);
+
+		_env.new_enum<nk_symbol_type>("Symbol",
+			{
+				std::make_pair("None", NK_SYMBOL_NONE),
+				std::make_pair("X", NK_SYMBOL_X),
+				std::make_pair("UnderScore", NK_SYMBOL_UNDERSCORE),
+				std::make_pair("SolidCircle", NK_SYMBOL_CIRCLE_SOLID),
+				std::make_pair("LineCircle", NK_SYMBOL_CIRCLE_OUTLINE),
+				std::make_pair("SolidRect", NK_SYMBOL_RECT_SOLID),
+				std::make_pair("LineRect", NK_SYMBOL_RECT_OUTLINE),
+				std::make_pair("UpTriangle", NK_SYMBOL_TRIANGLE_UP),
+				std::make_pair("DownTriangle", NK_SYMBOL_TRIANGLE_DOWN),
+				std::make_pair("LeftTriangle", NK_SYMBOL_TRIANGLE_LEFT),
+				std::make_pair("RightTriangle", NK_SYMBOL_TRIANGLE_RIGHT),
+				std::make_pair("Plus", NK_SYMBOL_PLUS),
+				std::make_pair("Minus", NK_SYMBOL_MINUS),
+				std::make_pair("Max", NK_SYMBOL_MAX)
+			}
+		);
+
+		_env.new_enum<nk_popup_type>("Popup",
+			{
+				std::make_pair("Static", NK_POPUP_STATIC),
+				std::make_pair("Dynamic", NK_POPUP_DYNAMIC),
+			}
+		);
+
 
 
 		// Access to the nuklear context.
 
-		auto context = _lua->new_usertype<struct nk_context>("Context");
-		(*_lua)["Ctx"] = _ctx.get();
+		auto context = _env.new_usertype<struct nk_context>("Context");
+		_env["Ctx"] = _ctx.get();
 
 		/*
 			Define nuklear functions.
 		*/
-
-		// Windows
-
-		_lua->new_usertype<struct nk_window>("Window");
 
 		context["Begin"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<struct nk_rect> size, sol::optional<nk_panel_flags> flags) -> bool
@@ -848,27 +836,6 @@ namespace proto
 		};
 
 		context["StylePopFont"] = nk_style_pop_font;
-
-		// Window commands
-
-		context["RequestWindowToClose"] = [this]() { glfwSetWindowShouldClose(_window->GetPtr(), 1); };
-
-		context["RequestWindowToggle"] = [this]() {
-			
-			if (Mapper::GetInstance()->IsFullscreen())
-			{
-				glfwRestoreWindow(_window->GetPtr());
-			}
-			else
-			{
-				glfwMaximizeWindow(_window->GetPtr());
-			}
-			
-		};
-
-		context["RequestWindowRestore"] = [this]() { glfwRestoreWindow(_window->GetPtr()); };
-
-		context["RequestWindowIconify"] = [this]() { glfwIconifyWindow(_window->GetPtr()); };
 
 	}	
 }

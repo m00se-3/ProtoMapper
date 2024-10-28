@@ -18,6 +18,7 @@
 #include "Window.hpp"
 
 #include "ProtoMapper.hpp"
+#include <GLFW/glfw3.h>
 
 namespace proto
 {
@@ -91,6 +92,8 @@ namespace proto
         _wHeight = h;
     }
 
+	void Window::RefreshSize() { glfwGetWindowSize(_window, &_wWidth, &_wHeight); }
+
     void Window::DebugOpenGL(GLenum src, GLenum type, [[maybe_unused]] GLuint id, GLenum severity, [[maybe_unused]] GLsizei length, const GLchar* message, [[maybe_unused]] const void* userParam)
 	{
 		std::fprintf(stderr, "Error %d %d %d - %s", src, type, severity, message); //NOLINT
@@ -115,25 +118,14 @@ namespace proto
 		
 		auto* self = Mapper::GetInstance();
 
-		const int oW = self->GetWin().GetWidth(),
-			oH = self->GetWin().GetHeight(),
-			rX = self->GetRenderer()->GetRenderX(),
-			rY = self->GetRenderer()->GetRenderY(),
-			rW = self->GetRenderer()->GetRenderWidth(),
-			rH = self->GetRenderer()->GetRenderHeight();
-
-		const float sW = ((float)width / (float)oW);
-		const float sH = ((float)height / (float)oH);
-
 		self->SetContextSize(width, height);
 		self->GetRenderer()->RefreshProjection();
 
-		const int nx = std::lround((float)rX * sW);
-		const int ny = std::lround((float)rY * sH);
-		const int nw = std::lround((float)rW * sW);
-		const int nh = std::lround((float)rH * sH);
+		const int rX = self->GetRenderer()->GetRenderX(),
+			rY = self->GetRenderer()->GetRenderY();
 
-		self->GetRenderer()->SetViewport(nx, ny, nw, nh);
+
+		self->GetRenderer()->SetViewport(rX, rY, width, height);
 
 	}
 

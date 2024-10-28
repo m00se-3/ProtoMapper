@@ -20,6 +20,7 @@
 */
 
 #include <cmath> // NOLINT - we are using this.
+#include <memory.h>
 
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_STANDARD_IO

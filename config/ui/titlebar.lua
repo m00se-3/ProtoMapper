@@ -4,7 +4,7 @@
     This function is not replaceable with a custom function.
 ]]
 function CustomTitleBar()
-    local width = Host.wWidth
+    local width = Win:GetWidth()
 
     local titleLabelWidth = width - 100.0
     local titleButtonsWidth = width - 105.0
@@ -26,21 +26,21 @@ function CustomTitleBar()
 
         -- The app close button.
         if Ctx:ButtonLbl("X") then
-            Ctx:RequestWindowToClose()
+            Win.Close()
         end
 
         Ctx:SpaceRowPush(new_rect(titleButtonsWidth + 35.0, 0.0, 25.0, 20.0))
 
         -- The app maximize/restore button.
         if Ctx:ButtonLbl("^") then
-            Ctx:RequestWindowToggle()
+            Win.Toggle()
         end
 
         Ctx:SpaceRowPush(new_rect(titleButtonsWidth, 0.0, 25.0, 20.0))
 
         -- The app minimumize button.
         if Ctx:ButtonLbl("_") then
-            Ctx:RequestWindowIconify()
+            Win.Iconify()
         end
 
         Ctx:SpaceRowEnd()

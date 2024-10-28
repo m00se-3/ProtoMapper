@@ -155,6 +155,38 @@ namespace proto
 		_lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::math);
 		_lua.set_exception_handler(luaExceptionHandler);
 
+		// Window commands
+
+		auto window = _lua.new_usertype<Window>("Window", 
+			"GetWidth", &Window::GetWidth,
+			"GetHeight", &Window::GetHeight
+		);
+
+		_lua["Win"] = &_window;
+
+		window["Close"] = [this]() { glfwSetWindowShouldClose(_window.GetPtr(), 1); };
+
+		window["Toggle"] = [this]() {
+			
+			if (IsFullscreen())
+			{
+				glfwRestoreWindow(_window.GetPtr());
+				_window.RefreshSize();
+			}
+			else
+			{
+				glfwMaximizeWindow(_window.GetPtr());
+				_window.RefreshSize();
+			}
+			
+		};
+
+		window["Restore"] = [this]() { glfwRestoreWindow(_window.GetPtr()); };
+
+		window["Iconify"] = [this]() { glfwIconifyWindow(_window.GetPtr()); };
+
+		
+
 		return true;
 	}
 
@@ -179,10 +211,10 @@ namespace proto
 		_renderer->SetViewport(0, 0, _window.GetWidth(), _window.GetHeight());
 		_renderer->Init(Renderer::mode::Two);
 
-		_ui = std::make_shared<UIContainer>(_fonts, &_window, _renderer.get());
-		_ui->InitLua(gsl::make_not_null(&_lua));
+		_ui = std::make_shared<UIContainer>(_fonts, _lua, _renderer.get());
+		_ui->InitLua();
 
-		if(!_ui->SetDefinitions(GetUIDir()))
+		if(!_ui->SetDefinitions(GetUIDir(), _lua))
 		{
 			return EXIT_FAILURE;
 		}
@@ -260,7 +292,6 @@ namespace proto
 
 	void Mapper::SetContextSize(int w, int h)
 	{
-		_window.SetSize(w, h);
 		_renderer->SetRenderSize(w, h);
 	}
 

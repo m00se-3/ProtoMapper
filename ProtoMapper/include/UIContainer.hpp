@@ -21,6 +21,7 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <sol/forward.hpp>
 
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_STANDARD_IO
@@ -47,12 +48,11 @@ namespace proto
 	class UIContainer
 	{
 	public:
-		UIContainer(FontGroup& fonts, Window *win, Renderer *ren);
+		UIContainer(FontGroup& fonts, const sol::state_view& state, Renderer *ren);
 
 		// Defines each UI function for the application to use.
-		[[nodiscard]] bool SetDefinitions(const std::filesystem::path &filepath);
-		void InitLua(gsl::not_null<sol::state*> ptr);
-		[[nodiscard]] constexpr bool IsLua(this auto&& self) { return (self._lua != nullptr); }
+		[[nodiscard]] bool SetDefinitions(const std::filesystem::path &filepath, sol::state_view& state);
+		void InitLua();
 
 		[[nodiscard]] nk_context *Context() { return _ctx.get(); }
 
@@ -68,8 +68,7 @@ namespace proto
 		};
 
 		std::filesystem::path _interfaceDir;
-		sol::state* _lua = nullptr;
-		sol::table _dimensions;
+		sol::environment _env;
 
 		std::map<std::string, std::string> _luaFunctions;
 		std::map<std::string, std::shared_ptr<Texture2D>> _icons;
@@ -90,8 +89,6 @@ namespace proto
 		/*
 			End nuklear buffer variables.
 		*/
-
-		Window* _window = nullptr;
 	};
 
 }
