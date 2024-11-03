@@ -20,8 +20,11 @@
 #include <cstdio>
 #include <array>
 #include <memory>
+#include <sol/as_returns.hpp>
 #include <sol/forward.hpp>
+#include <sol/in_place.hpp>
 #include <sol/protected_function_result.hpp>
+#include <sol/raii.hpp>
 #include <sol/state_handling.hpp>
 #include <sol/state_view.hpp>
 #include <stdexcept>
@@ -266,7 +269,7 @@ namespace proto
 		colorf["a"] = &nk_colorf::a;
 		_env["rgba_f"] = nk_rgba_f;
 
-		auto scroll = _env.new_usertype<struct nk_scroll>("scroll", sol::no_constructor);
+		auto scroll = _env.new_usertype<struct nk_scroll>("scroll", sol::constructors<nk_scroll(), nk_scroll(uint32_t, uint32_t)>());
 		scroll["x"] = &nk_scroll::x;
 		scroll["y"] = &nk_scroll::y;
 
@@ -362,64 +365,85 @@ namespace proto
 		*/
 
 		context["Begin"] = 
-			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<struct nk_rect> size, sol::optional<nk_panel_flags> flags) -> bool
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string> text, sol::optional<struct nk_rect> size, sol::optional<nk_panel_flags> flags) -> bool
 			{
-				// Unfortunately, for now there is no getting around relying on nk_strlen here.
-
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text)
 				{
 					throw std::runtime_error{"No identifying string provided."};
 				}
 
 				return static_cast<bool>(nk_begin(
-					*ctx, text.value().data(), // NOLINT
+					*ctx, text.value().c_str(),
 					 size.value_or(nk_rect(0.0f, 0.0f, 0.0f, 0.0f)),
 					  flags.value_or(NK_WINDOW_BORDER))); // This is the closest to a zero value we can provide.
 			};
 
-		context["End"] = nk_end;
+		context["End"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_end(*ctx);
+			};
 
 		// Groups
 
 		context["GroupBegin"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text)
 				{
-					throw std::runtime_error{"No identifying string provided."};
+					throw std::runtime_error{"No text string provided."};
 				}
 				
 				return static_cast<bool>(nk_group_begin(*ctx, text.value().data(), flags.value_or(NK_WINDOW_BORDER))); // NOLINT
 			};
 
-		context["GroupEnd"] = nk_group_end;
-
-		context["GroupBeginScroll"] =
-			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_scroll*> off, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags) -> bool
+		context["GroupEnd"] = 
+			[](sol::optional<nk_context*> ctx)
 			{
-				return static_cast<bool>(nk_group_scrolled_begin(*ctx, *off, text.value().data(), *flags)); // NOLINT
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_group_end(*ctx);
 			};
 
-		context["GroupEndScroll"] = nk_group_scrolled_end;
+		context["GroupBeginScroll"] =
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_scroll*> off, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				if(!text) { throw std::runtime_error{"No text string provided."}; }
+				if(!off) { throw std::runtime_error{"No offset variable provided."}; }
+				
+				return static_cast<bool>(nk_group_scrolled_begin(*ctx, *off, text.value().data(), flags.value_or(NK_TEXT_CENTERED))); // NOLINT
+			};
+
+		context["GroupEndScroll"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_group_scrolled_end(*ctx);
+			};
 
 		context["GroupGetScroll"] =
-			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id) -> std::pair<uint32_t, uint32_t>
+			[this](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id) -> sol::usertype<nk_scroll>
 			{
-				uint32_t scrX, scrY; // NOLINT(cppcoreguidelines-init-variables)
-
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!id)
 				{
 					throw std::runtime_error{"No identifying string provided."};
 				}
 
+				uint32_t scrX, scrY; // NOLINT(cppcoreguidelines-init-variables)
+
 				nk_group_get_scroll(*ctx, id.value().data(), &scrX, &scrY); // NOLINT
 
-				return std::make_pair(scrX, scrY);
+				return sol::object{ _env.lua_state(), sol::in_place, nk_scroll(scrX, scrY) };
 			};
 
 		context["GroupSetScroll"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<uint32_t> offX, sol::optional<uint32_t> offY)
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!id)
 				{
 					throw std::runtime_error{"No identifying string provided."};
@@ -430,20 +454,61 @@ namespace proto
 
 		// Layouts
 
-		context["SpaceRowBegin"] = nk_layout_space_begin;
-		context["SpaceRowEnd"] = nk_layout_space_end;
-		context["SpaceRowPush"] = nk_layout_space_push;
-		context["StaticRow"] = nk_layout_row_static;
-		context["DynamicRow"] = nk_layout_row_dynamic;
+		context["SpaceRowBegin"] = 
+			[](sol::optional<nk_context*> ctx, sol::optional<nk_layout_format> format, sol::optional<float> height, sol::optional<int> widgetCount)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_layout_space_begin(*ctx, format.value_or(NK_DYNAMIC), height.value_or(0.0f), widgetCount.value_or(1));
+			};
+		
+		context["SpaceRowEnd"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_layout_space_end(*ctx);
+			};
+
+		context["SpaceRowPush"] = 
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_rect> rect)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_layout_space_push(*ctx, rect.value_or(nk_rect(0.0f, 0.0f, 0.0f, 0.0f)));
+			};
+
+		context["StaticRow"] = 
+			[](sol::optional<nk_context*> ctx, sol::optional<float> height, sol::optional<int> itemW, sol::optional<int> cols)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_layout_row_static(*ctx, height.value_or(0.0f), itemW.value_or(0), cols.value_or(1));
+			};
+
+		context["DynamicRow"] = 
+			[](sol::optional<nk_context*> ctx, sol::optional<float> height, sol::optional<int> cols)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_layout_row_dynamic(*ctx, height.value_or(0.0f), cols.value_or(1));
+			};
 
 		//Widgets
 
-		context["MenubarBegin"] = nk_menubar_begin;
-		context["MenubarEnd"] = nk_menubar_end;
+		context["MenubarBegin"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_menubar_begin(*ctx);
+			};
+
+		context["MenubarEnd"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_menubar_end(*ctx);
+			};
 
 		context["MenuBeginLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_panel_flags> flags, sol::optional<struct nk_vec2> size) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text)
 				{
 					throw std::runtime_error{"No text string provided."};
@@ -456,6 +521,7 @@ namespace proto
 		context["MenuBeginImg"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<int> img, sol::optional<struct nk_vec2> size) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!id) { throw std::runtime_error{"No identifying string provided."}; }
 				if(!img) { throw std::runtime_error{"No image id provided."}; }
 				
@@ -465,6 +531,7 @@ namespace proto
 		context["MenuBeginImgLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> img, sol::optional<struct nk_vec2> size) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!img) { throw std::runtime_error{"No image id provided."}; }
 				
@@ -476,6 +543,7 @@ namespace proto
 		context["MenuBeginSym"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> id, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!id) { throw std::runtime_error{"No identifying string provided."}; }
 				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
 				
@@ -485,6 +553,7 @@ namespace proto
 		context["MenuBeginSymLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<nk_symbol_type> sym, sol::optional<struct nk_vec2> size) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
 				
@@ -495,6 +564,7 @@ namespace proto
 		context["MenuItemLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				
 				const auto& str = text.value();
@@ -504,6 +574,7 @@ namespace proto
 		context["MenuItemImgLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<int> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!img) { throw std::runtime_error{"No image id provided."}; }
 
@@ -515,6 +586,7 @@ namespace proto
 		context["MenuItemSymLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
 				
@@ -522,12 +594,24 @@ namespace proto
 				return static_cast<bool>(nk_menu_item_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED)));
 			};
 
-		context["MenuClose"] = nk_menu_close;
-		context["MenuEnd"] = nk_menu_end;
+		context["MenuClose"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_menu_close(*ctx);
+			};
+
+		context["MenuEnd"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_menu_end(*ctx);
+			};
 
 		context["Label"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags)
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				
 				const auto& str = text.value();				
@@ -537,6 +621,7 @@ namespace proto
 		context["ButtonLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 
 				const auto& str = text.value();
@@ -546,6 +631,7 @@ namespace proto
 		context["ButtonC"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_color> color) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				constexpr auto def_color = 255u;
 				return static_cast<bool>(nk_button_color(*ctx, color.value_or(nk_color(def_color, def_color, def_color, def_color))));
 			};
@@ -553,6 +639,7 @@ namespace proto
 		context["ButtonSym"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
 				
 				return static_cast<bool>(nk_button_symbol(*ctx, *sym));
@@ -561,6 +648,7 @@ namespace proto
 		context["ButtonImg"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<int> img) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!img) { throw std::runtime_error{"No image id provided."}; }
 				
 				return static_cast<bool>(nk_button_image(*ctx, nk_image_id(*img)));
@@ -569,6 +657,7 @@ namespace proto
 		context["ButtonSymLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
 
@@ -579,6 +668,7 @@ namespace proto
 		context["ButtonImgLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<int> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!img) { throw std::runtime_error{"No image id provided."}; }
 				
@@ -594,7 +684,8 @@ namespace proto
 
 		context["CheckLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<bool> active) -> bool
-			{
+			{				
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				
 				const auto& str = text.value();
@@ -604,6 +695,7 @@ namespace proto
 		context["CheckFlagLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<unsigned int> flags, sol::optional<unsigned int> value) -> unsigned int
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				
 				const auto& str = text.value();
@@ -613,6 +705,7 @@ namespace proto
 		context["CheckboxLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<int*> active) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!active) { throw std::runtime_error{"No boolean pointer provided."}; }
 				
@@ -623,6 +716,7 @@ namespace proto
 		context["CheckboxFlagLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<unsigned int*> flags, sol::optional<unsigned int> value) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!flags) { throw std::runtime_error{"No flag pointer provided."}; }
 				
@@ -633,6 +727,7 @@ namespace proto
 		context["RadioLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<int*> active) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!active) { throw std::runtime_error{"No boolean pointer provided."}; }
 				
@@ -643,6 +738,7 @@ namespace proto
 		context["RadioOptLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<int> active) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!active) { throw std::runtime_error{"No boolean pointer provided."}; }
 				
@@ -653,6 +749,7 @@ namespace proto
 		context["SelectableLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!value) { throw std::runtime_error{"Not value pointer provided."}; }
 				
 				const auto& str = text.value();
@@ -662,6 +759,7 @@ namespace proto
 		context["SelectableImgLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<int> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!img) { throw std::runtime_error{"No image id provided."}; }
 				if(!value) { throw std::runtime_error{"Not value pointer provided."}; }
@@ -673,6 +771,7 @@ namespace proto
 		context["SelectableSymLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int*> value) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
 				if(!value) { throw std::runtime_error{"Not value pointer provided."}; }
@@ -684,6 +783,7 @@ namespace proto
 		context["SelectLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				
 				const auto& str = text.value();
@@ -693,6 +793,7 @@ namespace proto
 		context["SelectImgLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_image> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<bool> value) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!img) { throw std::runtime_error{"No image id provided."}; }
 				
@@ -703,18 +804,41 @@ namespace proto
 		context["SelectSymLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<int> value) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				
 				const auto& str = text.value();
 				return static_cast<bool>(nk_select_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED), value.value_or(0)));
 			};
 
-		context["SlideF"] = nk_slide_float;
-		context["SlideI"] = nk_slide_int;
+		context["SlideF"] = 
+			[](sol::optional<nk_context*> ctx, sol::optional<float> min, sol::optional<float> val, sol::optional<float> max, sol::optional<float> step) -> float
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				constexpr float def_min = 0.0f;
+				constexpr float def_val = 0.0f;
+				constexpr float def_max = 1.0f;
+				constexpr float def_step = 0.1f;
+				
+				return nk_slide_float(*ctx, min.value_or(def_min), val.value_or(def_val), max.value_or(def_max), step.value_or(def_step));
+			};
+
+		context["SlideI"] = 
+			[](sol::optional<nk_context*> ctx, sol::optional<int> min, sol::optional<int> val, sol::optional<int> max, sol::optional<int> step) -> int
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				constexpr int def_min = 0;
+				constexpr int def_val = 0;
+				constexpr int def_max = 10;
+				constexpr int def_step = 1;
+				
+				return nk_slide_int(*ctx, min.value_or(def_min), val.value_or(def_val), max.value_or(def_max), step.value_or(def_step));
+			};
 
 		context["SliderF"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<float*> value, sol::optional<float> min, sol::optional<float> max, sol::optional<float> step) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!value) { throw std::runtime_error{"Not value pointer provided."}; }
 
 				constexpr auto def_step = 0.1f;
@@ -724,6 +848,7 @@ namespace proto
 		context["SliderI"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<int*> value, sol::optional<int> min, sol::optional<int> max, sol::optional<int> step) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!value) { throw std::runtime_error{"Not value pointer provided."}; }
 				
 				constexpr auto def_max = 10;
@@ -733,6 +858,7 @@ namespace proto
 		context["Progress"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<uintptr_t*> current, sol::optional<uintptr_t> max, sol::optional<bool> mod) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!current) { throw std::runtime_error{"No progress value provided."}; }
 				
 				constexpr auto def_max = 100uz;
@@ -746,6 +872,7 @@ namespace proto
 		context["PickColor"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_colorf*> color, sol::optional<nk_color_format> fmt) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!color) { throw std::runtime_error{"No color provided."}; }
 				
 				return static_cast<bool>(nk_color_pick(*ctx, *color, fmt.value_or(NK_RGBA)));
@@ -754,14 +881,27 @@ namespace proto
 		context["PopupBegin"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_popup_type> type, sol::optional<std::string_view> text, sol::optional<nk_flags> flags, sol::optional<struct nk_rect> bounds) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!type) { throw std::runtime_error{"No type provided."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				
 				return static_cast<bool>(nk_popup_begin(*ctx, *type, text.value().data(), flags.value_or(NK_TEXT_CENTERED), bounds.value_or(nk_rect(0.0f, 0.0f, 0.0f, 0.0f)))); // NOLINT
 			};
 
-		context["PopupClose"] = nk_popup_close;
-		context["PopupEnd"] = nk_popup_end;
+		context["PopupClose"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_popup_close(*ctx);
+			};
+
+		context["PopupEnd"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_popup_end(*ctx);
+			};
+
 		context["PopupGetScr"] = nk_popup_get_scroll;
 		context["PopupSetScr"] = nk_popup_set_scroll;
 
@@ -777,6 +917,7 @@ namespace proto
 		context["ContextBegin"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_flags> flags, sol::optional<struct nk_vec2> size, sol::optional<struct nk_rect> bounds) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				return static_cast<bool>(nk_contextual_begin(*ctx, flags.value_or(NK_TEXT_CENTERED),
 				 size.value_or(nk_vec2(0.0f, 0.0f)), bounds.value_or(nk_rect(0.0f, 0.0f, 0.0f, 0.0f))));
 			};
@@ -784,6 +925,7 @@ namespace proto
 		context["ContextItemLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 
 				const auto& str = text.value();				
@@ -793,6 +935,7 @@ namespace proto
 		context["ContextItemImgLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<int> img, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!img) { throw std::runtime_error{"No image id provided."}; }
 				
@@ -803,6 +946,7 @@ namespace proto
 		context["ContextItemSymLbl"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<nk_symbol_type> sym, sol::optional<std::string_view> text, sol::optional<nk_flags> flags) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if(!text) { throw std::runtime_error{"No text string provided."}; }
 				if(!sym) { throw std::runtime_error{"No symbol id provided."}; }
 				
@@ -810,32 +954,60 @@ namespace proto
 				return static_cast<bool>(nk_contextual_item_symbol_text(*ctx, *sym, str.data(), static_cast<int>(str.size()), flags.value_or(NK_TEXT_CENTERED)));
 			};
 
-		context["ContextClose"] = nk_contextual_close;
-		context["ContextEnd"] = nk_contextual_end;
+		context["ContextClose"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_contextual_close(*ctx);
+			};
 
-		context["TooltipTxt"] = nk_tooltip;
+		context["ContextEnd"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_contextual_end(*ctx);
+			};
+
+		context["TooltipTxt"] = 
+			[](sol::optional<nk_context*> ctx, sol::optional<std::string> text)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_tooltip(*ctx, text.value_or("").c_str());
+			};
 
 		context["TooltipBegin"] = 
 			[](sol::optional<nk_context*> ctx, sol::optional<float> width) -> bool
 			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				return static_cast<bool>(nk_tooltip_begin(*ctx, width.value_or(1.0f)));
 			};
 
-		context["TooltipEnd"] = nk_tooltip_end;
+		context["TooltipEnd"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_tooltip_end(*ctx);
+			};
 
 		// Styles
 
-		context["StylePushFont"] = [this](sol::optional<FontStyle> style) -> bool {
+		context["StylePushFont"] = [](sol::optional<nk_context*> ctx, sol::optional<FontStyle> style) -> bool {
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
 				if (style)
 				{
 					const auto* host = Mapper::GetInstance();
-					return static_cast<bool>(nk_style_push_font(_ctx.get(), &host->GetFont(*style)->handle));
+					return static_cast<bool>(nk_style_push_font(*ctx, &host->GetFont(*style)->handle));
 				}
 
 				return false;
 		};
 
-		context["StylePopFont"] = nk_style_pop_font;
+		context["StylePopFont"] = 
+			[](sol::optional<nk_context*> ctx)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				nk_style_pop_font(*ctx);
+			};
 
 	}	
 }

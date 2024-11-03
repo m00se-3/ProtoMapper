@@ -52,7 +52,7 @@ namespace proto
 		if (_window != nullptr)
 		{
 			auto getProcAddress = [](const char* proc) -> void*{
-				return glfwGetProcAddress(proc);	// NOLINT - Unfortunately, you have to do something like this with OpenGL.
+				return (void*)glfwGetProcAddress(proc);
 			};
 			
 			glfwMakeContextCurrent(_window);
