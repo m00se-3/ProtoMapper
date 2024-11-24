@@ -91,37 +91,3 @@ list(
     "-pie"
     "-shared"
 )
-
-# Enable sanitizers if chosen
-
-if(${USE_ADDR_SANITIZER} MATCHES ON)
-    list(
-        APPEND CompilerFlags
-
-        "-fsanitize=address"
-    )
-endif()
-
-if((${USE_THREAD_SANITIZER} MATCHES ON) AND NOT ${CMAKE_HOST_WIN32})
-    list(
-        APPEND CompilerFlags
-
-        "-fsanitize=thread"
-    )
-endif()
-
-if((${USE_LEAK_SANITIZER} MATCHES ON) AND NOT ${CMAKE_HOST_WIN32})
-    list(
-        APPEND CompilerFlags
-
-        "-fsanitize=leak"
-    )
-endif()
-
-if(${USE_UND_SANITIZER} MATCHES ON)
-    list(
-        APPEND CompilerFlags
-
-        "-fsanitize=undefined"
-    )
-endif()

@@ -42,12 +42,11 @@ target_link_libraries(
 	glm::glm
 	glfw
 	tinyxml2::tinyxml2
-	nuklear
 	gsl::gsl-lite
 	gsl::gsl-lite-v0
 	gsl::gsl-lite-v1
 	sol2
-	${LUA_LIBRARIES}
+	lua
 )
 
 target_sources(
@@ -79,9 +78,9 @@ target_sources(
 
 	${CMAKE_CURRENT_LIST_DIR}/include
 	${CMAKE_CURRENT_LIST_DIR}/stl
-	${SIMPLEINI_INCLUDE_DIRS}
-	${stb_INCLUDE_DIR}
-	${LUA_INCLUDE_DIR}
+	${simpleini_SOURCE_DIR}
+	${lua_SOURCE_DIR}
+	${Nuklear_SOURCE_DIR}
 
 	FILES 
 
@@ -101,3 +100,5 @@ target_sources(
 	${CMAKE_CURRENT_LIST_DIR}/include/stl/dyn_array.hpp
 
 )
+
+include(${CMAKE_CURRENT_LIST_DIR}/UnitTests.cmake)

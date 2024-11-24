@@ -21,15 +21,16 @@
 #include <filesystem>
 #include <memory>
 
-#include "Font.hpp"
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
-#include "SimpleIni.h"
+#include <Font.hpp>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <SimpleIni.h>
+#include <sol/sol.hpp>
 
-#include "UIContainer.hpp"
-#include "Scene.hpp"
-#include "Renderer.hpp"
-#include "Window.hpp"
+#include <UIContainer.hpp>
+#include <Scene.hpp>
+#include <Renderer.hpp>
+#include <Window.hpp>
 
 namespace proto
 {

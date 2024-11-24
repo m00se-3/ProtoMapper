@@ -1,15 +1,13 @@
-set(ProtoMapper_Root_Dir ${CMAKE_CURRENT_LIST_DIR}/../ProtoMapper)
-
 # Add commands for the tests
-add_executable(dyn_array_test_exe ${ProtoMapper_Root_Dir}/tests/dyn_array_test.cpp)
+add_executable(dyn_array_test_exe ${CMAKE_CURRENT_LIST_DIR}/tests/dyn_array_test.cpp)
 
 if(clang_tidy_FOUND)
-	#set_property(TARGET dyn_array_test_exe PROPERTY CXX_CLANG_TIDY ${clang_tidy_FOUND})
+	set_property(TARGET dyn_array_test_exe PROPERTY CXX_CLANG_TIDY ${clang_tidy_FOUND})
 endif()
 
 # Build options and libraries
 
-target_include_directories(dyn_array_test_exe PUBLIC ${ProtoMapper_Root_Dir}/include/stl ${catch2_SOURCE_DIR})
+target_include_directories(dyn_array_test_exe PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/stl ${catch2_SOURCE_DIR})
 target_compile_options(dyn_array_test_exe PRIVATE ${CompilerFlags})
 target_link_options(dyn_array_test_exe PRIVATE ${LinkerFlags})
 target_link_libraries(

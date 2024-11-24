@@ -6,10 +6,6 @@
     "glfw3",
     "stb",
     "glm",
-    "glad",
-    "simpleini",
-    "lua",
-    "tinyxml2",
-    "nuklear"
+    "glad"
   ]
 }

@@ -15,14 +15,14 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "Renderer.hpp"
+#include <Renderer.hpp>
 
 #include <filesystem>
 
 #include <fstream>
 #include <gsl/gsl-lite.h>
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace proto
 {

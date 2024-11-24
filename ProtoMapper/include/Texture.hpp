@@ -20,9 +20,8 @@
 
 #include <cstdint>
 
-#include "glad/glad.h"
-#include "Image.hpp"
-
+#include <glad/glad.h>
+#include <Image.hpp>
 namespace proto
 {
     inline constexpr auto TextureWhite = 0xFFFFFFFF;

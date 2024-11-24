@@ -15,9 +15,9 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "Scene.hpp"
+#include <Scene.hpp>
 
-#include "UIContainer.hpp"
+#include <UIContainer.hpp>
 #include <memory>
 
 namespace proto

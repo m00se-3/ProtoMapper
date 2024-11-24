@@ -15,8 +15,8 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "ProtoMapper.hpp"
-#include "Config.hpp"
+#include <ProtoMapper.hpp>
+#include <Config.hpp>
 #include <GLFW/glfw3.h>
 #include <cstdlib>
 #include <sol/stack_core.hpp>

@@ -36,4 +36,5 @@
 #define NK_MEMSET memset
 #define NK_MEMCPY memcpy
 
-#include "nuklear/nuklear.h"
+#define NK_IMPLEMENTATION
+#include <nuklear.h>

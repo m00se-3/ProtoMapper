@@ -25,13 +25,3 @@ list(
     "/DYNAMICBASE"
     "/HIGHENTROPYVA"
 )
-
-# Enable sanitizers if chosen
-
-if(${USE_ADDR_SANITIZER} MATCHES ON)
-    list(
-        APPEND CompilerFlags
-
-        "/fsanitize=address"
-    )
-endif()

@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <sol/forward.hpp>
+#include <sol/environment.hpp>
 
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_STANDARD_IO
@@ -31,16 +32,12 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_FIXED_TYPES
 
-// We have to explicitly undefine NK_IMPLEMENTATION here to avoid linking errors.
-#undef NK_IMPLEMENTATION
-#include "nuklear/nuklear.h"
-#include "sol/sol.hpp"
+#include <nuklear.h>
 
-#include "Texture.hpp"
-#include "Renderer.hpp"
-#include "Font.hpp"
-#include "Vertex.hpp"
-#include "Window.hpp"
+#include <Texture.hpp>
+#include <Renderer.hpp>
+#include <Font.hpp>
+#include <Vertex.hpp>
 #include <gsl/gsl-lite.hpp>
 
 namespace proto

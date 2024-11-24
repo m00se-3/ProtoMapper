@@ -21,17 +21,11 @@
 #include <filesystem>
 #include <unordered_map> 
 
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_STANDARD_IO
-
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-#define NK_UINT_DRAW_INDEX
-#define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_FIXED_TYPES
-
-// We have to explicitly undefine NK_IMPLEMENTATION here to avoid linking errors.
-#undef NK_IMPLEMENTATION
-#include "nuklear/nuklear.h"
+extern "C"
+{
+    struct nk_font;
+    struct nk_font_atlas;
+}
 
 namespace proto
 {

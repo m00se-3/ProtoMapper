@@ -397,7 +397,10 @@ namespace proto
             ::operator delete(_data);
         }
 
-        [[nodiscard]] constexpr T& operator[](size_t index) { return _data[index]; }
+        [[nodiscard]] constexpr auto& operator[](this auto&& self, size_t index) 
+        {
+            return self._data[index];
+        }
 
         [[nodiscard]] constexpr auto& at(this auto&& self, size_t index)
         {

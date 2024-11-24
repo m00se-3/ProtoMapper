@@ -22,7 +22,7 @@
 #include <utility>
 #include <functional>
 
-#include "glad/glad.h"
+#include <glad/glad.h>
 
 namespace proto
 {

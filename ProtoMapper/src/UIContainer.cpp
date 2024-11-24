@@ -15,24 +15,19 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "UIContainer.hpp"
+#include <UIContainer.hpp>
 
 #include <cstdio>
 #include <array>
+#include <filesystem>
 #include <memory>
-#include <sol/as_returns.hpp>
-#include <sol/forward.hpp>
-#include <sol/in_place.hpp>
-#include <sol/protected_function_result.hpp>
-#include <sol/raii.hpp>
-#include <sol/state_handling.hpp>
-#include <sol/state_view.hpp>
+#include <sol/sol.hpp>
 #include <stdexcept>
 #include <utility>
 
-#include "ProtoMapper.hpp"
-#include "Config.hpp"
-#include "Vertex.hpp"
+#include <ProtoMapper.hpp>
+#include <Config.hpp>
+#include <Vertex.hpp>
 
 namespace proto
 {	
@@ -46,16 +41,16 @@ namespace proto
 		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_POSITION, .format=NK_FORMAT_FLOAT, .offset=NK_OFFSETOF(Vertex2D, pos) },
 		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_TEXCOORD,  .format=NK_FORMAT_FLOAT,  .offset=NK_OFFSETOF(Vertex2D, texCoords) },
 		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_COLOR, .format=NK_FORMAT_R32G32B32A32_FLOAT, .offset=NK_OFFSETOF(Vertex2D, color) },
-		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_ATTRIBUTE_COUNT, .format=NK_FORMAT_COUNT, .offset=0 }
+		nk_draw_vertex_layout_element{ .attribute=NK_VERTEX_ATTRIBUTE_COUNT, .format=NK_FORMAT_COUNT, .offset=0 } // NK_VERTEX_LAYOUT_END
 	};
 
 	UIContainer::UIContainer(FontGroup& fonts, const sol::state_view& state, Renderer* ren)
 		: _env(state, sol::create, state.globals()), _ctx(new nk_context, CtxDeleter{}), _configurator(), _cmds(), _verts(), _inds(), _nullTexture()
 	{
 		const std::filesystem::path fontDir = GetAssetDir() + "/fonts/roboto";
-		const std::filesystem::path imgDir = GetAssetDir() + "/icons/";
+		const std::filesystem::path imgDir = GetAssetDir() + "/icons";
 
-		if(std::filesystem::exists(imgDir))
+		if(std::filesystem::exists(imgDir) && std::filesystem::is_directory(imgDir))
 		{
 			for(const auto& icon : std::filesystem::directory_iterator(imgDir))
 			{
@@ -66,6 +61,23 @@ namespace proto
 				iconImg.first->second->Create().WriteImage(img);
 			}
 		}
+
+		_nkBuffer.Generate(MaxVertexBuffer, MaxVertexBuffer);
+
+		constexpr int segmentsPerCurve = 22;
+
+		_configurator.shape_AA = NK_ANTI_ALIASING_ON;
+		_configurator.line_AA = NK_ANTI_ALIASING_ON;
+		_configurator.vertex_layout = vertex_layout.data();
+		_configurator.vertex_alignment = NK_ALIGNOF(Vertex2D);
+		_configurator.vertex_size = sizeof(Vertex2D);
+		_configurator.circle_segment_count = segmentsPerCurve;
+		_configurator.curve_segment_count = segmentsPerCurve;
+		_configurator.arc_segment_count = segmentsPerCurve;
+		_configurator.global_alpha = 1.0f;
+		_configurator.tex_null = _nullTexture;
+
+		nk_buffer_init_default(&_cmds);	
 		
 
 		auto nTexture = ren->GetDefaultTexture();
@@ -93,33 +105,15 @@ namespace proto
 		int imgWidth, imgHeight; // NOLINT(cppcoreguidelines-init-variables) - variables initialized later
 	    const void* img = nk_font_atlas_bake(fonts.GetAtlas(), &imgWidth, &imgHeight, NK_FONT_ATLAS_RGBA32);
 
-		// Create Texture object.
-		_fontTexture.Create().WriteData(img, imgWidth, imgHeight);
+		if(img != nullptr) 
+		{ 
+			// Create Texture object.
+			_fontTexture.Create().WriteData(img, imgWidth, imgHeight);
 
-		fonts.Finalize(_fontTexture.GetID());
-
-		if (nk_init_default(_ctx.get(), &fonts.GetFont(FontStyle::Normal)->handle) == 0)
-		{
-		    return;
+			fonts.Finalize(_fontTexture.GetID());
 		}
 
-		static constexpr int segmentsPerCurve = 22;
-
-		_configurator.shape_AA = NK_ANTI_ALIASING_ON;
-		_configurator.line_AA = NK_ANTI_ALIASING_ON;
-		_configurator.vertex_layout = vertex_layout.data();
-		_configurator.vertex_alignment = NK_ALIGNOF(Vertex2D);
-		_configurator.vertex_size = sizeof(Vertex2D);
-		_configurator.circle_segment_count = segmentsPerCurve;
-		_configurator.curve_segment_count = segmentsPerCurve;
-		_configurator.arc_segment_count = segmentsPerCurve;
-		_configurator.global_alpha = 1.0f;
-		_configurator.null = _nullTexture;
-
-		nk_buffer_init_default(&_cmds);
-
-		_nkBuffer.Generate(MaxVertexBuffer, MaxVertexBuffer);
-		
+		nk_init_default(_ctx.get(), &fonts.GetFont(FontStyle::Normal)->handle);
 	}
 
 	bool UIContainer::SetDefinitions(const std::filesystem::path& filepath, sol::state_view& state)
@@ -865,9 +859,22 @@ namespace proto
 				return static_cast<bool>(nk_progress(*ctx, *current, max.value_or(def_max), nk_bool{*mod}));
 			};
 			
-		context["Prog"] = nk_prog;
+		context["Prog"] = 
+			[](sol::optional<nk_context*> ctx, sol::optional<size_t> current, sol::optional<size_t> max, sol::optional<bool> modifyable) -> size_t
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				constexpr size_t def_max = 100uz;
+				
+				return nk_prog(*ctx, current.value_or(0uz), max.value_or(def_max), modifyable.value_or(false));
+			};
 
-		context["ColorPicker"] = nk_color_picker;
+		context["ColorPicker"] = 
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_colorf> color, sol::optional<nk_color_format> format) -> struct nk_colorf
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				
+				return nk_color_picker(*ctx, color.value_or(nk_colorf{.r=1.0f, .g=1.0f, .b=1.0f, .a=1.0f}), format.value_or(NK_RGBA));
+			};
 
 		context["PickColor"] =
 			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_colorf*> color, sol::optional<nk_color_format> fmt) -> bool
@@ -902,8 +909,24 @@ namespace proto
 				nk_popup_end(*ctx);
 			};
 
-		context["PopupGetScr"] = nk_popup_get_scroll;
-		context["PopupSetScr"] = nk_popup_set_scroll;
+		context["PopupGetScr"] = 
+			[this](sol::optional<nk_context*> ctx) -> sol::usertype<struct nk_scroll>
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				uint32_t offX, offY; // NOLINT(cppcoreguidelines-init-variables)
+
+				nk_popup_get_scroll(*ctx, &offX, &offY);
+				return sol::object{ _env.lua_state(), sol::in_place, nk_scroll{ .x=offX, .y=offY } };
+			};
+
+		context["PopupSetScr"] = 
+			[](sol::optional<nk_context*> ctx, sol::optional<struct nk_scroll> value)
+			{
+				if(!ctx) { throw std::runtime_error{"No UI context provided. Please call function with a ':' or pass Ctx as 1st arg."}; }
+				if(!value) { throw std::runtime_error{"No scrolling value provided."}; }
+
+				nk_popup_set_scroll(*ctx, value.value().x, value.value().y);
+			};
 
 		context["Combo"] = nk_combo;
 		context["ComboSep"] = nk_combo_separator;
