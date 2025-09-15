@@ -1,5 +1,10 @@
 # ProtoMapper  
 
+### A note to whoever looks at this repo.
+This project has **not** been abandoned. I ran into many moments where I was questioning the direction of the project and felt
+it was necessary to rethink it's foundation. I believe this project can succeed, but not as a standalone, everything built from scratch, spaghetti mess.
+As a result, I'm currently in the process of building other things that will be used in this project going forward.
+
 ## Overview And Goals
 
 ProtoMapper is a program that will aim to be a very useful tool for indie game developers. It will also serve as a fun  
